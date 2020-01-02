@@ -5,9 +5,9 @@ const DatabaseController = require("../../controllers/DatabaseController");
 module.exports = {
     name: "listautoroles",
     description: "Lists all of the autoroles",
-    aliases: ["listautoranks", "autoroles", "autoranks"],
+    aliases: ["lar", "listautoranks", "autoroles", "autoranks"],
     usage: "[role]",
-    mod: true,  // Minimum level required is Mod (kick members permission)
+    mod: true,  // Minimum level required is Mod
     super: false,
     admin: false,
     cooldown: 5,

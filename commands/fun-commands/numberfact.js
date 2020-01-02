@@ -1,5 +1,5 @@
 // Import required files
-const {prefix} = require('../config.json');
+const {prefix} = require('../../config');
 const http = require("http");
 
 //Create a new module export
@@ -47,7 +47,7 @@ module.exports = {
         } else if (args.length === 2) {
             // Make sure first arg given is a number
             if (isNaN(parseInt(args[0]))) {
-                message.channel.send(`Your first option must be a number!\n\nExample: \`${prefix}numberfact 1024 date\``); //if 1st arg is not a number let user know
+                message.channel.send(`Your first option must be a number!\n\nExample: \`${prefix}numberfact 10/24 date\``); //if 1st arg is not a number let user know
 
             // Make sure 2nd arg given is not a number
             } else if (isNaN(args[1])) {
@@ -93,12 +93,12 @@ module.exports = {
 
                             // If format was not correct let user know
                             } else {
-                                message.channel.send(`For date trivia you must use a mm/dd format!\n\nExample: \`${prefix}numberfact 12/25 date\` for December 25th`);
+                                message.channel.send(`For date trivia you must use a mm/dd format!\n\nExample: \`${prefix}numberfact 10/24 date\` for October 24th`);
                             }
 
                         // If 2nd arg is not correct format let user know
                         } else {
-                            message.channel.send(`For date trivia you must use a mm/dd format!\n\nExample: \`${prefix}numberfact 12/25 date\` for December 25th`);
+                            message.channel.send(`For date trivia you must use a mm/dd format!\n\nExample: \`${prefix}numberfact 10/24 date\` for October 24th`);
                         };
 
                     // If not date...

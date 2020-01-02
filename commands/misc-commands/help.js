@@ -1,5 +1,5 @@
 // Import required files
-const {prefix, admin_role, super_role, mod_role} = require('../config.json');
+const {prefix, admin_role, super_role, mod_role} = require('../../config');
 
 // Create a new module export
 module.exports = {
@@ -16,9 +16,10 @@ module.exports = {
         const cmd = {};
         let cmdArr = [];
         const {commands} = message.client;
-        const modRole = message.member.roles.find(role => role.name === mod_role);
-        const superRole = message.member.roles.find(role => role.name === super_role);
-        const adminRole = message.member.roles.find(role => role.name === admin_role);
+        const modRole = message.member.roles.cache.find(role => role.name === mod_role);
+        const superRole = message.member.roles.cache.find(role => role.name === super_role);
+        const adminRole = message.member.roles.cache.find(role => role.name === admin_role);
+        const ownerRole = message.member.guild.owner;
 
         // Check if any args were passed in
         if (!args.length) {
@@ -131,7 +132,7 @@ module.exports = {
         // If command is admin only
         if (command.admin === true) {
             // If user is an admin send the embed
-            if (adminRole) {
+            if (adminRole || message.member === ownerRole) {
                 message.channel.send({embed:cmdEmbed});
 
             // If user isn't an admin let them know they don't have permissions
@@ -141,7 +142,7 @@ module.exports = {
         // If command is super only
         } else if (command.super === true) {
             // If user is a super or admin send embed
-            if (superRole || adminRole) {
+            if (superRole || adminRole || message.member === ownerRole) {
                 message.channel.send({embed:cmdEmbed});
             // If user isn't a super or admin let them know they don't have permissions
             } else {
@@ -150,7 +151,7 @@ module.exports = {
         // If command is mod only
         } else if (command.mod === true) {
             // If user is a mod, super, or admin send embed
-            if (modRole || superRole || adminRole) {
+            if (modRole || superRole || adminRole || message.member === ownerRole) {
                 message.channel.send({embed:cmdEmbed});
             // If user isn't a mod, super, or admin let them know they don't have permissions
             } else {

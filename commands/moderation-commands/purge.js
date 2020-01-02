@@ -2,22 +2,19 @@
 const {prefix} = require('../../config');
 const DatabaseController = require("../../controllers/DatabaseController");
 
-// Create a new module export
 module.exports = {
-    name: 'joinrole',
-    description: 'Join a role!',
-    aliases: ["join", "joinrank"],
-    usage: "<role name>",
+    name: 'purge',
+    description: 'Purges a specific amount of messages.\n*Limited To 100 at a time*',
+    aliases: ['delete', 'clear', 'clean'],
+    usage: "<count>",
     mod: false,
-    super: false,
+    super: true,
     admin: false,
-    cooldown: 5,
+    cooldown: 3,
     execute(message, args, client) {
-
-        // Check for arguments...
         if (!args.length) {
             // If no arguments let users know arguments are required
-            return message.reply(`You must define a role you'd like to join!\n\nExample: \`${prefix}joinrole AwesomeRole\``);
+            return message.reply(`You must give a number of messages to delete (max 100)!\n\nExample: \`${prefix}purge 10\``);
         } else {
             // Call the query handler from the database controller with required args
             DatabaseController.queryHandler(message, args, client);

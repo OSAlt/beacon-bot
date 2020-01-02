@@ -1,24 +1,24 @@
 // Import the required files
 const moment = require('moment');
-const {prefix, admin_role, super_role, mod_role, admin_channel, super_channel, mod_channel, super_log_channel, action_log_channel, db_name, db_host, db_port, db_user, db_pass} = require("../config.json");
-const Sequelize = require('sequelize');
+const {prefix, admin_role, super_role, mod_role, admin_channel, super_channel, mod_channel, super_log_channel, action_log_channel, db_name, db_host, db_port, db_user, db_pass} = require("../config");
+const Trigger = require("../models/Trigger");
+const Warning = require("../models/Warning");
 const shortid = require('shortid');
 
 // Create a new module export
 module.exports = {
     // Create a function with required args
-    triggerHandler: function(cmd, s, c, a, m, tl) {
+    triggerHandler: function(cmd, c, a, m, tl) {
         // Create vars
         const command = cmd;
-        const sequelize = s;
         const client = c;
         const args = a;
         const message = m;
         const triggerList = tl;
         let trigger;
-        const modRole = message.member.roles.find(role => role.name === mod_role);
-        const superRole = message.member.roles.find(role => role.name === super_role);
-        const adminRole = message.member.roles.find(role => role.name === admin_role);
+        const modRole = message.member.roles.cache.find(role => role.name === mod_role);
+        const superRole = message.member.roles.cache.find(role => role.name === super_role);
+        const adminRole = message.member.roles.cache.find(role => role.name === admin_role);
         const ownerRole = message.member.guild.owner;
             
         // Check the length of the args
@@ -29,33 +29,6 @@ module.exports = {
             // If only 1 arg then make lowercase assign it to trigger
             trigger = args[0].toLowerCase();
         };
-        
-        // Create a trigger model/table
-        const Trigger = sequelize.define('trigger', {
-            // Create required trigger string column
-            trigger: {
-                type: Sequelize.STRING,
-                allowNull: false
-            },
-            // Create required user_id text column
-            user_id: {
-                type: Sequelize.TEXT,
-                allowNull: false
-            },
-            severity: {
-                type: Sequelize.TEXT,
-                allowNull: false
-            },
-            // Create required enabled bool column with default to true
-            enabled: {
-                type: Sequelize.BOOLEAN,
-                allowNull: false,
-                defaultValue: true
-            }
-        }, {
-            charset: 'utf8mb4',
-            collate: 'utf8mb4_bin',
-        });
 
         /*********** LIST TRIGGERS ***********/
         if (command.name === 'listtriggers') {
@@ -71,18 +44,20 @@ module.exports = {
                     });
                 // Send the triggers to the user in a DM
                 }).then(() => {
-                    message.author.send('**Triggers:** '+triggers.map(trigger => `\`${trigger}\``).join(', '))
-                    // Let user know they have been DMed
-                    .then(() => {
-                        if (message.channel.type === "dm") return;
-                        message.reply("I've sent you a DM with all of the triggers!");
-                    })
-                    // If failed to dm, let user know and ask if they have DMs disabled
-                    .catch(() => {
-                        message.reply("It seems like I can't DM you! Do you have DMs disables?");
-                    });
-                }).catch(() => {
-                    message.channel.send("Uh oh! It seems there aren't any triggers yet!");
+                    if (triggers.length) {
+                        message.author.send('**Triggers:** '+triggers.map(trigger => `\`${trigger}\``).join(', '))
+                        // Let user know they have been DMed
+                        .then(() => {
+                            if (message.channel.type === "dm") return;
+                            message.reply("I've sent you a DM with all of the triggers!");
+                        })
+                        // If failed to dm, let user know and ask if they have DMs disabled
+                        .catch(() => {
+                            message.reply("It seems like I can't DM you! Do you have DMs disables?");
+                        });
+                    } else {
+                        message.channel.send("Uh oh! It seems there aren't any triggers yet!");
+                    }
                 });
 
             // If user is a super mod and passed in args, then give all data about that trigger
@@ -96,8 +71,8 @@ module.exports = {
                     triggerData.creator = client.users.get(data.get('user_id'));
                     triggerData.severity = data.get('severity'); //get severity level
                     triggerData.enabled = data.get('enabled'); //get enabled
-                    triggerData.created = moment(data.get('createdAt')).format('MMM Do, YYYY'); //get created date in MM-DD-YYYY format
-                    triggerData.updated = moment(data.get('updatedAt')).format('MMM Do, YYYY'); //get updated date in MM-DD-YYYY format
+                    triggerData.created = moment(data.get('createdAt')).format('YYYY-MM-DD HH:mm:ss'); //get created date in YYYY-MM-DD HH:mm:ss format
+                    triggerData.updated = moment(data.get('updatedAt')).format('YYYY-MM-DD HH:mm:ss'); //get updated date in YYYY-MM-DD HH:mm:ss format
 
                 // Send the trigger to the user in a DM
                 }).then(() => {
@@ -121,7 +96,7 @@ module.exports = {
                         color: color,
                         author: {
                             name: triggerData.creator.username+'#'+triggerData.creator.discriminator,
-                            icon_url: triggerData.creator.displayAvatarURL,
+                            icon_url: triggerData.creator.displayAvatarURL(),
                         },
 
                         fields: [
@@ -178,11 +153,11 @@ module.exports = {
                 if (severity === 'low' || severity === 'medium' || severity === 'high') {
                     /* 
                     * Sync the model to the table
-                    * Creates a new table if table doesn't exist, otherwise just inserts new row
+                    * Creates a new table if table doesn't exist, otherwise just inserts a new row
                     * id, createdAt, and updatedAt are set by default; DO NOT ADD
                     * Since default is set for enabled above, no need to add
                     !!!!
-                        Keep force set to false otherwise it will overwrite the table instead of making new row!
+                        Keep force set to false otherwise it will overwrite the table instead of making a new row!
                     !!!!
                     */
                     Trigger.sync({ force: false }).then(() => {
@@ -200,7 +175,7 @@ module.exports = {
                                     message.channel.send(`I have successfully added \`${triggerArgs[0]}\` to the trigger list!`);
 
                                     // Add trigger to TriggerList
-                                    triggerList.list.push(triggerArgs[0]);
+                                    triggerList.list[triggerArgs[0]] = triggerArgs[1];
                                 });
                             // If there was a trigger, let user know it exists already
                             } else {
@@ -229,13 +204,9 @@ module.exports = {
                         }
                     // Let the user know it was removed
                     }).then(() => {
-                        // Get index of the trigger in the triggerList
-                        const triggerIndex = triggerList.list.indexOf(trigger);
 
-                        // Remove the trigger from the triggerList if found
-                        if (triggerIndex > -1) {
-                            triggerList.list.splice(triggerIndex, 1);
-                        }
+                        // Remove the trigger from the triggerList
+                        delete triggerList.list[trigger];
 
                         message.channel.send(`I have successfully removed \`${trigger}\` from the trigger list!`);
                     });
@@ -257,9 +228,8 @@ module.exports = {
                         trig.update({
                             enabled: true
                         }).then(() => {
-
                             // Add trigger to TriggerList
-                            triggerList.list.push(trigger);
+                            triggerList.list[trig.trigger] = trig.severity;
 
                             message.reply(`I have successfully enabled \`${trigger}\`!`);
                         });
@@ -287,13 +257,8 @@ module.exports = {
                         }).then(() => {
                             message.reply(`I have successfully disabled \`${trigger}\`!`);
 
-                            // Get index of the trigger in the triggerList
-                            const triggerIndex = triggerList.list.indexOf(trigger);
-
-                            // Remove the trigger from the triggerList if found
-                            if (triggerIndex > -1) {
-                                triggerList.list.splice(triggerIndex, 1);
-                            }
+                            // Remove the trigger from the triggerList
+                            delete triggerList.list[trigger];
                         });
                     // If already disabled let user know
                     } else {
@@ -305,89 +270,17 @@ module.exports = {
                 };
             });
         };
-
     },
     triggerHit: function(m, t, c) {
-        const message = m;
-        const triggers = t;
-        const client = c;
+        // Create vars
+        const message = m, triggers = t, client = c;
+        let severity, fullMessage;
+        
         let warnId = shortid.generate(); // generate a uid
         let severityArr = [];
-        let severity;
-        let fullMessage;
-        const modRole = message.member.roles.find(role => role.name === mod_role);
-        const superRole = message.member.roles.find(role => role.name === super_role);
-        const adminRole = message.member.roles.find(role => role.name === admin_role);
-        const sequelize = new Sequelize(`mysql://${db_user}:${db_pass}@${db_host}:${db_port}/${db_name}`, {logging: false});
-
-        // Create a trigger model/table
-        const Trigger = sequelize.define('trigger', {
-            // Create required trigger string column
-            trigger: {
-                type: Sequelize.STRING,
-                allowNull: false
-            },
-            // Create required user_id text column
-            user_id: {
-                type: Sequelize.TEXT,
-                allowNull: false
-            },
-            severity: {
-                type: Sequelize.TEXT,
-                allowNull: false
-            },
-            // Create required enabled bool column with default to true
-            enabled: {
-                type: Sequelize.BOOLEAN,
-                allowNull: false,
-                defaultValue: true
-            }
-        },
-        {
-            charset: 'utf8mb4',
-            collate: 'utf8mb4_bin',
-        });
-
-        // Create a warning model/table
-        const Warning = sequelize.define('warning', {
-            // Create required user_id text column
-            warning_id: {
-                type: Sequelize.STRING,
-                allowNull: false
-            },
-            user_id: {
-                type: Sequelize.BIGINT,
-                allowNull: false
-            },
-            username: {
-                type: Sequelize.TEXT,
-                allowNull: false
-            },
-            triggers: {
-                type: Sequelize.TEXT,
-                allowNull: false
-            },
-            message: {
-                type: Sequelize.TEXT,
-                allowNull: false
-            },
-            message_link: {
-                type: Sequelize.TEXT,
-                allowNull: false
-            },
-            severity: {
-                type: Sequelize.STRING,
-                allowNull: false
-            },
-            channel_id: {
-                type: Sequelize.BIGINT,
-                allowNull: false
-            }
-        },
-        {
-            charset: 'utf8mb4',
-            collate: 'utf8mb4_bin',
-        });
+        const modRole = message.member.roles.cache.find(role => role.name === mod_role);
+        const superRole = message.member.roles.cache.find(role => role.name === super_role);
+        const adminRole = message.member.roles.cache.find(role => role.name === admin_role);
 
         // Find the trigger(s) in the database
         Trigger.findAll({where: {trigger: triggers},raw:true}).then((data) => {
@@ -413,14 +306,17 @@ module.exports = {
             Warning.sync({ force: false }).then(() => {
 
                 Warning.findOne({where: {warning_id: warnId}, raw:true}).then((warning => {
-                    if(warning === warnId) {
-                        warnId = shortid.generate();
+                    if(warning) {
+                        if(warning.warning_id === warnId) {
+                            warnId = shortid.generate();
+                        }
                     }
                 })).then(() => {
                     // Store the data
                     Warning.create({
                         warning_id: warnId, // add the warning Id
                         user_id: message.author.id, // add the user's id
+                        type: "Trigger", // assign the type of warning
                         username: message.author.username.toLowerCase(), // add the user's username
                         triggers: triggers.join(", "), // join the trigger array and add them
                         message: message.content, // add the full message
@@ -444,7 +340,7 @@ module.exports = {
                             title: "A User Has Hit A Trigger!",
                             author: {
                                 name: `${message.author.username}#${message.author.discriminator}`,
-                                icon_url: message.author.displayAvatarURL,
+                                icon_url: message.author.displayAvatarURL(),
                             },
                             description: `${message.author} has been warned for saying a trigger!`,
                             fields: [
@@ -525,14 +421,14 @@ module.exports = {
 
         // Sends reports of triggers based on user's permissions and the existence of specific channels
         function reportLadder(t, e) {
-            const modChannel = message.guild.channels.find((c => c.name === mod_channel)); //mod channel
-            const superChannel = message.guild.channels.find((c => c.name === super_channel)); //super channel
-            const adminChannel = message.guild.channels.find((c => c.name === admin_channel)); //admin channel
-            const superLog = message.guild.channels.find((c => c.name === super_log_channel)); //super log channel
-            const logChannel = message.guild.channels.find((c => c.name === action_log_channel)); //action log channel
-            const owner = client.users.get(message.guild.ownerID); // server owner
+            const modChannel = message.guild.channels.cache.find((c => c.name === mod_channel)); //mod channel
+            const superChannel = message.guild.channels.cache.find((c => c.name === super_channel)); //super channel
+            const adminChannel = message.guild.channels.cache.find((c => c.name === admin_channel)); //admin channel
+            const superLog = message.guild.channels.cache.find((c => c.name === super_log_channel)); //super log channel
+            const logChannel = message.guild.channels.cache.find((c => c.name === action_log_channel)); //action log channel
+            const owner = client.users.cache.get(message.guild.ownerID); // server owner
             // Gets the guildMember instance of the user so we can get more information on them and their information within our server.
-            warnedUser = client.guilds.get(message.guild.id).members.get(message.author.id);
+            warnedUser = client.guilds.cache.get(message.guild.id).members.cache.get(message.author.id);
 
             // Create deleted message embed for action log for high severity triggers
             const delMsgEmbed = {
@@ -540,13 +436,13 @@ module.exports = {
                 title: `Trigger Message Deleted!`,
                 author: {
                     name: `${message.author.username}#${message.author.discriminator}`,
-                    icon_url: message.author.displayAvatarURL,
+                    icon_url: message.author.displayAvatarURL(),
                 },
                 description: `A message by ${message.author} has been deleted because it has hit a high severity trigger, disciplinary action should be taken as soon as possible!`,
                 fields: [
                     {
                         name: "User Roles",
-                        value: `${warnedUser.roles.map(role => role.name).join(", ")}`,
+                        value: `${warnedUser.roles.cache.map(role => role.name).join(", ")}`,
                     },
                     {
                         name: "Triggers Hit",
@@ -733,7 +629,7 @@ module.exports = {
                                 // Change the url for the mod channel's embed to link to log in the log channel
                                 e.fields[4].value = d.url;
                                 // Send embed to the mod channel
-                                modChannel.send("@ everyone", {embed: e});
+                                modChannel.send("@everyone", {embed: e});
 
                                 // Update the db's message link
                                 Warning.update({message_link: d.url}, {
@@ -748,7 +644,7 @@ module.exports = {
                         message.reply(`please try to refrain from using words such as: \`${t}\``);
 
                         // Send embed to the moderation channel with here tag
-                        modChannel.send("@ here", {embed: e});
+                        modChannel.send("@here", {embed: e});
                     } else if (severity === "low") {
                         // Warn the user
                         message.reply(`please try to refrain from using words such as: \`${t}\``);

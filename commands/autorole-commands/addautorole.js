@@ -5,10 +5,10 @@ const DatabaseController = require("../../controllers/DatabaseController");
 module.exports = {
     name: "addautorole",
     description: "Adds a role to the auto role list",
-    aliases: ["addautorank", "+autorole", "+autorank"],
+    aliases: ["aar", "addautorank", "+autorole", "+autorank"],
     usage: "<role>",
     mod: false,
-    super: true, // Minimum level required is Super (manage roles permission)
+    super: true, // Minimum level required is Super
     admin: false,
     cooldown: 5,
     execute(message, args, client) {
