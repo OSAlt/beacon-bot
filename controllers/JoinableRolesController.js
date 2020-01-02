@@ -1,16 +1,15 @@
 // Import the required files
 const moment = require('moment');
 const {prefix, super_role, admin_role} = require('../config.json');
-const Sequelize = require('sequelize');
+const JoinableRole = require("../models/JoinableRole");
 
 // Create a new module export
 module.exports = {
 
     // Create a function with required args
-    joinableRolesHandler: function(cmd, s, c, a, m) {
+    joinableRolesHandler: function(cmd, c, a, m) {
         // Create vars
         const command = cmd;
-        const sequelize = s;
         const client = c;
         const args = a;
         const message = m;
@@ -27,24 +26,6 @@ module.exports = {
             // If only 1 arg then assign it to joinableRole
             joinableRole = args[0].toLowerCase();
         };
-        
-        // Create a joinable role model/table
-        const JoinableRole = sequelize.define('joinable_roles', {
-            // Create required role string column
-            role: {
-                type: Sequelize.STRING,
-                allowNull: false
-            },
-            // Create required user_id text column
-            user_id: {
-                type: Sequelize.TEXT,
-                allowNull: false
-            }
-        },
-        {
-            charset: 'utf8mb4',
-            collate: 'utf8mb4_bin',
-        });
 
         /*********** JOIN/LEAVE ROLE ***********/
         if (command.name === "joinrole" || command.name === "leaverole") {
@@ -140,7 +121,7 @@ module.exports = {
             };
 
         /*********** REMOVE JOINABLE ROLE ***********/
-        } else if (command.name === 'removejoinablerole' && superRole) {
+        } else if (command.name === 'removejoinablerole' && (superRole || adminRole || ownerRole)) {
             // Find the role within the guild
             const role = message.guild.roles.find(role => role.name.toLowerCase() === joinableRole);
             // Query the database for the joinable role passed in
@@ -164,7 +145,7 @@ module.exports = {
         /*********** LIST JOINABLEROLES ***********/
         } else if (command.name === 'listjoinableroles') {
             // If user is a super and passed in any args give data for that role
-            if (superRole && args.length) {
+            if ((superRole || adminRole || ownerRole) && args.length) {
                 // Find the role within the guild
                 const role = message.guild.roles.find(role => role.name.toLowerCase() === joinableRole);
                 let joinableRoleData = {};
@@ -216,7 +197,7 @@ module.exports = {
                 });
                 
             // If user isn't a super mod and passed in args let them know they can't use that command
-            } else if (!superRole && args.length) {
+            } else if ((!superRole || !adminRole || !ownerRole) && args.length) {
                 message.channel.send(`You do not have the proper permissions to use this command!\nIf you were trying to get the list of joinable roles, use \`${prefix}listjoinableroles\``);
 
             // If user didn't pass in any args just list the joinable roles

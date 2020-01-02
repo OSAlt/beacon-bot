@@ -1,16 +1,16 @@
 // Import the required files
 const moment = require('moment');
 const {prefix, admin_role, super_role, mod_role, admin_channel, super_channel, mod_channel, super_log_channel, action_log_channel, db_name, db_host, db_port, db_user, db_pass} = require("../config.json");
-const Sequelize = require('sequelize');
+const Trigger = require("../models/Trigger");
+const Warning = require("../models/Warning");
 const shortid = require('shortid');
 
 // Create a new module export
 module.exports = {
     // Create a function with required args
-    triggerHandler: function(cmd, s, c, a, m, tl) {
+    triggerHandler: function(cmd, c, a, m, tl) {
         // Create vars
         const command = cmd;
-        const sequelize = s;
         const client = c;
         const args = a;
         const message = m;
@@ -29,33 +29,6 @@ module.exports = {
             // If only 1 arg then make lowercase assign it to trigger
             trigger = args[0].toLowerCase();
         };
-        
-        // Create a trigger model/table
-        const Trigger = sequelize.define('trigger', {
-            // Create required trigger string column
-            trigger: {
-                type: Sequelize.STRING,
-                allowNull: false
-            },
-            // Create required user_id text column
-            user_id: {
-                type: Sequelize.TEXT,
-                allowNull: false
-            },
-            severity: {
-                type: Sequelize.TEXT,
-                allowNull: false
-            },
-            // Create required enabled bool column with default to true
-            enabled: {
-                type: Sequelize.BOOLEAN,
-                allowNull: false,
-                defaultValue: true
-            }
-        }, {
-            charset: 'utf8mb4',
-            collate: 'utf8mb4_bin',
-        });
 
         /*********** LIST TRIGGERS ***********/
         if (command.name === 'listtriggers') {
@@ -318,76 +291,6 @@ module.exports = {
         const modRole = message.member.roles.find(role => role.name === mod_role);
         const superRole = message.member.roles.find(role => role.name === super_role);
         const adminRole = message.member.roles.find(role => role.name === admin_role);
-        const sequelize = new Sequelize(`mysql://${db_user}:${db_pass}@${db_host}:${db_port}/${db_name}`, {logging: false});
-
-        // Create a trigger model/table
-        const Trigger = sequelize.define('trigger', {
-            // Create required trigger string column
-            trigger: {
-                type: Sequelize.STRING,
-                allowNull: false
-            },
-            // Create required user_id text column
-            user_id: {
-                type: Sequelize.TEXT,
-                allowNull: false
-            },
-            severity: {
-                type: Sequelize.TEXT,
-                allowNull: false
-            },
-            // Create required enabled bool column with default to true
-            enabled: {
-                type: Sequelize.BOOLEAN,
-                allowNull: false,
-                defaultValue: true
-            }
-        },
-        {
-            charset: 'utf8mb4',
-            collate: 'utf8mb4_bin',
-        });
-
-        // Create a warning model/table
-        const Warning = sequelize.define('warning', {
-            // Create required user_id text column
-            warning_id: {
-                type: Sequelize.STRING,
-                allowNull: false
-            },
-            user_id: {
-                type: Sequelize.BIGINT,
-                allowNull: false
-            },
-            username: {
-                type: Sequelize.TEXT,
-                allowNull: false
-            },
-            triggers: {
-                type: Sequelize.TEXT,
-                allowNull: false
-            },
-            message: {
-                type: Sequelize.TEXT,
-                allowNull: false
-            },
-            message_link: {
-                type: Sequelize.TEXT,
-                allowNull: false
-            },
-            severity: {
-                type: Sequelize.STRING,
-                allowNull: false
-            },
-            channel_id: {
-                type: Sequelize.BIGINT,
-                allowNull: false
-            }
-        },
-        {
-            charset: 'utf8mb4',
-            collate: 'utf8mb4_bin',
-        });
 
         // Find the trigger(s) in the database
         Trigger.findAll({where: {trigger: triggers},raw:true}).then((data) => {

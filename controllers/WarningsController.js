@@ -1,62 +1,20 @@
 // Import the required files
 const moment = require('moment-timezone');
 const {prefix} = require('../config.json');
-const Sequelize = require('sequelize');
 const Discord = require("discord.js");
+const Warning = require("../models/Warning");
 
 // Create a new module export
 module.exports = {
     // Create a function with required args
-    warningHandler: function(s, c, a, m) {
+    warningHandler: function(c, a, m) {
         // Create vars
-        const sequelize = s;
         const client = c;
         const args = a;
         const message = m;
         let warnedUser;
         let warnedChannel;
         let fullMessage;
-
-        // Create a warning model/table
-        const Warning = sequelize.define('warning', {
-            // Create required user_id text column
-            warning_id: {
-                type: Sequelize.STRING,
-                allowNull: false
-            },
-            user_id: {
-                type: Sequelize.BIGINT,
-                allowNull: false
-            },
-            username: {
-                type: Sequelize.TEXT,
-                allowNull: false
-            },
-            triggers: {
-                type: Sequelize.TEXT,
-                allowNull: false
-            },
-            message: {
-                type: Sequelize.TEXT,
-                allowNull: false
-            },
-            message_link: {
-                type: Sequelize.TEXT,
-                allowNull: false
-            },
-            severity: {
-                type: Sequelize.STRING,
-                allowNull: false
-            },
-            channel_id: {
-                type: Sequelize.BIGINT,
-                allowNull: false
-            }
-        },
-        {
-            charset: 'utf8mb4',
-            collate: 'utf8mb4_bin',
-        });
 
         // If only 1 arg, make sure it is "recent"
         if (args[0].toLowerCase() === "recent") {

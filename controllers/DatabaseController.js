@@ -5,6 +5,8 @@ const TriggersController = require("./TriggersController");
 const AutorolesController = require("./AutorolesController");
 const JoinableRolesController = require("./JoinableRolesController");
 const WarningsController = require("./WarningsController");
+const PollsController = require("./PollsController");
+const Trigger = require("../models/Trigger");
 
 // Create a new module export
 module.exports = {
@@ -39,7 +41,16 @@ module.exports = {
         if (command.name.includes("trigger")) {
 
             // Call the trigger handler function from the TriggersController file
-            TriggersController.triggerHandler(command, sequelize, client, args, message, triggerList);
+            TriggersController.triggerHandler(command, client, args, message, triggerList);
+
+        /*
+        ###################################
+        ########## poll commands ##########
+        ###################################
+        */
+        } else if (command.name.includes("poll")) {
+            // Call the poll handler function from the PollsController file
+           PollsController.pollHandler(command, client, args, message);
 
         /*
         #######################################
@@ -49,7 +60,7 @@ module.exports = {
         } else if (command.name.includes("autorole")) {
             
             // Call the autoroles handler function from the AutorolesController file
-            AutorolesController.autoroleHandler(command, sequelize, client, args, message);
+            AutorolesController.autoroleHandler(command, client, args, message);
         
         /*
         ###########################################
@@ -59,7 +70,7 @@ module.exports = {
         } else if (command.name.includes("joinablerole") || command.name.includes("joinrole") || command.name.includes("leaverole")) {
 
             // Call the joinable roles handler function from the JoinableRolesController file
-            JoinableRolesController.joinableRolesHandler(command, sequelize, client, args, message);
+            JoinableRolesController.joinableRolesHandler(command, client, args, message);
 
         /*
         ######################################
@@ -68,7 +79,7 @@ module.exports = {
         */
         } else if (command.name === "warnings") {
             // Call the Warning handler function from the JoinableRolesController file
-            WarningsController.warningHandler(sequelize, client, args, message);
+            WarningsController.warningHandler(client, args, message);
         /*
         ####################################
         ########## testdb command ##########
@@ -90,33 +101,6 @@ module.exports = {
 
     // Function for when bot starts up
     botReconnect: function(tl) {
-
-        // Connect to Database
-        const sequelize = new Sequelize(`mysql://${db_user}:${db_pass}@${db_host}:${db_port}/${db_name}`, {logging: false});
-
-        // Create a trigger model/table connection
-        const Trigger = sequelize.define('trigger', {
-            // Create required trigger string column
-            trigger: {
-                type: Sequelize.STRING,
-                allowNull: false
-            },
-            // Create required user_id text column
-            user_id: {
-                type: Sequelize.TEXT,
-                allowNull: false
-            },
-            severity: {
-                type: Sequelize.TEXT,
-                allowNull: false
-            },
-            // Create required enabled bool column with default to true
-            enabled: {
-                type: Sequelize.BOOLEAN,
-                allowNull: false,
-                defaultValue: true
-            }
-        });
 
         // Get all rows of enabled triggers and add them to the triggerList
         Trigger.findAll({

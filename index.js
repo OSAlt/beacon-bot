@@ -1,6 +1,6 @@
 // Import required files
 const Discord = require("discord.js");
-const {prefix, token} = require("./config.json");
+const {token} = require("./config.json");
 const messageController = require("./controllers/MessageController");
 const joinController = require("./controllers/JoinController");
 const databaseController = require("./controllers/DatabaseController");

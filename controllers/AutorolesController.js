@@ -1,16 +1,15 @@
 // Import the required files
 const moment = require('moment');
 const {prefix} = require('../config.json');
-const Sequelize = require('sequelize');
+const AutoRole = require("../models/AutoRole");
 
 // Create a new module export
 module.exports = {
 
     // Create a function with required args
-    autoroleHandler: function(cmd, s, c, a, m) {
+    autoroleHandler: function(cmd, c, a, m) {
         // Create vars
         const command = cmd;
-        const sequelize = s;
         const client = c;
         const args = a;
         const message = m;
@@ -24,24 +23,6 @@ module.exports = {
             // If only 1 arg then assign it to autorole
             autorole = args[0].toLowerCase();
         };
-        
-        // Create an autorole model/table
-        const AutoRole = sequelize.define('autorole', {
-            // Create required autorole string column
-            role: {
-                type: Sequelize.STRING,
-                allowNull: false
-            },
-            // Create required user_id text column
-            user_id: {
-                type: Sequelize.TEXT,
-                allowNull: false
-            }
-        },
-        {
-            charset: 'utf8mb4',
-            collate: 'utf8mb4_bin',
-        });
 
         /*********** ADD AUTOROLE ***********/
         if (command.name === 'addautorole') {
