@@ -27,44 +27,43 @@ module.exports = {
         Choice.belongsTo(Poll); // Eeach choice belongs to a poll
 
         if (command.name === "listpolls") {
-            // let polls = []; // object for the polls from the db
-            // let choicesObj = [];
+            let polls = []; // object for the polls from the db
+            let choicesObj = [];
 
-            // Poll.findAll({raw:true}).then((data) => {
-            //     data.forEach((item) => {
-            //         let tempPoll = {};
-            //         tempPoll.id = item.id; // Assign id
-            //         tempPoll.title = item.title; // Assign title
-            //         tempPoll.author = client.users.get(item.author); // Assign author
+            Poll.findAll({raw:true}).then((data) => {
+                data.forEach((item) => {
+                    let tempPoll = {};
+                    tempPoll.id = item.id; // Assign id
+                    tempPoll.title = item.title; // Assign title
+                    tempPoll.author = client.users.get(item.author); // Assign author
 
-            //         // Assign status
-            //         if (item.active === 1) {
-            //             tempPoll.status = "Active";
-            //         } else {
-            //             tempPoll.status = "Inactive";
-            //         }
+                    // Assign status
+                    if (data.active === 1) {
+                        tempPoll.status = "Active";
+                    } else {
+                        tempPoll.status = "Inactive";
+                    }
 
-            //         tempPoll.created = moment(item.createdAt).format('MMM Do, YYYY'); // Assign created
-            //         tempPoll.updated = moment(item.updatedAt).format('MMM Do, YYYY'); // Assign updated
+                    tempPoll.created = moment(data.createdAt).format('MMM Do, YYYY'); // Assign created
+                    tempPoll.updated = moment(data.updatedAt).format('MMM Do, YYYY'); // Assign updated
                     
-            //         // Get all the choices
-            //         Choice.findAll({where: {pollId: item.id}, raw:true}).then((options) => {
+                    // Get all the choices
+                    Choice.findAll({where: {pollId: item.id}, raw:true}).then((options) => {
 
-            //             options.forEach((option) => {
-            //                 choicesObj.push(option);
-            //             })
-            //         }).then(() => {
-            //             tempPoll.choices = choicesObj;
-            //         })
+                        //console.log(options); // has data
+                        choicesObj = options;
 
-            //         // Add the tempPoll object to the polls array
-            //         polls.push(tempPoll);
+                    }).then(() => {
+                        //console.log(choicesObj) // has data
+                        tempPoll.choices = choicesObj;
+                        // Add the tempPoll object to the polls array
+                        polls.push(tempPoll);
+                    }).then(() => {
+                        console.log(polls) // has data (WITH CHOICES)
+                    })
+                });
+            })
 
-            //     });
-
-            // }).then(() => {
-            //     console.log(polls["choices"])
-            // })
 
         /*********** ADD POLL ***********/
         } else if (command.name === "addpoll") {
