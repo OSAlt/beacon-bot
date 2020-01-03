@@ -5,7 +5,7 @@ const DatabaseController = require("../../controllers/DatabaseController");
 module.exports = {
     name: "listtriggers",
     description: "Lists all of the triggers",
-    aliases: ["triggers", "showtriggers", "alltriggers"],
+    aliases: ["triggers", "showtriggers", "alltriggers", "viewtriggers"],
     usage: "[trigger]",
     mod: true,  // Minimum level required is Mod (kick members permission)
     super: false,

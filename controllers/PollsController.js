@@ -20,45 +20,96 @@ module.exports = {
         let pollChoices; // var for the choices before changing to caps letter beginning
         let pollTitle; // final var for the poll title
         let finalChoices = []; // final var for the choices
-        const modRole = message.member.roles.find(role => role.name === mod_role); // mod role
-        const superRole = message.member.roles.find(role => role.name === super_role); // super role
-        const adminRole = message.member.roles.find(role => role.name === admin_role); // admin role
-        const ownerRole = message.member.guild.owner; // owner role
-
-        // Run the modifyInput function
-        modifyInput(args);
+        let pollId; // var to store the poll id after creation
 
         // Associate the two tables
         Poll.hasMany(Choice); // Poll rows have many choices
         Choice.belongsTo(Poll); // Eeach choice belongs to a poll
 
+        if (command.name === "listpolls") {
+            // let polls = []; // object for the polls from the db
+            // let choicesObj = [];
+
+            // Poll.findAll({raw:true}).then((data) => {
+            //     data.forEach((item) => {
+            //         let tempPoll = {};
+            //         tempPoll.id = item.id; // Assign id
+            //         tempPoll.title = item.title; // Assign title
+            //         tempPoll.author = client.users.get(item.author); // Assign author
+
+            //         // Assign status
+            //         if (item.active === 1) {
+            //             tempPoll.status = "Active";
+            //         } else {
+            //             tempPoll.status = "Inactive";
+            //         }
+
+            //         tempPoll.created = moment(item.createdAt).format('MMM Do, YYYY'); // Assign created
+            //         tempPoll.updated = moment(item.updatedAt).format('MMM Do, YYYY'); // Assign updated
+                    
+            //         // Get all the choices
+            //         Choice.findAll({where: {pollId: item.id}, raw:true}).then((options) => {
+
+            //             options.forEach((option) => {
+            //                 choicesObj.push(option);
+            //             })
+            //         }).then(() => {
+            //             tempPoll.choices = choicesObj;
+            //         })
+
+            //         // Add the tempPoll object to the polls array
+            //         polls.push(tempPoll);
+
+            //     });
+
+            // }).then(() => {
+            //     console.log(polls["choices"])
+            // })
+
         /*********** ADD POLL ***********/
-        if (command.name === "addpoll") {
-            if (modRole || superRole || adminRole || message.member === ownerRole) {
-                // Sync the Poll model with the Poll table
-                Poll.sync({force: false}).then(() => {
-                    // Create the poll
-                    Poll.create({
-                        title: pollTitle, // add the poll title
-                        author: message.author.id, // add the creator's id
-                    }).then((result) => {
-                        // Loop through the pollChoices arr and create a new choice row for each
-                        finalChoices.forEach((choice) => {
-                            // Sync the Choice model with the Choice table
-                            Choice.sync({force: false}).then(() => {
-                                // Create the Choice row
-                                Choice.create({
-                                    choice: choice, // add the choice
-                                    pollId: result.id // assign the poll's id
-                                });
+        } else if (command.name === "addpoll") {
+            // Run the modifyInput function
+            modifyInput(args);
+
+            // Sync the Poll model with the Poll table
+            Poll.sync({force: false}).then(() => {
+                // Create the poll
+                Poll.create({
+                    title: pollTitle, // add the poll title
+                    author: message.author.id, // add the creator's id
+                }).then((result) => {
+                    pollId = result.id; // store the poll id in a var for later use
+                    // Loop through the pollChoices arr and create a new choice row for each
+                    finalChoices.forEach((choice) => {
+                        // Sync the Choice model with the Choice table
+                        Choice.sync({force: false}).then(() => {
+                            // Create the Choice row
+                            Choice.create({
+                                choice: choice, // add the choice
+                                pollId: result.id // assign the poll's id
                             });
                         });
-                    }).then(() => {
-                        // Let user know the poll was added
-                        message.channel.send("I have successfully created the poll!");
                     });
+                }).then(() => {
+                    // Let user know the poll was added
+                    message.channel.send(`I have successfully created the poll!\rYour poll's id is \`${pollId}\``);
                 });
-            }
+            });
+        /*********** REMOVE POLL ***********/
+        } else if(command.name === "removepoll") {
+            pollId = args[0]; // assign pollId
+            
+            // Remove the choices with the poll's id
+            Choice.destroy({where: {pollId: pollId}}).then(() => {
+
+                // Delete the poll with the same id
+                Poll.destroy({where: {id:pollId}}).then(() => {
+                    message.channel.send(`The poll was successfully removed!`)
+                });
+                
+            }).catch(() => {
+                message.channel.send(`Unable to find a poll with the id of \`${pollId}\`!\rIf you forgot the id of the poll you can find it with \`${prefix}listpolls active\`!`);
+            });
         }
 
         // Take the user input and modify it

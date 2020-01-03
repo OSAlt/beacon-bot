@@ -44,18 +44,20 @@ module.exports = {
                     });
                 // Send the triggers to the user in a DM
                 }).then(() => {
-                    message.author.send('**Triggers:** '+triggers.map(trigger => `\`${trigger}\``).join(', '))
-                    // Let user know they have been DMed
-                    .then(() => {
-                        if (message.channel.type === "dm") return;
-                        message.reply("I've sent you a DM with all of the triggers!");
-                    })
-                    // If failed to dm, let user know and ask if they have DMs disabled
-                    .catch(() => {
-                        message.reply("It seems like I can't DM you! Do you have DMs disables?");
-                    });
-                }).catch(() => {
-                    message.channel.send("Uh oh! It seems there aren't any triggers yet!");
+                    if (triggers.length) {
+                        message.author.send('**Triggers:** '+triggers.map(trigger => `\`${trigger}\``).join(', '))
+                        // Let user know they have been DMed
+                        .then(() => {
+                            if (message.channel.type === "dm") return;
+                            message.reply("I've sent you a DM with all of the triggers!");
+                        })
+                        // If failed to dm, let user know and ask if they have DMs disabled
+                        .catch(() => {
+                            message.reply("It seems like I can't DM you! Do you have DMs disables?");
+                        });
+                    } else {
+                        message.channel.send("Uh oh! It seems there aren't any triggers yet!");
+                    }
                 });
 
             // If user is a super mod and passed in args, then give all data about that trigger
