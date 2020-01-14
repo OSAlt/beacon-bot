@@ -4,9 +4,11 @@ const {token} = require("./config.json");
 const messageController = require("./controllers/MessageController");
 const joinController = require("./controllers/JoinController");
 const databaseController = require("./controllers/DatabaseController");
+const pollsController = require("./controllers/PollsController");
+const moderationController = require("./controllers/ModerationController");
 
 // Instantiate a new Discord client and collection
-const client = new Discord.Client({disableEveryone: false});
+const client = new Discord.Client({disableEveryone: false, partials: ["MESSAGE", "REACTION"]});
 
 // Create a class for Triggers
 class TriggerList {
@@ -26,7 +28,7 @@ const triggerList = new TriggerList(); //instantiate a new TriggerList class
 process.on('unhandledRejection', error => console.error('Uncaught Promise Rejection', error));
 
 
-// Log that the bot has came online
+// Trigger once when the bot comes online
 client.once('ready', () => {
     console.log('Bot Online!');
     
@@ -57,6 +59,14 @@ client.on('guildMemberAdd', member => {
     // Call the function from /controller/JoinController to handle the member join
     try {
         joinController.joinHandler(member, client);
+    } catch (e) {
+        console.error(e);
+    }
+});
+
+client.on("messageDelete", message => {
+    try {
+        moderationController.deleteHandler(message, client);
     } catch (e) {
         console.error(e);
     }

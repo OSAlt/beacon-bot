@@ -21,6 +21,7 @@ module.exports = {
         let pollTitle; // final var for the poll title
         let finalChoices = []; // final var for the choices
         let pollId; // var to store the poll id after creation
+        let pollCount; // the count of the polls to pull from the db
 
         // Associate the two tables
         Poll.hasMany(Choice); // Poll rows have many choices
@@ -30,7 +31,13 @@ module.exports = {
             let polls = []; // object for the polls from the db
             let choicesObj = [];
 
-            Poll.findAll({raw:true}).then((data) => {
+            if(isNaN(args)) {
+                return message.reply(`uh oh! You must specify a number for the amount of polls you wish to see.\r\nExample: \`${prefix}listpolls 3\``);
+            } else {
+                pollCount = parseInt(args);
+            }
+
+            Poll.findAll({limit: pollCount, raw:true}).then((data) => {
                 data.forEach((item) => {
                     let tempPoll = {};
                     tempPoll.id = item.id; // Assign id
