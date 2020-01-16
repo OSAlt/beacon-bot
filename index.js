@@ -3,6 +3,7 @@ const Discord = require("discord.js");
 const {token} = require("./config.json");
 const messageController = require("./controllers/MessageController");
 const joinController = require("./controllers/JoinController");
+const leaveController = require("./controllers/LeaveController");
 const databaseController = require("./controllers/DatabaseController");
 const pollsController = require("./controllers/PollsController");
 const moderationController = require("./controllers/ModerationController");
@@ -56,7 +57,8 @@ client.on('message', async message => {
 
 // Listen for members to join the server
 client.on('guildMemberAdd', member => {
-    // Call the function from /controller/JoinController to handle the member join
+
+    // Attempt to run the joinHandler method
     try {
         joinController.joinHandler(member, client);
     } catch (e) {
@@ -64,9 +66,56 @@ client.on('guildMemberAdd', member => {
     }
 });
 
-client.on("messageDelete", message => {
+// Listen for members to leave the server
+client.on('guildMemberRemove', member => {
+
+    // Attempt to run the leaveHandler method
     try {
-        moderationController.deleteHandler(message, client);
+        leaveController.leaveHandler(member, client);
+    } catch (e) {
+        console.error(e);
+    }
+});
+
+client.on("messageDelete", message => {
+    
+    // Make sure the author isn't null
+    /* Uncached messages contain less data than caches */
+    if (message.author) {
+
+        // Make sure the message isn't from a bot
+        if (message.author.bot === false) {
+
+            // Attempt to run the deleteHandler method
+            try {
+                moderationController.deleteHandler(message, client);
+            } catch (e) {
+                return;
+            }
+
+        // If the message is from a bot, ignore it
+        } else {
+            return;
+        }
+    }
+});
+
+client.on("messageUpdate", (oldMsg, newMsg) => {
+
+    // Attempt to run the editHandler method
+    try {
+
+        // Make sure the message isn't from a bot
+        /* Embeds counts as an edit so when the bot sends the embed it triggers this again.
+         * Making this ignore bot messages prevent infinite loops or crashes.
+        */
+        if(newMsg.author.bot === false) {
+            moderationController.editHandler(oldMsg, newMsg, client);
+
+        // If the message is from a bot, ignore it
+        } else {
+            return;
+        }
     } catch (e) {
         console.error(e);
     }

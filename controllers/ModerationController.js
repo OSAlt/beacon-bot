@@ -1,39 +1,20 @@
 const Discord = require("discord.js");
-const {prefix, admin_role, super_role, mod_role, action_log_channel} = require('../config.json');
+const {prefix, admin_role, super_role, mod_role, action_log_channel, super_log_channel} = require('../config.json');
 
 module.exports = {
-    deleteHandler: function(m, c) {
+    deleteHandler: function(m) {
         const message = m;
-        const client = c;
-        let sentBy;
-        let deletedBy;
-
-        message.guild.fetchAuditLogs({type: "MESSAGE_DELETE"})
-        .then(audit =>  {
-            deletedBy = client.users.get(audit.entries.first().executor.id);
-            sentBy = client.users.get(audit.entries.first().target.id);
-        }).then(() => {
-
+        const actionLog = message.guild.channels.find((c => c.name === action_log_channel)); //mod log channel
 
             const delEmbed = {
                 color: 0xff0000,
                 title: `Message Deleted in ${message.channel.name}`,
                 author: {
-                    name: sentBy.name,
-                    icon_url: sentBy.displayAvatarURL
+                    name: `${message.author.username}#${message.author.discriminator}`,
+                    icon_url: message.author.displayAvatarURL()
                 },
-                description: `${deletedBy} has deleted a message by ${sentBy} in ${message.channel}`,
+                description: `A message by ${message.author} was deleted in ${message.channel}`,
                 fields: [
-                    {
-                        name: `Message Sent By`,
-                        value: `${sentBy}`,
-                        inline: true,
-                    },
-                    {
-                        name: `Message Deleted By`,
-                        value: `${deletedBy}`,
-                        inline: true,
-                    },
                     {
                         name: "Message",
                         value: message.content || "`{Message was either an Embed or Image}`",
@@ -43,7 +24,36 @@ module.exports = {
                 timestamp: new Date()
             }
     
-            message.channel.send({embed: delEmbed});
-        });
+            actionLog.send({embed: delEmbed});
+    },
+    editHandler: function(o, n, c) {
+        const oldMsg = o, newMsg = n, client = c;
+        const superLog = newMsg.guild.channels.find((c => c.name === super_log_channel)); //super log channel
+
+        const author = client.users.get(newMsg.author.id);
+        
+        const editEmbed = {
+            color: 0x00ff00,
+            title: `Message was edited in ${newMsg.channel.name}`,
+            url: `${newMsg.url}`,
+            author: {
+                name: `${author.username}#${author.discriminator}`,
+                icon_url: author.displayAvatarURL(),
+            },
+            description: `${newMsg.author} has edited a message in ${newMsg.channel}`,
+            fields: [
+                {
+                    name: `Original Message`,
+                    value: ` ${oldMsg.content}`,
+                },
+                {
+                    name: `New Message`,
+                    value: ` ${newMsg.content}`,
+                },
+            ],
+            timestamp: new Date()
+        }
+
+        superLog.send({embed: editEmbed});
     }
 }

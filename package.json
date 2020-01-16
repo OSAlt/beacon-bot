@@ -12,6 +12,7 @@
     "discord.js": "github:discordjs/discord.js",
     "lodash": "^4.17.15",
     "moment": "^2.24.0",
+    "moment-duration-format": "^2.3.2",
     "moment-timezone": "^0.5.27",
     "mysql2": "^2.0.1",
     "sequelize": "^5.21.2",

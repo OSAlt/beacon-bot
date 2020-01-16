@@ -56,10 +56,10 @@ module.exports = {
                         // If a role was found in the db add it to/remove it from the user
                         if (data) {
                             if (command.name === "joinrole") {
-                                message.member.addRole(role); // add the role
+                                message.member.roles.add(role); // add the role
                                 return message.reply(`You've been successfully added to the ${role.name} role!`);
                             } else if (command.name === "leaverole") {
-                                message.member.removeRole(role); // remove the role
+                                message.member.roles.remove(role); // remove the role
                                 return message.reply(`You've have successfully left the ${role.name} role!`);
                             }
 

@@ -109,7 +109,7 @@ module.exports = {
                             title: `Warning for ${args[1]}`,
                             author: {
                                 name: warnedUser.user.username,
-                                icon_url: warnedUser.user.displayAvatarURL,
+                                icon_url: warnedUser.user.displayAvatarURL(),
                             },
                             fields: [
                                 {
@@ -230,7 +230,7 @@ module.exports = {
             const userWarningsEmbed = new Discord.RichEmbed() 
                 .setColor('#FF0000')
                 .setTitle(`${warnedUser.user.username} has a total of ${Object.keys(warnings).length} warnings`)
-                .setAuthor(`${warnedUser.user.username}`, `${warnedUser.user.displayAvatarURL}`)
+                .setAuthor(`${warnedUser.user.username}`, `${warnedUser.user.displayAvatarURL()}`)
                 .addField(`User Id`, `${warnedUser.id}`)
                 .addField(`User`, `${warnedUser}`, true)
                 .addField(`Server Nickname`, `${warnedUser.nickname || "None"}`, true)
