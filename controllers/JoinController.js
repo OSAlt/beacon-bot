@@ -12,7 +12,7 @@ module.exports = {
         const sequelize = new Sequelize(`mysql://${db_user}:${db_pass}@${db_host}:${db_port}/${db_name}`, {logging: false}); //create the sequelize connection
         const roles = []; //create the roles array
         const joinedDate = moment(member.joinedAt).format(`MMM Do, YYYY`); //joined date only
-        const joinedTime = moment(member.joinedAt).format(`HH:mm:ss`); //joined time only
+        const joinedTime = moment(member.joinedAt).format(`HH:mm:ssa`); //joined time only
         const joinedTimezone = moment(member.joinedAt).tz(moment.tz.guess()).format(`z`); // timezone for the joined time
         const joinLog = member.guild.channels.find((c => c.name === join_log_channel)); //join log channel
 
@@ -32,13 +32,11 @@ module.exports = {
                     value: `${joinedTime}`,
                     inline: true,
                 },
-                {
-                    name: `Timezone`,
-                    value: `${joinedTimezone}`,
-                    inline: true,
-                }
             ],
             timestamp: new Date(),
+            footer: {
+                text: `All times are in ${joinedTimezone}`,
+            }
         }
 
         // Send the embed to the action log channel

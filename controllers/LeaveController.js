@@ -13,12 +13,12 @@ module.exports = {
         const member = m, client = c;
         let lastMessage;
         const superLog = member.guild.channels.find((c => c.name === super_log_channel)); //super log channel
-        const timezone = moment(member.joinedAt).tz(moment.tz.guess()).format(`z`); // timezone
-        const joinedDate = moment(member.joinedAt).format(`MMM Do, YYYY`); //joined date only
-        const unixDate = moment(member.joinedTimestamp).unix(); //convert time to unix(ms)
-        const memberLength = moment.duration(unixDate, "milliseconds").format("Y[y] D[d] H[h] m[m] s[s]"); //get the duration of the membership
-
-        console.log(memberLength);
+        const timezone = moment(member.joinedAt).tz(moment.tz.guess()).format(`z`); // server timezone
+        const joinedDate = moment(member.joinedAt).format("MMM Do YYYY, hh:mm:ssa"); // joined date
+        const joinedTimeStamp = moment(member.joinedTimestamp); // timestamp user joined
+        const currentTime = moment(); // create a new moment obj with current time
+        const memberLength = moment.duration(currentTime.diff(joinedTimeStamp)).format("Y[y] D[d] H[h] m[m] s[s]"); //get the duration of the membership and format it
+        const timestamp = moment(currentTime).valueOf();
 
         if (member.lastMessage) {
             lastMessage = member.lastMessage.content;
@@ -44,9 +44,9 @@ module.exports = {
                     value: `${lastMessage}`,
                 }
             ],
-            timestamp: new Date(),
+            timestamp: timestamp,
             footer: {
-                text: `All times are in the following timezone: ${timezone}`,
+                text: `All times are in ${timezone}`,
             }
         };
 
