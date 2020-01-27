@@ -153,11 +153,11 @@ module.exports = {
                 if (severity === 'low' || severity === 'medium' || severity === 'high') {
                     /* 
                     * Sync the model to the table
-                    * Creates a new table if table doesn't exist, otherwise just inserts new row
+                    * Creates a new table if table doesn't exist, otherwise just inserts a new row
                     * id, createdAt, and updatedAt are set by default; DO NOT ADD
                     * Since default is set for enabled above, no need to add
                     !!!!
-                        Keep force set to false otherwise it will overwrite the table instead of making new row!
+                        Keep force set to false otherwise it will overwrite the table instead of making a new row!
                     !!!!
                     */
                     Trigger.sync({ force: false }).then(() => {
@@ -283,13 +283,12 @@ module.exports = {
 
     },
     triggerHit: function(m, t, c) {
-        const message = m;
-        const triggers = t;
-        const client = c;
+        // Create vars
+        const message = m, triggers = t, client = c;
+        let severity, fullMessage;
+        
         let warnId = shortid.generate(); // generate a uid
         let severityArr = [];
-        let severity;
-        let fullMessage;
         const modRole = message.member.roles.find(role => role.name === mod_role);
         const superRole = message.member.roles.find(role => role.name === super_role);
         const adminRole = message.member.roles.find(role => role.name === admin_role);

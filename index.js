@@ -71,7 +71,7 @@ client.on('guildMemberRemove', member => {
 
     // Attempt to run the leaveHandler method
     try {
-        leaveController.leaveHandler(member, client);
+        leaveController.leaveHandler(member);
     } catch (e) {
         console.error(e);
     }

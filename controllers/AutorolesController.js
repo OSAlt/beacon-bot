@@ -9,10 +9,7 @@ module.exports = {
     // Create a function with required args
     autoroleHandler: function(cmd, c, a, m) {
         // Create vars
-        const command = cmd;
-        const client = c;
-        const args = a;
-        const message = m;
+        const command = cmd, client = c, args = a, message = m;
         let autorole;
             
         // Check the length of the args

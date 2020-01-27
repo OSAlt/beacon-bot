@@ -6,6 +6,7 @@ const AutorolesController = require("./AutorolesController");
 const JoinableRolesController = require("./JoinableRolesController");
 const WarningsController = require("./WarningsController");
 const PollsController = require("./PollsController");
+const ModerationController = require("./ModerationController");
 const Trigger = require("../models/Trigger");
 
 // Create a new module export
@@ -13,11 +14,10 @@ module.exports = {
     // Create a function with required args
     queryHandler: function(m, a, c, tl) {
         // Create vars
-        const message = m;
+        const message = m, client = c, triggerList = tl;
         let args = a;
-        const client = c;
-        const triggerList = tl;
         let commandName;
+        
         // Create a db connection; pass in the logging option and set to false to prevent console logs
         const sequelize = new Sequelize(`mysql://${db_user}:${db_pass}@${db_host}:${db_port}/${db_name}`, {logging: false});
 
@@ -78,8 +78,27 @@ module.exports = {
         ######################################
         */
         } else if (command.name === "warnings") {
-            // Call the Warning handler function from the JoinableRolesController file
+            // Call the warning handler function from the JoinableRolesController file
             WarningsController.warningHandler(client, args, message);
+
+        /*
+        ##################################
+        ########## kick command ##########
+        ##################################
+        */
+        } else if(command.name === "kick") {
+            // Call the kick handler function from the ModerationController file
+            ModerationController.kickHandler(client, args, message);
+
+        /*
+        #################################
+        ########## ban command ##########
+        #################################
+        */
+        } else if(command.name === "ban") {
+            // Call the ban handler function from the ModerationController file
+            ModerationController.banHandler(client, args, message);
+
         /*
         ####################################
         ########## testdb command ##########

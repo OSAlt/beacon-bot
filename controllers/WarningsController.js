@@ -9,12 +9,8 @@ module.exports = {
     // Create a function with required args
     warningHandler: function(c, a, m) {
         // Create vars
-        const client = c;
-        const args = a;
-        const message = m;
-        let warnedUser;
-        let warnedChannel;
-        let fullMessage;
+        const client = c, args = a, message = m;
+        let warnedUser, warnedChannel, fullMessage;
 
         // If only 1 arg, make sure it is "recent"
         if (args[0].toLowerCase() === "recent") {

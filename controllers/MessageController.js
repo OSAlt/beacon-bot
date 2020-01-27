@@ -11,14 +11,11 @@ module.exports = {
 
     // Create a function to be called
     messageHandler: function(m, c, tl) {
-        const message = m; //assign the message obj to the passed in msg parameter
-        const client = c;
-        const triggerList = tl;
+        // Create vars
+        const message = m, client = c, triggerList = tl;
+        let modRole, superRole, adminRole, ownerRole;
+        
         client.commands = new Discord.Collection(); // Create a new collection for commands
-        let modRole;
-        let superRole;
-        let adminRole;
-        let ownerRole;
 
         // Make sure the author isn't a bot before checking its' roles
         if(!message.author.bot) {

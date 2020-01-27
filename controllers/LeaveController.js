@@ -5,12 +5,12 @@ const {super_log_channel} = require("../config.json");
 
 // Create a new module export
 module.exports = {
-    leaveHandler: function(m, c) {
+    leaveHandler: function(m) {
 
         // Link moment-duration-format with moment
         momentDuration(moment);
 
-        const member = m, client = c;
+        const member = m;
         let lastMessage;
         const superLog = member.guild.channels.find((c => c.name === super_log_channel)); //super log channel
         const timezone = moment(member.joinedAt).tz(moment.tz.guess()).format(`z`); // server timezone
@@ -20,12 +20,16 @@ module.exports = {
         const memberLength = moment.duration(currentTime.diff(joinedTimeStamp)).format("Y[y] D[d] H[h] m[m] s[s]"); //get the duration of the membership and format it
         const timestamp = moment(currentTime).valueOf();
 
+        // See if the user has a last message
         if (member.lastMessage) {
+            // If so assign it to lastMessage
             lastMessage = member.lastMessage.content;
         } else {
+            // If not give it the value of "None"
             lastMessage = "None";
         }
 
+        // Create the leave embed
         const leaveEmbed = {
             color: 0xff5500,
             title: `Member Left`,
@@ -50,6 +54,7 @@ module.exports = {
             }
         };
 
+        // Send the leave embed to the super log
         superLog.send({embed: leaveEmbed});
 
     }

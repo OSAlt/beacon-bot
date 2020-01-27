@@ -10,10 +10,8 @@ module.exports = {
     // Create a function with required args
     pollHandler: function(cmd, c, a, m) {
         // Create vars
-        const command = cmd;
-        const client = c;
-        const args = a;
-        const message = m;
+        const command = cmd, client = c, args = a, message = m;
+
         let argStr; // var for the args in string format
         let splitArgs; // var for the split args
         let choicesStr; // var for the choices in string format
@@ -31,9 +29,12 @@ module.exports = {
             let polls = []; // object for the polls from the db
             let choicesObj = [];
 
-            if(isNaN(args)) {
+            // Check if an argument was given and if it is a number
+            if(isNaN(args) || !args.length) {
+                // If no arg given or not a number let user know
                 return message.reply(`uh oh! You must specify a number for the amount of polls you wish to see.\r\nExample: \`${prefix}listpolls 3\``);
             } else {
+                // If a arg was given and is a number, set that number to the pollCount var
                 pollCount = parseInt(args);
             }
 

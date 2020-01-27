@@ -9,10 +9,7 @@ module.exports = {
     // Create a function with required args
     joinableRolesHandler: function(cmd, c, a, m) {
         // Create vars
-        const command = cmd;
-        const client = c;
-        const args = a;
-        const message = m;
+        const command = cmd, client = c, args = a, message = m;
         const superRole = message.member.roles.find(role => role.name === super_role);
         const adminRole = message.member.roles.find(role => role.name === admin_role);
         const ownerRole = message.member.guild.owner;
