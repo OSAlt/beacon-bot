@@ -88,7 +88,7 @@ module.exports = {
         */
         } else if(command.name === "kick") {
             // Call the kick handler function from the ModerationController file
-            ModerationController.kickHandler(client, args, message);
+            ModerationController.kickHandler(args, message);
 
         /*
         #################################
@@ -97,7 +97,7 @@ module.exports = {
         */
         } else if(command.name === "ban") {
             // Call the ban handler function from the ModerationController file
-            ModerationController.banHandler(client, args, message);
+            ModerationController.banHandler(args, message);
 
         /*
         ####################################
