@@ -174,10 +174,12 @@ module.exports = {
             }
         }
     },
-    banHandler: function(a, m) {
+    banHandler: async function(a, m, c) {
         const args = a;
         const message = m;
+        const client = c;
         const actionLog = message.guild.channels.find((c => c.name === action_log_channel)); //mod log channel
+        const timezone = moment.tz(moment.tz.guess()).zoneAbbr(); // server timezone
         let user; // user var
 
         const argsStr = args.join(" "); //create a string out of the args
@@ -197,22 +199,28 @@ module.exports = {
         } else {
 
             // Check if a user mention was given
-            if(args[0].startsWith("<@!")) {
-                user = message.mentions.members.first(); // get user tag
+            if(args[0].startsWith("<@")) {
+                user = message.mentions.members.first().user; // get user tag
             // If not, find the user by the provided id
             } else {
-                // If invalid id let the user know
-                if(message.guild.members.get(args[0]) === undefined) {
-                    return message.reply(`uh oh! Looks like I wasn't able to find that user, please check the user id and try again or try using a user mention like so: \`@Username\``);
 
-                // If user found, assign it to the user var
-                } else {
-                    user = message.guild.members.get(args[0]);
+                // Attempt to fetch the user
+                try {
+                    user = await client.users.fetch(args[0]);
+
+                // If unable to fetch the user make it undefined
+                } catch (e) {
+                    user = undefined;
+                }
+
+                // If user is undefined let the moderator know
+                if(user === undefined) {
+                    return message.reply(`uh oh! Looks like I wasn't able to find that user, please check the user id and try again or try using a user mention like so: \`@Username\``)
                 }
             }
 
             // Check if a reason was given
-            if(args[1]) {
+            if(args[1] && user !== undefined) {
                 // If a length wasn't given then let the user know it is required
                 if(!args[2]) {
                     return message.reply(`uh oh! It seems you forgot to give a length for ther ban, please be sure to provide a ban length for this action!\nExample: \`${prefix}ban ${user}, reason, length\``);
@@ -231,31 +239,30 @@ module.exports = {
                     if(banArr.length > 1) {
                             banValue = banArr[0]; //assign the ban value
                             banUnit = banArr[1]; //assign the ban unit
+
+                            if (banUnit === "s" || banUnit === "sec" || banUnit === "secs" || banUnit === "seconds" || banUnit === "second") {
+                                return message.reply(`please give a duration that is at least 1 minute in length!`);
+                            }
                     } else {
                         // If a permanent option was provided set the ban value to 999
                         if(banArr[0].toLowerCase() === "p" || banArr[0].toLowerCase().includes("perm")) {
                             banValue = 999;
                             banUnit = "years";
-                            banLength = "Permanent";
+                            banLength = "an indefinite amount of time";
                         } else {
                             return message.reply(`uh oh! It seems like you entered an invalue ban duration! Please use formats such as these for the ban duration: \`6 years\`, \`17 d\`, \`permanent\`, \`3 wks\``);
                         }
                     }
-                    const unbanDate = now.add(banUnit, banValue)//.format("YYYY-MM-DD HH:mm:ss"); //create the unban date
+                    let unbanDate = now.add(banValue, banUnit); //create the unban date
 
                     // Make sure the unban date is after the current time
-                    if(!unbanDate.isAfter(now)) {
+                    if(moment(unbanDate).isAfter(now)) {
                         // If not after the current time, let the user know how to fix the problem
                         return message.reply("uh oh! Looks like you have an invalid duration! Please try again with a proper unit of time and number duration!");
                     }
-
-                    // console.log("user: ", user)
-                    // console.log("argsArr: ", newArgs)
-                    // console.log("reason: ", reason)
-                    // console.log("ban length: ", banLength)
-                    // console.log("unban date: ", unbanDate)
                     
-                
+                    unbanDate = unbanDate.format(`YYYY-MM-DD HH:mm:ss`);
+
                     /* 
                     * Sync the model to the table
                     * Creates a new table if table doesn't exist, otherwise just inserts a new row
@@ -264,65 +271,64 @@ module.exports = {
                         Keep force set to false otherwise it will overwrite the table instead of making a new row!
                     !!!!
                     */
-                    // Ban.sync({ force: false }).then(() => {
-                    //     // Add the ban record to the database
-                    //     Ban.create({
-                    //         user_id: user.id,
-                    //         reason: reason,
-                    //         unban_date: unbanDate,
-                    //         moderator_id: message.author.id,
-                    //     })
-                    //     // Let the user know it was added
-                    //     .then(() => {
+                    Ban.sync({ force: false }).then(() => {
+                        // Add the ban record to the database
+                        Ban.create({
+                            user_id: user.id,
+                            guild_id: message.guild.id,
+                            reason: reason,
+                            unban_date: unbanDate,
+                            moderator_id: message.author.id,
+                        })
+                        // Let the user know it was added
+                        .then(() => {
+                            // Create the banned embed
+                            const banEmbed = {
+                                color: 0xFF0000,
+                                title: `User Was Banned!`,
+                                author: {
+                                    name: `${user.username}#${user.discriminator}`,
+                                    icon_url: user.displayAvatarURL(),
+                                },
+                                description: `${user} was banned from the server by ${message.author} for ${banLength}!`,
+                                fields: [
+                                    {
+                                        name: `User Banned`,
+                                        value: `${user}`,
+                                        inline: true,
+                                    },
+                                    {
+                                        name: `Banned By`,
+                                        value: `${message.author}`,
+                                        inline: true,
+                                    },
+                                    {
+                                        name: `Unban Date`,
+                                        value: `${unbanDate} (${timezone})`,
+                                        inline: true,
+                                    },
+                                    {
+                                        name: `Reason`,
+                                        value: `${reason}`,
+                                        inline: false,
+                                    }
+                                ],
+                                timestamp: new Date(),
+                            };
 
-                    //         // Create the kicked embed
-                    //         const banEmbed = {
-                    //             color: 0xFF0000,
-                    //             title: `User Was Banned!`,
-                    //             author: {
-                    //                 name: `${user.user.username}#${user.user.discriminator}`,
-                    //                 icon_url: user.user.displayAvatarURL(),
-                    //             },
-                    //             description: `${user} was banned from the server by ${message.author} for ${banLength}`,
-                    //             fields: [
-                    //                 {
-                    //                     name: `User Banned`,
-                    //                     value: `${user}`,
-                    //                     inline: true,
-                    //                 },
-                    //                 {
-                    //                     name: `Banned By`,
-                    //                     value: `${message.author}`,
-                    //                     inline: true,
-                    //                 },
-                    //                 {
-                    //                     name: `Unban Date`,
-                    //                     value: `${unbanDate}`,
-                    //                     inline: true,
-                    //                 },
-                    //                 {
-                    //                     name: `Reason`,
-                    //                     value: `${reason}`,
-                    //                     inline: false,
-                    //                 }
-                    //             ],
-                    //             timestamp: new Date(),
-                    //         };
-
-                    //         // Ban the user from the server
-                    //         user.ban().then(() => {
-                    //             // Send the embed to the action log channel
-                    //             actionLog.send({embed: banEmbed});
-                    //         });
-                    //     });
-                    // });
+                            // Ban the user from the server
+                            message.guild.members.ban(user.id).then(() => {
+                                // Send the embed to the action log channel
+                                actionLog.send({embed: banEmbed});
+                            });
+                        });
+                    });
                 }
 
             // If no reason was given let the user know it is required
             } else {
                 // Check if a user mention was used
                 if(message.mentions.users.first()) {
-                    console.log(user)
                     // Let user know a reason is needed
                     message.reply(`uh oh! It seems you forgot to give a reason for banning, please be sure to provide a reason for this action!\nExample: \`${prefix}ban @${user.user.tag}, reason, length\``);
 

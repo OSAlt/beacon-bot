@@ -36,12 +36,21 @@ client.once('ready', () => {
     // Set the status of the bot
     client.user.setActivity(`👌👈+🍆🍑=😩🌊💦☔=😋`,{type:'Playing'});
 
-    // Populate the triggerList
+    // Populate the triggerList and check for unbans
     try {
         databaseController.botReconnect(triggerList);
     } catch(e) {
-        console.error("Error: "+e);
+        console.error("Error: ", e);
     }
+
+    // Check for unbans every hour
+    setInterval(() => {
+        try {
+            databaseController.unbanCheck(client);
+        } catch(e) {
+            console.error("Error: ", e);
+        }
+    }, 60000)
 
 });
 

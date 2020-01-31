@@ -1,6 +1,7 @@
 // Import the required files
 const Sequelize = require('sequelize');
-const {prefix, db_name, db_host, db_port, db_user, db_pass} = require("../config.json");
+const moment = require("moment");
+const {prefix, db_name, db_host, db_port, db_user, db_pass, action_log_channel} = require("../config.json");
 const TriggersController = require("./TriggersController");
 const AutorolesController = require("./AutorolesController");
 const JoinableRolesController = require("./JoinableRolesController");
@@ -8,6 +9,7 @@ const WarningsController = require("./WarningsController");
 const PollsController = require("./PollsController");
 const ModerationController = require("./ModerationController");
 const Trigger = require("../models/Trigger");
+const Ban = require("../models/Ban");
 
 // Create a new module export
 module.exports = {
@@ -97,7 +99,7 @@ module.exports = {
         */
         } else if(command.name === "ban") {
             // Call the ban handler function from the ModerationController file
-            ModerationController.banHandler(args, message);
+            ModerationController.banHandler(args, message, client);
 
         /*
         ####################################
@@ -131,7 +133,105 @@ module.exports = {
                 tl.list.push(item.get('trigger'));
             });
         }).catch((e) => {
-            // console.error("Error: "+e);
+             console.error("Error: "+e);
+        });
+    },
+
+    // Function to handle unbans
+    unbanCheck: function(c) {
+        const client = c;
+        const now = moment().format("YYYY-MM-DD HH:mm:ss");
+        let bannedUsers = []; // array for all banned users
+        let logChannel; // var for action log channel(s)
+        const timezone = moment().tz(moment.tz.guess()).format(`z`); // server timezone
+
+        // Find all uncompleted bans
+        Ban.findAll({where: {completed: false},raw:true}).then((data) => {
+            // If the ban(s) were found...
+            if (data) {
+                // Loop through each row from the db
+                data.forEach((ban) => {
+                    let ubDate = ban.unban_date; // store the unban date
+                    // Make sure the ban hasn't already been completed
+                    if(moment(ubDate).isSameOrBefore(now)) {
+                        let banObj = {}; // ban object
+
+                        // Add the data to the ban object
+                        banObj.id = ban.id
+                        banObj.userId = ban.user_id;
+                        banObj.guildId = ban.guild_id;
+                        banObj.reason = ban.reason;
+                        banObj.unbanDate = ban.unban_date;
+                        banObj.modId = ban.moderator_id;
+                        banObj.completed = ban.completed;
+                        banObj.created = ban.createdAt;
+                        banObj.updated = ban.updatedAt;
+                        
+                        // Add the ban to the banned users array
+                        bannedUsers.push(banObj);
+                    }
+                })
+            // If no bans were found just ignore
+            } else {
+                return;
+            }
+        }).then(() => {
+            // Loop through each user that needs to be unbanned
+            bannedUsers.forEach((item) => {
+                // Find the server the user was banned from
+                const guild = client.guilds.get(item.guildId);
+                logChannel = guild.channels.find((c => c.name === action_log_channel)); //action log channel
+
+                // Unban the user with a time up reason
+                guild.members.unban(item.userId, "Ban Expiration").then(() => {
+                    const user = client.users.get(item.userId); //get the user that was banned
+                    const moderator = client.users.get(item.modId); //get the moderator that performed the ban
+                    let banDate = moment(item.created).format(`YYYY-MM-DD HH:mm:ss`);
+
+                    // Update the completed field
+                    Ban.update({completed: true}, {where: {id: item.id}});
+
+                    // Create the unban embed
+                    const unbanEmbed = {
+                        color: 0xff5500,
+                        title: "User Unbanned",
+                        author: {
+                            name: `${user.username}#${user.discriminator}`,
+                            icon_url: user.displayAvatarURL,
+                        },
+                        description: `${user.username}'s ban has expired`,
+                        fields: [
+                            {
+                                name: `User`,
+                                value: `${user}`,
+                                inline: true,
+                            },
+                            {
+                                name: `Date Banned`,
+                                value: `${banDate} (${timezone})`,
+                                inline: true,
+                            },
+                            {
+                                name: `Banned By`,
+                                value: `${moderator}`,
+                                inline: true,
+                            },
+                            {
+                                name: `Reason`,
+                                value: `${item.reason}`,
+                                inline: false,
+                            },
+                        ],
+                        timestamp: new Date(),
+                        footer: {
+                            text: `Ban Id: ${item.id}`
+                        }
+                    };
+
+                    // Send the embed to the log channel
+                    logChannel.send({embed: unbanEmbed});
+                });
+            });
         });
     }
 }

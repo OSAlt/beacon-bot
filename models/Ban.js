@@ -12,6 +12,11 @@ const Ban = sequelize.define('ban', {
         type: Sequelize.TEXT,
         allowNull: false
     },
+    // Create required guild_id text column
+    guild_id: {
+        type: Sequelize.TEXT,
+        allowNull: false
+    },
     // Create required reason text column
     reason: {
         type: Sequelize.TEXT,
