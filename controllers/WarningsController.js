@@ -35,7 +35,7 @@ module.exports = {
                 if (data) {
                     let i = 1; // counter
                     // Create the embed
-                    let recentEmbed = new Discord.RichEmbed()
+                    let recentEmbed = new Discord.MessageEmbed()
                     .setColor('#FF0000')
                     .setTitle('Most Recent Warnings')
                     .setDescription(`These are the ${data.length} most recent warnings given.`)
@@ -45,10 +45,24 @@ module.exports = {
                     // Add a new field for each warning
                     data.forEach(warning => {
                         warnedUser = client.guilds.get(message.guild.id).members.get(warning.user_id.toString());
-                        recentEmbed.addField(
-                            `Warning #${i}`, // title
-                            `Warning Id: **${warning.warning_id}**\rUser: **${warnedUser}**\rSeverity: **${warning.severity}**\rTrigger(s): **${warning.triggers}**`); // value
-                        i++;
+                        let date = moment(warning.createdAt).format("YYYY-MM-DD HH:mm:ss"); // format date
+
+                        // Create a new field depending on the type of warning
+                        if(warning.type === "Trigger") {
+
+                            // Warning from a Trigger
+                            recentEmbed.addField(
+                                `Warning #${i}`, // title
+                                `Warning Id: **${warning.warning_id}**\rUser: **${warnedUser}**\rType: **${warning.type}**\rDate: **${date}**\rSeverity: **${warning.severity}**\rTrigger(s): **${warning.triggers}**`); // value
+                        } else if(warning.type === "Note") {
+
+                            // Warning from a mod note
+                            recentEmbed.addField(
+                                `Warning #${i}`, //title
+                                `Warning Id: **${warning.warning_id}**\rUser: **${warnedUser}**\rType: **${warning.type}**\rDate: **${date}**` //value
+                            )
+                        }
+                        i++; // increment counter
                     });
 
                     // DM the user the warnings
@@ -61,8 +75,6 @@ module.exports = {
                         message.reply("It seems like I can't DM you! Do you have DMs disables?");
                     });
                 };
-            }).catch(() => {
-                message.reply(`It seems there are no warnings yet, nice!`)
             });
 
         } else if (args[0].toLowerCase() === "specific") {
@@ -73,87 +85,67 @@ module.exports = {
                     // If a warning was found
                     if (warning) {
                         
-                        // Gets the guildMember instance of the user so we can get more information on them and their information within our server.
+                        // Find the warned user
                         warnedUser = client.guilds.get(message.guild.id).members.get(warning.user_id.toString());
-                        warnedChannel = client.guilds.get(message.guild.id).channels.get(warning.channel_id);
-                        let embedColor; // embed color
-
-                        // Set the color of the embed based on severity level
-                        switch(warning.severity) {
-                            case 'low':
-                                embedColor = 0xffff00; //yellow
-                                break;
-                            case 'medium':
-                                embedColor = 0xff5500; //orange
-                                break;
-                            case 'high':
-                                embedColor = 0xff0000; //red
-                                break;
-                        }
-
-
-                        // Make sure message isn't too long for embed
-                        if (warning.message.length > 1024) {
-                            fullMessage = warning.message.substring(0, 1021) + "..."; // 1021 to add elipsis to end
-                        } else {
-                            fullMessage = warning.message;
-                        }
+                        let embedColor = 0xff5500; // embed color; default to orange
 
                         // Create the embed
-                        const specificEmbed = {
-                            color: embedColor,
-                            title: `Warning for ${args[1]}`,
-                            author: {
-                                name: warnedUser.user.username,
-                                icon_url: warnedUser.user.displayAvatarURL(),
-                            },
-                            fields: [
-                                {
-                                    name: `User Id`,
-                                    value: `${warnedUser.id}`,
-                                },
-                                {
-                                    name: `User`,
-                                    value: `${warnedUser}`,
-                                    inline: true,
-                                },
-                                {
-                                    name: `Server Nickname`,
-                                    value: `${warnedUser.nickname || "None"}`,
-                                    inline: true,
-                                },
-                                {
-                                    name: `User Roles`,
-                                    value: `${warnedUser.roles.map(role => role.name).join(", ")}`,
-                                },
-                                {
-                                    name: `Trigger(s) Hit`,
-                                    value: `${warning.triggers}`,
-                                },
-                                {
-                                    name: `Severity`,
-                                    value: `${warning.severity}`,
-                                    inline: true,
-                                },
-                                {
-                                    name: `Channel`,
-                                    value: `${warnedChannel}`,
-                                    inline: true,
-                                },
-                                {
-                                    name: `Time Trigger Was Hit`,
-                                    value: moment(warning.createdAt).tz(moment.tz.guess()).format('MMM Do, YYYY hh:mm:ssA (z)'),
-                                },
-                                {
-                                    name: `Full Message`,
-                                    value: `${fullMessage}`,
-                                },
-                                {
-                                    name: "Message URL",
-                                    value: warning.message_link,
-                                },
-                            ],
-                            timestamp: new Date(),
+                        let specificEmbed = new Discord.MessageEmbed()
+                        .setTitle(`Warning for ${args[1]}`)
+                        .setAuthor(warnedUser.user.username, warnedUser.user.displayAvatarURL())
+                        .addField(`User Id`, warnedUser.id, false)
+                        .addField(`User`, warnedUser, true)
+                        .addField(`Server Nickname`, `${warnedUser.nickname || "None"}`, true)
+                        .addField(`Warning Type`, warning.type, true)
+                        .addField(`User Roles`, warnedUser.roles.map(role => role.name).join(", "))
+                        .setTimestamp();
+                        
+                        // If the warning is a trigger
+                        if(warning.type === "Trigger") {
+                            // Find the channel for the warning
+                            warnedChannel = client.guilds.get(message.guild.id).channels.get(warning.channel_id);
+
+                            // Set the color of the embed based on severity level
+                            switch(warning.severity) {
+                                case 'low':
+                                    embedColor = 0xffff00; //yellow
+                                    break;
+                                case 'medium':
+                                    embedColor = 0xff5500; //orange
+                                    break;
+                                case 'high':
+                                    embedColor = 0xff0000; //red
+                                    break;
+                            }
+
+                            // Make sure message isn't too long for embed
+                            if (warning.message.length > 1024) {
+                                fullMessage = warning.message.substring(0, 1021) + "..."; // 1021 to add elipsis to end
+                            } else {
+                                fullMessage = warning.message;
+                            }
+
+                            // Add the color for the embed
+                            specificEmbed.setColor(embedColor);
+
+                            // Add the remaining fields
+                            specificEmbed.addField(`Trigger(s) Hit`, warning.triggers, false);
+                            specificEmbed.addField(`Severity`, warning.severity, false);
+                            specificEmbed.addField(`Channel`, warnedChannel, false);
+                            specificEmbed.addField(`Time Trigger Was Hit`, moment(warning.createdAt).tz(moment.tz.guess()).format('YYYY-MM-DD HH:mm:ss'), false);
+                            specificEmbed.addField(`Full Message`, fullMessage, false);
+                            specificEmbed.addField(`Message URL`, warning.message_link, false)
+                        } else if(warning.type === "Note") {
+                            // Find the moderator
+                            moderator = client.guilds.get(message.guild.id).members.get(warning.mod_id.toString());
+
+                            // Add the color for the embed
+                            specificEmbed.setColor(embedColor);
+
+                            // Add the remaining fields
+                            specificEmbed.addField(`Created By`, moderator, false);
+                            specificEmbed.addField(`Warning Reason`, warning.reason, false);
+
                         }
 
                         // Send the embed to the user
@@ -195,9 +187,10 @@ module.exports = {
                 // If the second argument isn't numeric only query based on username
                 } else {
                     args.shift(); // remove the query type from the args
-                    let username = args.join(" ").toLowerCase();
+                    let userId = args.toString().replace(/[^0-9]/g, ''); // remove everything except numbers (user id)
 
-                    Warning.findAll({where: {username: username}, order: [['createdAt', 'DESC']], raw: true}).then((warnings) => {
+                    // Find all warnings for the user's id
+                    Warning.findAll({where: {user_id: userId}, order: [['createdAt', 'DESC']], raw: true}).then((warnings) => {
                         
                         // If a warning was found
                         if (warnings) {
@@ -218,12 +211,12 @@ module.exports = {
         }
 
         function sendUserWarnings(message, client, warnings) {
-            // Gets the guildMember instance of the user so we can get more information on them and their information within our server.
+            // Find the warned user
             warnedUser = client.guilds.get(message.guild.id).members.get(warnings[0].user_id.toString());
             let i = 0;
 
             // Create the embed
-            const userWarningsEmbed = new Discord.RichEmbed() 
+            const userWarningsEmbed = new Discord.MessageEmbed() 
                 .setColor('#FF0000')
                 .setTitle(`${warnedUser.user.username} has a total of ${Object.keys(warnings).length} warnings`)
                 .setAuthor(`${warnedUser.user.username}`, `${warnedUser.user.displayAvatarURL()}`)

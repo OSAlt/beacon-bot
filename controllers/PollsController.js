@@ -52,8 +52,8 @@ module.exports = {
                         tempPoll.status = "Inactive";
                     }
 
-                    tempPoll.created = moment(data.createdAt).format('MMM Do, YYYY'); // Assign created
-                    tempPoll.updated = moment(data.updatedAt).format('MMM Do, YYYY'); // Assign updated
+                    tempPoll.created = moment(data.createdAt).format('YYYY-MM-DD HH:mm:ss'); // Assign created
+                    tempPoll.updated = moment(data.updatedAt).format('YYYY-MM-DD HH:mm:ss'); // Assign updated
                     
                     // Get all the choices
                     Choice.findAll({where: {pollId: item.id}, raw:true}).then((options) => {

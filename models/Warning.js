@@ -7,8 +7,13 @@ const sequelize = new Sequelize(`mysql://${db_user}:${db_pass}@${db_host}:${db_p
 
 // Create a warning model/table
 const Warning = sequelize.define('warning', {
-    // Create required user_id text column
+    
+    /****** Fields for all warnings ******/
     warning_id: {
+        type: Sequelize.STRING,
+        allowNull: false
+    },
+    type: {
         type: Sequelize.STRING,
         allowNull: false
     },
@@ -16,29 +21,41 @@ const Warning = sequelize.define('warning', {
         type: Sequelize.BIGINT,
         allowNull: false
     },
+
+    /****** Fields for banned words warnings ******/
+    banned_words: {
+        type: Sequelize.TEXT
+    },
+    strikes: {
+        type: Sequelize.INTEGER
+    },
+
+    /****** Fields for manual warnings ******/
+    reason: {
+        type: Sequelize.TEXT
+    },
+    mod_id: {
+        type: Sequelize.BIGINT
+    },
+
+    /****** Fields for triggers warnings ******/
     username: {
-        type: Sequelize.TEXT,
-        allowNull: false
+        type: Sequelize.TEXT
     },
     triggers: {
-        type: Sequelize.TEXT,
-        allowNull: false
+        type: Sequelize.TEXT
     },
     message: {
-        type: Sequelize.TEXT,
-        allowNull: false
+        type: Sequelize.TEXT
     },
     message_link: {
-        type: Sequelize.TEXT,
-        allowNull: false
+        type: Sequelize.TEXT
     },
     severity: {
-        type: Sequelize.STRING,
-        allowNull: false
+        type: Sequelize.STRING
     },
     channel_id: {
-        type: Sequelize.BIGINT,
-        allowNull: false
+        type: Sequelize.BIGINT
     }
 },
 {

@@ -102,6 +102,15 @@ module.exports = {
             ModerationController.banHandler(args, message, client);
 
         /*
+        ##################################
+        ########## warn command ##########
+        ##################################
+        */
+        } else if(command.name === "warn") {
+            // Call the warn handler function from the ModerationController file
+            ModerationController.warnHandler(args, message, client);
+
+        /*
         ####################################
         ########## testdb command ##########
         ####################################
@@ -193,11 +202,11 @@ module.exports = {
 
                     // Create the unban embed
                     const unbanEmbed = {
-                        color: 0xff5500,
+                        color: 0xFF5500,
                         title: "User Unbanned",
                         author: {
                             name: `${user.username}#${user.discriminator}`,
-                            icon_url: user.displayAvatarURL,
+                            icon_url: user.displayAvatarURL(),
                         },
                         description: `${user.username}'s ban has expired`,
                         fields: [

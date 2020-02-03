@@ -14,7 +14,7 @@ module.exports = {
         let lastMessage;
         const superLog = member.guild.channels.find((c => c.name === super_log_channel)); //super log channel
         const timezone = moment(member.joinedAt).tz(moment.tz.guess()).format(`z`); // server timezone
-        const joinedDate = moment(member.joinedAt).format("MMM Do YYYY, hh:mm:ssa"); // joined date
+        const joinedDate = moment(member.joinedAt).format("YYYY-MM-DD HH:mm:ss"); // joined date
         const joinedTimeStamp = moment(member.joinedTimestamp); // timestamp user joined
         const currentTime = moment(); // create a new moment obj with current time
         const memberLength = moment.duration(currentTime.diff(joinedTimeStamp)).format("Y[y] D[d] H[h] m[m] s[s]"); //get the duration of the membership and format it

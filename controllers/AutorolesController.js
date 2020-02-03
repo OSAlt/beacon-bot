@@ -119,8 +119,8 @@ module.exports = {
                     autoroleData.id = data.get('id'); //get id
                     autoroleData.role = data.get('role'); //get role
                     autoroleData.creator = client.users.get(data.get('user_id')); //get user id
-                    autoroleData.created = moment(data.get('createdAt')).format('MMM Do, YYYY'); //get created date in MM-DD-YYYY format
-                    autoroleData.updated = moment(data.get('updatedAt')).format('MMM Do, YYYY'); //get updated date in MM-DD-YYYY format
+                    autoroleData.created = moment(data.get('createdAt')).format('YYYY-MM-DD HH:mm:ss'); //get created date in YYYY-MM-DD HH:mm:ss format
+                    autoroleData.updated = moment(data.get('updatedAt')).format('YYYY-MM-DD HH:mm:ss'); //get updated date in YYYY-MM-DD HH:mm:ss format
 
                 // Send the autorole to the user in a DM
                 }).then(() => {

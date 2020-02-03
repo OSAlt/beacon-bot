@@ -71,8 +71,8 @@ module.exports = {
                     triggerData.creator = client.users.get(data.get('user_id'));
                     triggerData.severity = data.get('severity'); //get severity level
                     triggerData.enabled = data.get('enabled'); //get enabled
-                    triggerData.created = moment(data.get('createdAt')).format('MMM Do, YYYY'); //get created date in MM-DD-YYYY format
-                    triggerData.updated = moment(data.get('updatedAt')).format('MMM Do, YYYY'); //get updated date in MM-DD-YYYY format
+                    triggerData.created = moment(data.get('createdAt')).format('YYYY-MM-DD HH:mm:ss'); //get created date in YYYY-MM-DD HH:mm:ss format
+                    triggerData.updated = moment(data.get('updatedAt')).format('YYYY-MM-DD HH:mm:ss'); //get updated date in YYYY-MM-DD HH:mm:ss format
 
                 // Send the trigger to the user in a DM
                 }).then(() => {
@@ -317,7 +317,7 @@ module.exports = {
             Warning.sync({ force: false }).then(() => {
 
                 Warning.findOne({where: {warning_id: warnId}, raw:true}).then((warning => {
-                    if(warning === warnId) {
+                    if(warning.warning_id === warnId) {
                         warnId = shortid.generate();
                     }
                 })).then(() => {
@@ -325,6 +325,7 @@ module.exports = {
                     Warning.create({
                         warning_id: warnId, // add the warning Id
                         user_id: message.author.id, // add the user's id
+                        type: "Trigger", // assign the type of warning
                         username: message.author.username.toLowerCase(), // add the user's username
                         triggers: triggers.join(", "), // join the trigger array and add them
                         message: message.content, // add the full message
