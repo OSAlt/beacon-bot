@@ -1,5 +1,5 @@
 // Import required files
-const {db_name, db_host, db_port, db_user, db_pass, join_log_channel} = require("../config.json");
+const {db_name, db_host, db_port, db_user, db_pass, join_log_channel} = require("../config");
 const Sequelize = require('sequelize');
 const moment = require("moment-timezone")
 

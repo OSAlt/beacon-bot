@@ -1,7 +1,7 @@
 // Import the required files
 const Sequelize = require('sequelize');
 const moment = require("moment");
-const {prefix, db_name, db_host, db_port, db_user, db_pass, action_log_channel} = require("../config.json");
+const {prefix, db_name, db_host, db_port, db_user, db_pass, action_log_channel} = require("../config");
 const TriggersController = require("./TriggersController");
 const AutorolesController = require("./AutorolesController");
 const JoinableRolesController = require("./JoinableRolesController");
@@ -101,6 +101,15 @@ module.exports = {
             // Call the ban handler function from the ModerationController file
             ModerationController.banHandler(args, message, client);
 
+        /*
+        #################################
+        ######## unban command ##########
+        #################################
+        */
+        } else if(command.name === "unban") {
+            // Call the unban handler function from the ModerationController file
+            ModerationController.unbanHandler(args, message, client);
+            
         /*
         ##################################
         ########## warn command ##########

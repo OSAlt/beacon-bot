@@ -1,5 +1,5 @@
 // Import required files
-const {prefix} = require('../../config.json');
+const {prefix} = require('../../config');
 const http = require("http");
 
 //Create a new module export

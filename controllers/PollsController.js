@@ -1,6 +1,6 @@
 // Import the required files
 const moment = require('moment');
-const {prefix, admin_role, super_role, mod_role, admin_channel, super_channel, mod_channel, super_log_channel, action_log_channel, db_name, db_host, db_port, db_user, db_pass} = require("../config.json");
+const {prefix, admin_role, super_role, mod_role, admin_channel, super_channel, mod_channel, super_log_channel, action_log_channel, db_name, db_host, db_port, db_user, db_pass} = require("../config");
 const Poll = require("../models/Poll");
 const Choice = require("../models/Choice");
 const shortid = require('shortid');

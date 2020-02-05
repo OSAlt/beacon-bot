@@ -2,7 +2,7 @@
 const { readdirSync, statSync } = require("fs");
 const { join } = require("path");
 const Discord = require("discord.js");
-const {prefix, admin_role, super_role, mod_role} = require('../config.json');
+const {prefix, admin_role, super_role, mod_role} = require('../config');
 const TriggersController = require("./TriggersController");
 const cooldowns = new Discord.Collection();
 

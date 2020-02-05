@@ -6,9 +6,14 @@ const {db_name, db_host, db_port, db_user, db_pass} = require("../config");
 const sequelize = new Sequelize(`mysql://${db_user}:${db_pass}@${db_host}:${db_port}/${db_name}`, {logging: false});
 
 // Create a kick model/table
-const Kick = sequelize.define('kick', {
+const Unban = sequelize.define('unban', {
     // Create required user_id text column
     user_id: {
+        type: Sequelize.TEXT,
+        allowNull: false
+    },
+    // Create required type text column
+    type: {
         type: Sequelize.TEXT,
         allowNull: false
     },
@@ -27,4 +32,4 @@ const Kick = sequelize.define('kick', {
     collate: 'utf8mb4_bin',
 });
 
-module.exports = Kick;
+module.exports = Unban;

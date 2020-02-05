@@ -3,10 +3,10 @@ const {prefix} = require('../../config');
 const DatabaseController = require("../../controllers/DatabaseController");
 
 module.exports = {
-    name: 'warn',
-    description: 'Creates a warning for a user; **DOES NOT** send the user anything.',
-    aliases: ["addnote", "addwarn", "warning", "addwarning", "+warn", "+warning", "+note"],
-    usage: "<@user | user id>, <reason>",
+    name: 'unban',
+    description: 'Unban a user from the server',
+    aliases: ['removeban', 'liftban'],
+    usage: "<user id>, <reason>",
     mod: true,
     super: false,
     admin: false,
@@ -14,7 +14,7 @@ module.exports = {
     execute(message, args, client) {
         if (!args.length) {
             // If no arguments let users know arguments are required
-            return message.reply(`You must mention the user or add the user's id that you wish to warn and a reason!\n\nExamples: \`${prefix}warn @username, acting up in other servers\` \`${prefix}warn 1234567890, under 18\``);
+            return message.reply(`You must add the user's id that you wish to unban and add a reason!\n\nExample: \`${prefix}unban 1234567890, incorrect ban\``);
         } else {
             // Call the query handler from the database controller with required args
             DatabaseController.queryHandler(message, args, client);

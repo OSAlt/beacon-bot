@@ -1,5 +1,5 @@
 // Import required files
-const {prefix, admin_role, super_role, mod_role} = require('../../config.json');
+const {prefix, admin_role, super_role, mod_role} = require('../../config');
 
 // Create a new module export
 module.exports = {

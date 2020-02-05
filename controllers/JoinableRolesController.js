@@ -1,6 +1,6 @@
 // Import the required files
 const moment = require('moment');
-const {prefix, super_role, admin_role} = require('../config.json');
+const {prefix, super_role, admin_role} = require('../config');
 const JoinableRole = require("../models/JoinableRole");
 
 // Create a new module export

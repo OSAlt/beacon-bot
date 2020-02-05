@@ -1,7 +1,7 @@
 // Import required files
 const moment = require("moment");
 const momentDuration = require("moment-duration-format");
-const {super_log_channel} = require("../config.json");
+const {super_log_channel} = require("../config");
 
 // Create a new module export
 module.exports = {

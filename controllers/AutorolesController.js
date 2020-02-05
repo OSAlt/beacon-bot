@@ -1,6 +1,6 @@
 // Import the required files
 const moment = require('moment');
-const {prefix} = require('../config.json');
+const {prefix} = require('../config');
 const AutoRole = require("../models/AutoRole");
 
 // Create a new module export

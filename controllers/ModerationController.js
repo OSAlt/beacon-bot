@@ -1,8 +1,9 @@
 const Discord = require("discord.js");
 const moment = require("moment");
-const {prefix, admin_role, super_role, mod_role, action_log_channel, super_log_channel} = require('../config.json');
+const {prefix, admin_role, super_role, mod_role, action_log_channel, super_log_channel} = require('../config');
 const Kick = require("../models/Kick");
 const Ban = require("../models/Ban");
+const Unban = require("../models/Unban");
 const Warning = require("../models/Warning");
 const shortid = require('shortid');
 
@@ -202,12 +203,24 @@ module.exports = {
 
             // Check if a user mention was given
             if(args[0].startsWith("<@")) {
-                user = message.mentions.members.first().user; // get user tag
+
+                // Try to get the user
+                try {
+                    user = message.mentions.members.first().user; // get user tag
+                } catch(e) {
+                    // If unable to get the user, let the mod know
+                    return message.reply(`uh oh! That user isn't a member of this guild!`);
+                }
             // If not, find the user by the provided id
             } else {
 
-                // Get the user
-                user = message.guild.members.get(args[0]);
+                // Try to get the user
+                try {
+                    user = message.guild.members.get(args[0]).user;
+                } catch(e) {
+                    // If unable to get the user, let the mod know
+                    return message.reply(`uh oh! That user isn't a member of this guild!`);
+                }
 
                 // If user is undefined let the moderator know
                 if(user === undefined) {
@@ -257,6 +270,7 @@ module.exports = {
                         return message.reply("uh oh! Looks like you have an invalid duration! Please try again with a proper unit of time and number duration!");
                     }
                     
+                    // Format the unban date
                     unbanDate = unbanDate.format(`YYYY-MM-DD HH:mm:ss`);
 
                     /* 
@@ -334,6 +348,137 @@ module.exports = {
                     message.reply(`uh oh! It seems you forgot to give a reason for banning, please be sure to provide a reason for this action!\nExample: \`${prefix}ban ${user}, reason, length\``);
                 }
             }
+        }
+    },
+    unbanHandler: function(a, m, c) {
+        const args = a;
+        const message = m;
+        const client = c;
+        const actionLog = message.guild.channels.find((c => c.name === action_log_channel)); //mod log channel
+        let user; // user var
+
+        // Check if the first arg is a number
+        if(isNaN(args[0])) {
+            // Attempt to fix the arg for the user by removing the comma if the moderator forgot to add a space after the id and before the comma
+            args[0] = args[0].replace(",", "");
+        }
+
+        // Make sure the first arg was a user id
+        if(isNaN(args[0])) {
+            // Let user know they need to provide a valid user id
+            message.reply(`uh oh! Looks like you gave an invalid user id. Make sure that you are providing a valid user id!`);
+        } else {
+            let userId = args[0];
+
+            // Attempt to fetch the user
+            client.users.fetch(userId).then((u) => {
+                user = u; //assign user
+
+                // If a reason was given then unban the user and log the action to the database
+                if(args[1]) {
+                    let reasonArr = args;
+                    let reason;
+                    reasonArr.shift(); //remove the first arg (user id)
+                    reason = reasonArr.join(" "); //turn the array into a string
+                    reason = reason.replace(',', ''); // remove the first comma from the string
+                    reason = reason.trim(); // remove any excess whitespace
+
+                    // Fetch the ban from the server
+                    message.guild.fetchBan(user).then(() => {
+                        
+                        // Search the db for the ban
+                        Ban.findOne({where: {user_id: userId, completed: 0}, raw:true}).then((data) => {
+
+                            // Make sure data was retrieved
+                            if(data) {
+                                const banDate = moment(data.createdAt).format(`YYYY-MM-DD HH:mm:ss`); //assign ban date
+                                const banReason = data.reason; //assign ban reason
+                                /* 
+                                * Sync the model to the table
+                                * Creates a new table if table doesn't exist, otherwise just inserts a new row
+                                * id, createdAt, and updatedAt are set by default; DO NOT ADD
+                                !!!!
+                                    Keep force set to false otherwise it will overwrite the table instead of making a new row!
+                                !!!!
+                                */
+                                Unban.sync({ force: false }).then(() => {
+
+                                    // Add the unban record to the database
+                                    Unban.create({
+                                        user_id: userId,
+                                        reason: reason,
+                                        type: "Manual",
+                                        moderator_id: message.author.id,
+                                    })
+                                    // Let the user know it was added
+                                    .then(() => {
+
+                                        // Create the unban embed
+                                        const unbanEmbed = {
+                                            color: 0xFF5500,
+                                            title: `User Was Unbanned!`,
+                                            author: {
+                                                name: `${user.username}#${user.discriminator}`,
+                                                icon_url: user.displayAvatarURL(),
+                                            },
+                                            description: `${user} was unbanned from the server by ${message.author}`,
+                                            fields: [
+                                                {
+                                                    name: `User Unbanned`,
+                                                    value: `${user}`,
+                                                    inline: true,
+                                                },
+                                                {
+                                                    name: `Unbanned By`,
+                                                    value: `${message.author}`,
+                                                    inline: true,
+                                                },
+                                                {
+                                                    name: `Unban Reason`,
+                                                    value: `${reason}`,
+                                                    inline: false,
+                                                },
+                                                {
+                                                    name: `Ban Date`,
+                                                    value: `${banDate}`,
+                                                    inline: false,
+                                                },
+                                                {
+                                                    name: `Ban Reason`,
+                                                    value: `${banReason}`,
+                                                    inline: false,
+                                                }
+                                            ],
+                                            timestamp: new Date(),
+                                        };
+                                        // Unban the user from the server
+                                        message.guild.members.unban(userId).then(() => {
+
+                                            // Update the completed field for the ban
+                                            Ban.update({completed: 1}, {where: {user_id: userId}});
+
+                                            // Send the embed to the action log channel
+                                            actionLog.send({embed: unbanEmbed});
+                                        });
+                                    });
+                                });
+                            };
+                        }).catch((e) => {
+                            // If no data was found in the db
+                            message.channel.send(`uh oh, it looks like there is no information on this ban in the database!`)
+                        });
+                    }).catch((e) => {
+                        // If no ban was found for that user
+                        return message.reply(`you silly! ${user} isn't banned!`)
+                    });
+                } else {
+                    // Let user know a reason is needed
+                    message.reply(`uh oh! It seems you forgot to give a reason for unbanning, please be sure to provide a reason for this action!\nExample: \`${prefix}unban ${userId}, reason\``);
+                };
+            }).catch((e) => {
+                // Let the user know there was no user with the given id
+                return message.reply(`uh oh! Looks like there is no user with the id \`${userId}\``);
+            });
         }
     },
     warnHandler: function(a, m, c) {

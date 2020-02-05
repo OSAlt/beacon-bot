@@ -1,6 +1,6 @@
 // Import the required files
 const moment = require('moment-timezone');
-const {prefix} = require('../config.json');
+const {prefix} = require('../config');
 const Discord = require("discord.js");
 const Warning = require("../models/Warning");
 

@@ -1,6 +1,6 @@
 // Require needed files/vars
 const Sequelize = require('sequelize');
-const {db_name, db_host, db_port, db_user, db_pass} = require("../config.json");
+const {db_name, db_host, db_port, db_user, db_pass} = require("../config");
 
 // Create a db connection; pass in the logging option and set to false to prevent console logs
 const sequelize = new Sequelize(`mysql://${db_user}:${db_pass}@${db_host}:${db_port}/${db_name}`, {logging: false});
