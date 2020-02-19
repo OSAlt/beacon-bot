@@ -34,7 +34,7 @@ client.once('ready', () => {
     console.log('Bot Online!');
     
     // Set the status of the bot
-    client.user.setActivity(`👌👈+🍆🍑=😩🌊💦☔=😋`,{type:'Playing'});
+    client.user.setPresence({activity: {name: `👌👈+🍆🍑=😩🌊💦☔=😋`}, status: 'online'});
 
     // Populate the triggerList and check for unbans
     try {
