@@ -34,8 +34,57 @@ module.exports = {
         // Send the embed to the action log channel
         actionLog.send({embed: delEmbed});
     },
+    purgeHandler: function(a, m) {
+        const args = a, message = m; //create vars for parameter values
+        const superLog = message.guild.channels.find((c => c.name === super_log_channel)); //super log channel
+        const author = message.author; //mod that triggered the command
+        const regex = /(^\d{1,10}$)/;
+
+        // Check if the argument given was a number
+        if(!args[0].match(regex)) {
+            // Let the user know that they provided an incorrect argument type
+            return message.reply(`uh oh! You have provided an incorrect value for the amount of messages to delete!`);
+        } else {
+            let count = parseInt(args[0]); //count var
+            count++; //add one to the count to exclude purge command
+
+            // Perform bulk deletion
+            message.channel.bulkDelete(count).then(() => {
+                bulkEmbed = {
+                    color: 0xFF5500,
+                    title: "Bulk Deleted Messages",
+                    author: {
+                        name: `${message.author.username}#${message.author.discriminator}`,
+                        icon_url: message.author.displayAvatarURL(),
+                    },
+                    description: `${count} messages were deleted in ${message.channel.name}`,
+                    fields: [
+                        {
+                            name: "Deletion Count",
+                            value: `${count}`,
+                            inline: true,
+                        },
+                        {
+                            name: "Channel",
+                            value: `${message.channel}`,
+                            inline: true,
+                        },
+                        {
+                            name: "Performed By",
+                            value: `${message.author}`,
+                            inline: true,
+                        }
+                    ],
+                    timestamp: new Date(),
+                };
+
+                superLog.send({embed: bulkEmbed});
+            });
+        };
+
+    },
     editHandler: function(o, n, c) {
-        const oldMsg = o, newMsg = n, client = c; // creats vars for parameter values
+        const oldMsg = o, newMsg = n, client = c; // create vars for parameter values
         const superLog = newMsg.guild.channels.find((c => c.name === super_log_channel)); //super log channel
 
         // Create author var
@@ -177,10 +226,9 @@ module.exports = {
             }
         }
     },
-    banHandler: function(a, m, c) {
+    banHandler: function(a, m) {
         const args = a;
         const message = m;
-        const client = c;
         const actionLog = message.guild.channels.find((c => c.name === action_log_channel)); //mod log channel
         const timezone = moment.tz(moment.tz.guess()).zoneAbbr(); // server timezone
         let user; // user var
@@ -308,13 +356,13 @@ module.exports = {
                                         inline: true,
                                     },
                                     {
-                                        name: `Banned By`,
-                                        value: `${message.author}`,
+                                        name: `Unban Date`,
+                                        value: `${unbanDate} (${timezone})`,
                                         inline: true,
                                     },
                                     {
-                                        name: `Unban Date`,
-                                        value: `${unbanDate} (${timezone})`,
+                                        name: `Banned By`,
+                                        value: `${message.author}`,
                                         inline: true,
                                     },
                                     {

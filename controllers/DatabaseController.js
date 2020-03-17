@@ -50,9 +50,9 @@ module.exports = {
         ########## poll commands ##########
         ###################################
         */
-        } else if (command.name.includes("poll")) {
-            // Call the poll handler function from the PollsController file
-           PollsController.pollHandler(command, client, args, message);
+        // } else if (command.name.includes("poll")) {
+        //     // Call the poll handler function from the PollsController file
+        //    PollsController.pollHandler(command, client, args, message);
 
         /*
         #######################################
@@ -73,6 +73,18 @@ module.exports = {
 
             // Call the joinable roles handler function from the JoinableRolesController file
             JoinableRolesController.joinableRolesHandler(command, client, args, message);
+
+
+        /*
+        ###################################
+        ########## purge command ##########
+        ###################################
+        */
+        } else if (command.name === "purge") {
+            
+            // Call the purge handler function from the ModeratorController file
+            ModerationController.purgeHandler(args, message);
+
 
         /*
         ######################################
@@ -99,7 +111,7 @@ module.exports = {
         */
         } else if(command.name === "ban") {
             // Call the ban handler function from the ModerationController file
-            ModerationController.banHandler(args, message, client);
+            ModerationController.banHandler(args, message);
 
         /*
         #################################

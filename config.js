@@ -13,6 +13,8 @@ module.exports = {
     "action_log_channel": "mod-log",
     "join_log_channel" : "mod-log",
 
+    "excluded_channels": ["mod-channel", "super-channel", "admin-channel", "announcements"],
+
     "db_name" : "localbeacon",
     "db_host" : "localhost",
     "db_port" : 8889,
