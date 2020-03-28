@@ -1,5 +1,5 @@
 module.exports = {
-    "token" : "NjYxNTUxMTQ2ODAzOTIwOTE3.XgtE9g.BhwVH_F3oUM6VzfpSeIDeJ7nQmQ",
+    "token" : "NjQ0MzA0NTg0OTg2MTk4MDE2.Xn9hrw.6-rMlWZDz7gx3qUHYSTXitEkNxM",
     "prefix" : "~",
 
     "admin_role": "Admins",
@@ -14,6 +14,12 @@ module.exports = {
     "join_log_channel" : "mod-log",
 
     "excluded_channels": ["mod-channel", "super-channel", "admin-channel", "announcements"],
+
+    // "db_name" : "gbbot",
+    // "db_host" : "localhost",
+    // "db_port" : 3306,
+    // "db_user" : "root",
+    // "db_pass" : "password"
 
     "db_name" : "localbeacon",
     "db_host" : "localhost",

@@ -5,10 +5,10 @@ const DatabaseController = require("../../controllers/DatabaseController");
 module.exports = {
     name: "removejoinablerole",
     description: "Removes a role from the joinable roles list",
-    aliases: ["removejoinablerank", "-joinablerole", "-joinablerank", "deletejoinablerole", "deljoinablerole", "deletejoinablerank", "deljoinablerank", "-joinable", "removejoinable", "deletejoinable", "deljoinable"],
+    aliases: ["rjr", "removejoinablerank", "-joinablerole", "-joinablerank", "removejoinable", "-joinable"],
     usage: "<role>",
     mod: false,
-    super: true, // Minimum level required is Super (manage roles permission)
+    super: true, // Minimum level required is Super
     admin: false,
     cooldown: 5,
     execute(message, args, client) {

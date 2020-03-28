@@ -16,9 +16,9 @@ module.exports = {
         const cmd = {};
         let cmdArr = [];
         const {commands} = message.client;
-        const modRole = message.member.roles.find(role => role.name === mod_role);
-        const superRole = message.member.roles.find(role => role.name === super_role);
-        const adminRole = message.member.roles.find(role => role.name === admin_role);
+        const modRole = message.member.roles.cache.find(role => role.name === mod_role);
+        const superRole = message.member.roles.cache.find(role => role.name === super_role);
+        const adminRole = message.member.roles.cache.find(role => role.name === admin_role);
         const ownerRole = message.member.guild.owner;
 
         // Check if any args were passed in

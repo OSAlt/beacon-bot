@@ -16,9 +16,9 @@ module.exports = {
         const message = m;
         const triggerList = tl;
         let trigger;
-        const modRole = message.member.roles.find(role => role.name === mod_role);
-        const superRole = message.member.roles.find(role => role.name === super_role);
-        const adminRole = message.member.roles.find(role => role.name === admin_role);
+        const modRole = message.member.roles.cache.find(role => role.name === mod_role);
+        const superRole = message.member.roles.cache.find(role => role.name === super_role);
+        const adminRole = message.member.roles.cache.find(role => role.name === admin_role);
         const ownerRole = message.member.guild.owner;
             
         // Check the length of the args
@@ -204,13 +204,9 @@ module.exports = {
                         }
                     // Let the user know it was removed
                     }).then(() => {
-                        // Get index of the trigger in the triggerList
-                        const triggerIndex = triggerList.list.indexOf(trigger);
 
-                        // Remove the trigger from the triggerList if found
-                        if (triggerIndex > -1) {
-                            triggerList.list.splice(triggerIndex, 1);
-                        }
+                        // Remove the trigger from the triggerList
+                        delete triggerList.list[trigger];
 
                         message.channel.send(`I have successfully removed \`${trigger}\` from the trigger list!`);
                     });
@@ -232,9 +228,8 @@ module.exports = {
                         trig.update({
                             enabled: true
                         }).then(() => {
-
                             // Add trigger to TriggerList
-                            triggerList.list.push(trigger);
+                            triggerList.list[trig.trigger] = trig.severity;
 
                             message.reply(`I have successfully enabled \`${trigger}\`!`);
                         });
@@ -262,13 +257,8 @@ module.exports = {
                         }).then(() => {
                             message.reply(`I have successfully disabled \`${trigger}\`!`);
 
-                            // Get index of the trigger in the triggerList
-                            const triggerIndex = triggerList.list.indexOf(trigger);
-
-                            // Remove the trigger from the triggerList if found
-                            if (triggerIndex > -1) {
-                                triggerList.list.splice(triggerIndex, 1);
-                            }
+                            // Remove the trigger from the triggerList
+                            delete triggerList.list[trigger];
                         });
                     // If already disabled let user know
                     } else {
@@ -280,7 +270,6 @@ module.exports = {
                 };
             });
         };
-
     },
     triggerHit: function(m, t, c) {
         // Create vars
@@ -289,9 +278,9 @@ module.exports = {
         
         let warnId = shortid.generate(); // generate a uid
         let severityArr = [];
-        const modRole = message.member.roles.find(role => role.name === mod_role);
-        const superRole = message.member.roles.find(role => role.name === super_role);
-        const adminRole = message.member.roles.find(role => role.name === admin_role);
+        const modRole = message.member.roles.cache.find(role => role.name === mod_role);
+        const superRole = message.member.roles.cache.find(role => role.name === super_role);
+        const adminRole = message.member.roles.cache.find(role => role.name === admin_role);
 
         // Find the trigger(s) in the database
         Trigger.findAll({where: {trigger: triggers},raw:true}).then((data) => {
@@ -317,8 +306,10 @@ module.exports = {
             Warning.sync({ force: false }).then(() => {
 
                 Warning.findOne({where: {warning_id: warnId}, raw:true}).then((warning => {
-                    if(warning.warning_id === warnId) {
-                        warnId = shortid.generate();
+                    if(warning) {
+                        if(warning.warning_id === warnId) {
+                            warnId = shortid.generate();
+                        }
                     }
                 })).then(() => {
                     // Store the data
@@ -430,14 +421,14 @@ module.exports = {
 
         // Sends reports of triggers based on user's permissions and the existence of specific channels
         function reportLadder(t, e) {
-            const modChannel = message.guild.channels.find((c => c.name === mod_channel)); //mod channel
-            const superChannel = message.guild.channels.find((c => c.name === super_channel)); //super channel
-            const adminChannel = message.guild.channels.find((c => c.name === admin_channel)); //admin channel
-            const superLog = message.guild.channels.find((c => c.name === super_log_channel)); //super log channel
-            const logChannel = message.guild.channels.find((c => c.name === action_log_channel)); //action log channel
-            const owner = client.users.get(message.guild.ownerID); // server owner
+            const modChannel = message.guild.channels.cache.find((c => c.name === mod_channel)); //mod channel
+            const superChannel = message.guild.channels.cache.find((c => c.name === super_channel)); //super channel
+            const adminChannel = message.guild.channels.cache.find((c => c.name === admin_channel)); //admin channel
+            const superLog = message.guild.channels.cache.find((c => c.name === super_log_channel)); //super log channel
+            const logChannel = message.guild.channels.cache.find((c => c.name === action_log_channel)); //action log channel
+            const owner = client.users.cache.get(message.guild.ownerID); // server owner
             // Gets the guildMember instance of the user so we can get more information on them and their information within our server.
-            warnedUser = client.guilds.get(message.guild.id).members.get(message.author.id);
+            warnedUser = client.guilds.cache.get(message.guild.id).members.cache.get(message.author.id);
 
             // Create deleted message embed for action log for high severity triggers
             const delMsgEmbed = {
@@ -451,7 +442,7 @@ module.exports = {
                 fields: [
                     {
                         name: "User Roles",
-                        value: `${warnedUser.roles.map(role => role.name).join(", ")}`,
+                        value: `${warnedUser.roles.cache.map(role => role.name).join(", ")}`,
                     },
                     {
                         name: "Triggers Hit",
@@ -638,7 +629,7 @@ module.exports = {
                                 // Change the url for the mod channel's embed to link to log in the log channel
                                 e.fields[4].value = d.url;
                                 // Send embed to the mod channel
-                                modChannel.send("@ everyone", {embed: e});
+                                modChannel.send("@everyone", {embed: e});
 
                                 // Update the db's message link
                                 Warning.update({message_link: d.url}, {
@@ -653,7 +644,7 @@ module.exports = {
                         message.reply(`please try to refrain from using words such as: \`${t}\``);
 
                         // Send embed to the moderation channel with here tag
-                        modChannel.send("@ here", {embed: e});
+                        modChannel.send("@here", {embed: e});
                     } else if (severity === "low") {
                         // Warn the user
                         message.reply(`please try to refrain from using words such as: \`${t}\``);

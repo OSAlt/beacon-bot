@@ -10,8 +10,8 @@ module.exports = {
     joinableRolesHandler: function(cmd, c, a, m) {
         // Create vars
         const command = cmd, client = c, args = a, message = m;
-        const superRole = message.member.roles.find(role => role.name === super_role);
-        const adminRole = message.member.roles.find(role => role.name === admin_role);
+        const superRole = message.member.roles.cache.find(role => role.name === super_role);
+        const adminRole = message.member.roles.cache.find(role => role.name === admin_role);
         const ownerRole = message.member.guild.owner;
         let joinableRole;
             
@@ -29,12 +29,12 @@ module.exports = {
             let role;
             // Check length of args
             if (args.length > 1) {
-                role = message.guild.roles.find(role => role.name.toLowerCase() === args.join(" ").toLowerCase()); // Find the role based on the args
+                role = message.guild.roles.cache.find(role => role.name.toLowerCase() === args.join(" ").toLowerCase()); // Find the role based on the args
             } else {
-                role = message.guild.roles.find(role => role.name.toLowerCase() === args[0].toLowerCase()); // Find the role based on the arg
+                role = message.guild.roles.cache.find(role => role.name.toLowerCase() === args[0].toLowerCase()); // Find the role based on the arg
             }
 
-            const joinedRole = message.member.roles.find(r => r === role); // Look for role in user's current roles
+            const joinedRole = message.member.roles.cache.find(r => r === role); // Look for role in user's current roles
 
             // If no role let user know
             if (!role) {
@@ -80,7 +80,7 @@ module.exports = {
         /*********** ADD JOINABLE ROLE ***********/
         } else if (command.name === 'addjoinablerole' && (superRole || adminRole || ownerRole)) {
             // Search for the role within the server
-            const role = message.guild.roles.find(role => role.name.toLowerCase() === joinableRole);
+            const role = message.guild.roles.cache.find(role => role.name.toLowerCase() === joinableRole);
             
             // Check if the role exists
             if (role) {
@@ -120,7 +120,7 @@ module.exports = {
         /*********** REMOVE JOINABLE ROLE ***********/
         } else if (command.name === 'removejoinablerole' && (superRole || adminRole || ownerRole)) {
             // Find the role within the guild
-            const role = message.guild.roles.find(role => role.name.toLowerCase() === joinableRole);
+            const role = message.guild.roles.cache.find(role => role.name.toLowerCase() === joinableRole);
             // Query the database for the joinable role passed in
             JoinableRole.findOne({where: {role: role.name}}).then((ar) => {
                 // If the joinable role was found, then remove it
@@ -144,7 +144,7 @@ module.exports = {
             // If user is a super and passed in any args give data for that role
             if ((superRole || adminRole || ownerRole) && args.length) {
                 // Find the role within the guild
-                const role = message.guild.roles.find(role => role.name.toLowerCase() === joinableRole);
+                const role = message.guild.roles.cache.find(role => role.name.toLowerCase() === joinableRole);
                 let joinableRoleData = {};
 
                 // Get the data for the joinable role

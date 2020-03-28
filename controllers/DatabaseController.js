@@ -159,9 +159,11 @@ module.exports = {
                 enabled: 1
             }
         }).then((data) => {
+            let triggers = {}
             data.forEach((item) => {
-                tl.list.push(item.get('trigger'));
+                triggers[item.get('trigger')] = item.get("severity");
             });
+            tl.list = triggers;
         }).catch((e) => {
              console.error("Error: "+e);
         });
@@ -209,13 +211,13 @@ module.exports = {
             // Loop through each user that needs to be unbanned
             bannedUsers.forEach((item) => {
                 // Find the server the user was banned from
-                const guild = client.guilds.get(item.guildId);
-                logChannel = guild.channels.find((c => c.name === action_log_channel)); //action log channel
+                const guild = client.guilds.cache.get(item.guildId);
+                logChannel = guild.channels.cache.find((c => c.name === action_log_channel)); //action log channel
 
                 // Unban the user with a time up reason
                 guild.members.unban(item.userId, "Ban Expiration").then(() => {
-                    const user = client.users.get(item.userId); //get the user that was banned
-                    const moderator = client.users.get(item.modId); //get the moderator that performed the ban
+                    const user = client.users.cache.get(item.userId); //get the user that was banned
+                    const moderator = client.users.cache.get(item.modId); //get the moderator that performed the ban
                     let banDate = moment(item.created).format(`YYYY-MM-DD HH:mm:ss`);
 
                     // Update the completed field

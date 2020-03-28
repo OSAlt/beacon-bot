@@ -14,7 +14,7 @@ module.exports = {
         const joinedDate = moment(member.joinedAt).format(`YYYY-MM-DD`); //joined date only
         const joinedTime = moment(member.joinedAt).format(`HH:mm:ss`); //joined time only
         const joinedTimezone = moment(member.joinedAt).tz(moment.tz.guess()).format(`z`); // timezone for the joined time
-        const joinLog = member.guild.channels.find((c => c.name === join_log_channel)); //join log channel
+        const joinLog = member.guild.channels.cache.find((c => c.name === join_log_channel)); //join log channel
 
         // Create the embed to display a new member join
         const joinEmbed = {
@@ -50,7 +50,7 @@ module.exports = {
             if (data) {
                 // Find the role within the server and add it to the array
                 data.forEach(item => {
-                    roles.push(member.guild.roles.find(role => role.name === item.role));
+                    roles.push(member.guild.roles.cache.find(role => role.name === item.role));
                 });
 
             // If no autoroles, just ignore assigning them

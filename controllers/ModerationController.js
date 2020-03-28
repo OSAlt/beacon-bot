@@ -1,4 +1,3 @@
-const Discord = require("discord.js");
 const moment = require("moment");
 const {prefix, admin_role, super_role, mod_role, action_log_channel, super_log_channel} = require('../config');
 const Kick = require("../models/Kick");
@@ -8,36 +7,56 @@ const Warning = require("../models/Warning");
 const shortid = require('shortid');
 
 module.exports = {
-    deleteHandler: function(m) {
-        const message = m;
-        const actionLog = message.guild.channels.find((c => c.name === action_log_channel)); //mod log channel
+    deleteHandler: function(m, tl) {
+        const message = m, triggerList = tl;
+        const actionLog = message.guild.channels.cache.find((c => c.name === action_log_channel)); //mod log channel
+        let triggerArr = [];
 
-        // Create the delete embed
-        const delEmbed = {
-            color: 0xff0000,
-            title: `Message Deleted in ${message.channel.name}`,
-            author: {
-                name: `${message.author.username}#${message.author.discriminator}`,
-                icon_url: message.author.displayAvatarURL()
-            },
-            description: `A message by ${message.author} was deleted in ${message.channel}`,
-            fields: [
-                {
-                    name: "Message",
-                    value: message.content || "`{Message was either an Embed or Image}`",
-                    inline: false,
-                }
-            ],
-            timestamp: new Date()
+        for(key in triggerList.list) {
+            triggerArr.push(key);
         }
 
-        // Send the embed to the action log channel
-        actionLog.send({embed: delEmbed});
+        // See if the message contains a trigger
+        if(triggerArr.some(trigger => message.content.toLowerCase().match(`\\b${trigger}\\b`))) {
+            // Store the trigger words
+            let triggers = triggerArr.filter((trig) => message.content.toLowerCase().match(`\\b(${trig})\\b`));
+
+            // Loop through all triggers in the message
+            triggers.forEach((trigg) => {
+
+                // If the trigger is high severity then return (don't send embed)
+                if(triggerList.list[trigg] === "high") {
+                    return;
+                }
+            })
+            
+        } else {
+            // Create the delete embed
+            const delEmbed = {
+                color: 0xff0000,
+                title: `Message Deleted in ${message.channel.name}`,
+                author: {
+                    name: `${message.author.username}#${message.author.discriminator}`,
+                    icon_url: message.author.displayAvatarURL()
+                },
+                description: `A message by ${message.author} was deleted in ${message.channel}`,
+                fields: [
+                    {
+                        name: "Message",
+                        value: message.content || "`{Message was either an Embed or Image}`",
+                        inline: false,
+                    }
+                ],
+                timestamp: new Date()
+            }
+
+            // Send the embed to the action log channel
+            actionLog.send({embed: delEmbed});
+        }
     },
     purgeHandler: function(a, m) {
         const args = a, message = m; //create vars for parameter values
-        const superLog = message.guild.channels.find((c => c.name === super_log_channel)); //super log channel
-        const author = message.author; //mod that triggered the command
+        const superLog = message.guild.channels.cache.find((c => c.name === super_log_channel)); //super log channel
         const regex = /(^\d{1,10}$)/;
 
         // Check if the argument given was a number
@@ -46,7 +65,6 @@ module.exports = {
             return message.reply(`uh oh! You have provided an incorrect value for the amount of messages to delete!`);
         } else {
             let count = parseInt(args[0]); //count var
-            count++; //add one to the count to exclude purge command
 
             // Perform bulk deletion
             message.channel.bulkDelete(count).then(() => {
@@ -85,10 +103,10 @@ module.exports = {
     },
     editHandler: function(o, n, c) {
         const oldMsg = o, newMsg = n, client = c; // create vars for parameter values
-        const superLog = newMsg.guild.channels.find((c => c.name === super_log_channel)); //super log channel
+        const superLog = newMsg.guild.channels.cache.find((c => c.name === super_log_channel)); //super log channel
 
         // Create author var
-        const author = client.users.get(newMsg.author.id);
+        const author = client.users.cache.get(newMsg.author.id);
         
         // Create the edit embed
         const editEmbed = {
@@ -119,7 +137,7 @@ module.exports = {
     kickHandler: function(a, m) {
         const args = a;
         const message = m;
-        const actionLog = message.guild.channels.find((c => c.name === action_log_channel)); //mod log channel
+        const actionLog = message.guild.channels.cache.find((c => c.name === action_log_channel)); //mod log channel
         let user; // user var
 
         // Check if the first arg is a number
@@ -140,12 +158,12 @@ module.exports = {
             // If not, find the user by the provided id
             } else {
                 // If invalid id let the user know
-                if(message.guild.members.get(args[0]) === undefined) {
+                if(message.guild.members.cache.get(args[0]) === undefined) {
                     return message.reply(`uh oh! Looks like I wasn't able to find that user, please check the user id and try again or try using a user mention like so: \`@Username\``);
 
                 // If user found, assign it to the user var
                 } else {
-                    user = message.guild.members.get(args[0]);
+                    user = message.guild.members.cache.get(args[0]);
                 }
             }
 
@@ -229,7 +247,7 @@ module.exports = {
     banHandler: function(a, m) {
         const args = a;
         const message = m;
-        const actionLog = message.guild.channels.find((c => c.name === action_log_channel)); //mod log channel
+        const actionLog = message.guild.channels.cache.find((c => c.name === action_log_channel)); //mod log channel
         const timezone = moment.tz(moment.tz.guess()).zoneAbbr(); // server timezone
         let user; // user var
 
@@ -264,7 +282,7 @@ module.exports = {
 
                 // Try to get the user
                 try {
-                    user = message.guild.members.get(args[0]).user;
+                    user = message.guild.members.cache.get(args[0]).user;
                 } catch(e) {
                     // If unable to get the user, let the mod know
                     return message.reply(`uh oh! That user isn't a member of this guild!`);
@@ -402,7 +420,7 @@ module.exports = {
         const args = a;
         const message = m;
         const client = c;
-        const actionLog = message.guild.channels.find((c => c.name === action_log_channel)); //mod log channel
+        const actionLog = message.guild.channels.cache.find((c => c.name === action_log_channel)); //mod log channel
         let user; // user var
 
         // Check if the first arg is a number
@@ -419,7 +437,7 @@ module.exports = {
             let userId = args[0];
 
             // Attempt to fetch the user
-            client.users.fetch(userId).then((u) => {
+            client.users.fetch(userId.toString()).then((u) => {
                 user = u; //assign user
 
                 // If a reason was given then unban the user and log the action to the database
@@ -507,13 +525,16 @@ module.exports = {
 
                                             // Send the embed to the action log channel
                                             actionLog.send({embed: unbanEmbed});
+
+                                            // Reply with a message
+                                            message.reply(`unban successful!`)
                                         });
                                     });
                                 });
-                            };
-                        }).catch((e) => {
-                            // If no data was found in the db
-                            message.channel.send(`uh oh, it looks like there is no information on this ban in the database!`)
+                            } else {
+                                // If no data was found in the db
+                                message.channel.send(`uh oh, it looks like there is no information on this ban in the database!`)
+                            }
                         });
                     }).catch((e) => {
                         // If no ban was found for that user
@@ -532,7 +553,7 @@ module.exports = {
     warnHandler: function(a, m, c) {
         const args = a, message = m, client = c;
         let warnId = shortid.generate(); //generate a short id for the warning
-        const actionLog = message.guild.channels.find((c => c.name === action_log_channel)); //mod log channel
+        const actionLog = message.guild.channels.cache.find((c => c.name === action_log_channel)); //mod log channel
         let reason = args.slice(1).join(" "); //remove the user from the array then join to get the reason
         reason = reason.replace(",", ""); //remove the comma
         reason = reason.trim(); //remove any excess whitespace
@@ -561,7 +582,7 @@ module.exports = {
             // If not, find the user by the provided id
             } else {
                 // Get the user
-                user = message.guild.members.get(args[0]);
+                user = message.guild.members.cache.get(args[0]);
 
                 // If user is undefined let the moderator know
                 if(user === undefined) {
@@ -621,6 +642,7 @@ module.exports = {
                         };
 
                         actionLog.send({embed: warnEmbed});
+                        message.reply(`${user.username} was successfully warned!`);
                     });
                 });
             });

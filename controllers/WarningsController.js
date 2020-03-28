@@ -44,7 +44,7 @@ module.exports = {
 
                     // Add a new field for each warning
                     data.forEach(warning => {
-                        warnedUser = client.guilds.get(message.guild.id).members.get(warning.user_id.toString());
+                        warnedUser = client.guilds.cache.get(message.guild.id).members.cache.get(warning.user_id.toString());
                         let date = moment(warning.createdAt).format("YYYY-MM-DD HH:mm:ss"); // format date
 
                         // Create a new field depending on the type of warning
@@ -86,7 +86,7 @@ module.exports = {
                     if (warning) {
                         
                         // Find the warned user
-                        warnedUser = client.guilds.get(message.guild.id).members.get(warning.user_id.toString());
+                        warnedUser = client.guilds.cache.get(message.guild.id).members.cache.get(warning.user_id.toString());
                         let embedColor = 0xff5500; // embed color; default to orange
 
                         // Create the embed
@@ -97,13 +97,13 @@ module.exports = {
                         .addField(`User`, warnedUser, true)
                         .addField(`Server Nickname`, `${warnedUser.nickname || "None"}`, true)
                         .addField(`Warning Type`, warning.type, true)
-                        .addField(`User Roles`, warnedUser.roles.map(role => role.name).join(", "))
+                        .addField(`User Roles`, warnedUser.roles.cache.map(role => role.name).join(", "))
                         .setTimestamp();
                         
                         // If the warning is a trigger
                         if(warning.type === "Trigger") {
                             // Find the channel for the warning
-                            warnedChannel = client.guilds.get(message.guild.id).channels.get(warning.channel_id);
+                            warnedChannel = client.guilds.cache.get(message.guild.id).channels.cache.get(warning.channel_id);
 
                             // Set the color of the embed based on severity level
                             switch(warning.severity) {
@@ -157,9 +157,9 @@ module.exports = {
                             message.reply("It seems like I can't DM you! Do you have DMs disables?");
                         });
                     }
-                }).catch(() => {
+                }).catch((e) => {
                     // If unable to find warning/user
-                    return message.reply(`uh oh! I either wasn't able to find the user with that username or that user has no warnings!\r If you think the user has warnings, please check your username and try again!\rNote: This query uses a user's username and **NOT** their server nickname!`);
+                    return message.reply(`uh oh! I wasn't able to find the a warning with that warning id!\r If you think the warning exists, please check your warning id and try again!`);
                 });
 
             // If no second arg let user know
@@ -180,8 +180,8 @@ module.exports = {
                             sendUserWarnings(message, client, warnings);
                         }
 
-                    }).catch(() => {
-                        return message.reply(`uh oh! I either wasn't able to find the user with that username or that user has no warnings!\r If you think the user has warnings, please check your username and try again!\rNote: This query uses a user's username and **NOT** their server nickname!`);
+                    }).catch((e) => {
+                        return message.reply(`uh oh! I either wasn't able to find the user with that id or that user has no warnings!\r If you think the user has warnings, please check your id and try again!`);
                     });
 
                 // If the second argument isn't numeric only query based on username
@@ -197,14 +197,13 @@ module.exports = {
                             // Call the sendUserWarnings function
                             sendUserWarnings(message, client, warnings);
                         }
-                    }).catch(() => {
-
-                        return message.reply(`uh oh! I either wasn't able to find the user with that username or that user has no warnings!\r If you think the user has warnings, please check your username and try again!\rNote: This query uses a user's username and **NOT** their server nickname!`);
+                    }).catch((e) => {
+                        return message.reply(`uh oh! I either wasn't able to find the user with that id or that user has no warnings!\r If you think the user has warnings, please check your id and try again!`);
                     });
                 }
             // If user forgot to give a username or id
             } else {
-                return message.reply(`uh oh! Looks like you forgot to tell me the user's name or id!\rExample: \`${prefix}warnings user {username | user_id}\``);
+                return message.reply(`uh oh! Looks like you forgot to tell me the user's id!\rExample: \`${prefix}warnings user {user_id}\``);
             }
         } else {
             return message.reply(`uh oh! Looks like you didn't use that command properly, please check its' usage with \`${prefix}help warnings\``);
@@ -212,7 +211,7 @@ module.exports = {
 
         function sendUserWarnings(message, client, warnings) {
             // Find the warned user
-            warnedUser = client.guilds.get(message.guild.id).members.get(warnings[0].user_id.toString());
+            warnedUser = client.guilds.cache.get(message.guild.id).members.cache.get(warnings[0].user_id.toString());
             let i = 0;
 
             // Create the embed
@@ -223,7 +222,7 @@ module.exports = {
                 .addField(`User Id`, `${warnedUser.id}`)
                 .addField(`User`, `${warnedUser}`, true)
                 .addField(`Server Nickname`, `${warnedUser.nickname || "None"}`, true)
-                .addField(`User Roles`, `${warnedUser.roles.map(role => role.name).join(", ")}`)
+                .addField(`User Roles`, `${warnedUser.roles.cache.map(role => role.name).join(", ")}`)
                 .setTimestamp()
 
                 // If 21 or less warnings loop through them and add a field for each (Discord embeds are limited to 25 fields and we used 4 above)

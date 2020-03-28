@@ -14,13 +14,13 @@ const client = new Discord.Client({disableEveryone: false, partials: ["MESSAGE",
 // Create a class for Triggers
 class TriggerList {
     constructor() {
-        this._list = [];
+        this._list = {};
     }
     get list() {
         return this._list;
     }
-    set list(trigger) {
-        this._list.push(trigger);
+    set list(triggers) {
+        this._list = triggers;
     }
 }
 const triggerList = new TriggerList(); //instantiate a new TriggerList class
@@ -97,7 +97,7 @@ client.on("messageDelete", message => {
 
             // Attempt to run the deleteHandler method
             try {
-                moderationController.deleteHandler(message, client);
+                moderationController.deleteHandler(message, triggerList);
             } catch (e) {
                 return;
             }

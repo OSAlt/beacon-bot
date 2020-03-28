@@ -24,7 +24,7 @@ module.exports = {
         /*********** ADD AUTOROLE ***********/
         if (command.name === 'addautorole') {
             // Search for the role within the server
-            const role = message.guild.roles.find(role => role.name.toLowerCase() === autorole);
+            const role = message.guild.roles.cache.find(role => role.name.toLowerCase() === autorole);
             
             // Check if the role exists
             if (role) {
@@ -64,7 +64,7 @@ module.exports = {
         /*********** REMOVE AUTOROLE ***********/
         } else if (command.name === 'removeautorole') {
             // Find the role within the guild
-            const role = message.guild.roles.find(role => role.name.toLowerCase() === autorole);
+            const role = message.guild.roles.cache.find(role => role.name.toLowerCase() === autorole);
             // Query the database for the autorole passed in
             AutoRole.findOne({where: {role: role.name}}).then((ar) => {
                 // If the autorole was found, then remove it
@@ -111,7 +111,7 @@ module.exports = {
             // If user is a super mod and passed in args, then give all data about that autorole
             } else if (message.member.hasPermission("MANAGE_ROLES") && args.length) {
                 // Find the role within the guild
-                const role = message.guild.roles.find(role => role.name.toLowerCase() === autorole);
+                const role = message.guild.roles.cache.find(role => role.name.toLowerCase() === autorole);
                 let autoroleData = {};
 
                 // Get the data for the autorole

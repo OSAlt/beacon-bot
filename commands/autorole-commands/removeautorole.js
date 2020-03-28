@@ -5,10 +5,10 @@ const DatabaseController = require("../../controllers/DatabaseController");
 module.exports = {
     name: "removeautorole",
     description: "Removes a role from the auto role list",
-    aliases: ["removeautorank", "-autorole", "-autorank", "deleteautorole", "delautorole", "deleteautorank", "delautorank"],
+    aliases: ["rar", "removeautorank", "-autorole", "-autorank"],
     usage: "<role>",
     mod: false,
-    super: true, // Minimum level required is Super (manage roles permission)
+    super: true, // Minimum level required is Super
     admin: false,
     cooldown: 5,
     execute(message, args, client) {
