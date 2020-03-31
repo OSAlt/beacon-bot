@@ -1,5 +1,5 @@
 // Import the required files
-const VerifyController = require("../../controllers/VerifyController");
+const reactionsController = require("../../controllers/ReactionsController");
 
 // Create a new module export
 module.exports = {
@@ -13,6 +13,6 @@ module.exports = {
     cooldown: 5,
     execute(message, args) {
         // Call the query handler from the verify controller with the required args
-        VerifyController.verifyCreator(message, args);
+        reactionsController.verifyCreator(message, args);
     }
 }

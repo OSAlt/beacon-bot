@@ -7,7 +7,7 @@ const leaveController = require("./controllers/LeaveController");
 const databaseController = require("./controllers/DatabaseController");
 const pollsController = require("./controllers/PollsController");
 const moderationController = require("./controllers/ModerationController");
-const verifyController = require("./controllers/VerifyController");
+const reactionsController = require("./controllers/ReactionsController");
 
 // Instantiate a new Discord client and collection
 const client = new Discord.Client({disableEveryone: false, partials: ["MESSAGE", "REACTION"]});
@@ -35,7 +35,7 @@ client.once('ready', () => {
     console.log('Bot Online!');
     
     // Set the status of the bot
-    client.user.setPresence({activity: {name: `👌👈+🍆🍑=😩🌊💦☔=😋`}, status: 'online'});
+    client.user.setPresence({activity: {name: `${prefix}help`}, status: 'online'});
 
     // Populate the triggerList and check for unbans
     try {
@@ -92,7 +92,7 @@ client.on('messageReactionAdd', message => {
 
     // Attempt to run the leaveHandler method
     try {
-        verifyController.verifyHandler(message, client);
+        reactionsController.verifyHandler(message, client);
     } catch (e) {
         console.error(e);
     }

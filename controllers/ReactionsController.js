@@ -22,7 +22,7 @@ module.exports = {
         const client = c;
         const guild = client.guilds.cache.find((g => g.id === server_id));
         const verifyChannel = guild.channels.cache.find((c => c.name === "verify"));
-        const message = verifyChannel.messages.cache.first(); // possible cause of error
+        const message = verifyChannel.messages.cache.first();
         
         const filter = (reaction) => {
             return reaction.emoji.id === "694295496885534730";
@@ -39,13 +39,5 @@ module.exports = {
                 message.channel.send("you didn't react with the proper emoji!");
             }
         });
-
-        // Make sure the user isn't a bot
-        // if(m.bot == false) {
-        //     const guild = client.guilds.cache.find((g => g.id === server_id));
-        //     const verifyChannel = guild.channels.cache.find((c => c.name === "verify")); //verify channel
-
-        //     console.log("dix")
-        // }
     }
 }
