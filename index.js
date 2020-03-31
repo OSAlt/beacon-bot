@@ -1,6 +1,6 @@
 // Import required files
 const Discord = require("discord.js");
-const {token} = require("./config");
+const {prefix, token} = require("./config");
 const messageController = require("./controllers/MessageController");
 const joinController = require("./controllers/JoinController");
 const leaveController = require("./controllers/LeaveController");
@@ -88,11 +88,11 @@ client.on('guildMemberRemove', member => {
 });
 
 // Listen for members to leave the server
-client.on('messageReactionAdd', message => {
+client.on('messageReactionAdd', (reaction, user) => {
 
     // Attempt to run the leaveHandler method
     try {
-        reactionsController.verifyHandler(message, client);
+        reactionsController.verifyHandler(reaction, user);
     } catch (e) {
         console.error(e);
     }

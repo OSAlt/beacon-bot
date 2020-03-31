@@ -1,4 +1,5 @@
-const {server_id} = require('../config');
+const {verify_msg_id, server_id} = require('../config');
+
 // Create a new module export
 module.exports = {
 
@@ -6,38 +7,48 @@ module.exports = {
     verifyCreator: function(m, a) {
         // Create vars
         const message = m, args = a;
-        const verifyChannel = message.guild.channels.cache.find((c => c.name === "verify")); //verify channel
+        const verifyChannel = message.guild.channels.cache.find((c => c.name.includes("verify"))); //verify channel
 
-        if(args.length === 1 && args[0] === "create" && message.guild.ownerID === message.author.id) {
-            verifyChannel.send("Please React with <a:cube:694295496885534730> to verify that you are a human!")
-            .then(sent => {
-                sent.react("694295496885534730");
-            });
-        }
+        verifyChannel.messages.fetch({limit:1}).then((messages) => {
+            if(messages.size !== 0) {
+                message.channel.send(`There is already a verify message!`)
+            } else {
+                if(args.length === 1 && args[0] === "create" && message.guild.ownerID === message.author.id) {
+                    verifyChannel.send("Please React with <a:cube:694295496885534730> to verify that you are a human!")
+                    .then(sent => {
+                        verifyMessageId = sent.id;
+                        sent.react("694295496885534730");
+                    });
+                }
+            }
+        })
 
     },
-    verifyHandler: function(m, c) {
+    verifyHandler: function(r, u) {
         // Create vars
-        let messageReaction = m;
-        const client = c;
+        const user = u;
+        const reaction = r;
+        const client = reaction.client;
         const guild = client.guilds.cache.find((g => g.id === server_id));
-        const verifyChannel = guild.channels.cache.find((c => c.name === "verify"));
-        const message = verifyChannel.messages.cache.first();
-        
-        const filter = (reaction) => {
-            return reaction.emoji.id === "694295496885534730";
-        };
-        
+        const verifyChannel = guild.channels.cache.find((c => c.name.includes("verify")));
+        const role = guild.roles.cache.find(r => r.name === "Users");
 
-        message.awaitReactions(filter, {max:1})
-        .then(reactions => {
-            console.log("test")
-            const reaction = reactions.first();
-            if(reaction.emoji.id === "694295496885534730") {
-                message.channel.send("congratulations you are now verified!");
-            } else {
-                message.channel.send("you didn't react with the proper emoji!");
-            }
+        verifyChannel.messages.fetch({limit:1}).then(message => {
+
+            if(user.bot) {
+                return;
+            } else if(reaction.message.id !== message.first().id) {
+                return;
+            };
+    
+            guild.members.fetch(user.id).then((member) => {
+                
+                if(reaction.emoji.id === "694295496885534730") {
+                    member.roles.add(role);
+                } else {
+                    reaction.remove();
+                } 
+            });
         });
     }
 }

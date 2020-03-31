@@ -16,12 +16,6 @@ module.exports = {
 
     "excluded_channels": ["mod-channel", "super-channel", "admin-channel", "announcements"],
 
-    // "db_name" : "gbbot",
-    // "db_host" : "localhost",
-    // "db_port" : 3306,
-    // "db_user" : "root",
-    // "db_pass" : "password"
-
     "db_name" : "localbeacon",
     "db_host" : "localhost",
     "db_port" : 8889,
