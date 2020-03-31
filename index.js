@@ -7,6 +7,7 @@ const leaveController = require("./controllers/LeaveController");
 const databaseController = require("./controllers/DatabaseController");
 const pollsController = require("./controllers/PollsController");
 const moderationController = require("./controllers/ModerationController");
+const verifyController = require("./controllers/VerifyController");
 
 // Instantiate a new Discord client and collection
 const client = new Discord.Client({disableEveryone: false, partials: ["MESSAGE", "REACTION"]});
@@ -81,6 +82,17 @@ client.on('guildMemberRemove', member => {
     // Attempt to run the leaveHandler method
     try {
         leaveController.leaveHandler(member);
+    } catch (e) {
+        console.error(e);
+    }
+});
+
+// Listen for members to leave the server
+client.on('messageReactionAdd', message => {
+
+    // Attempt to run the leaveHandler method
+    try {
+        verifyController.verifyHandler(message, client);
     } catch (e) {
         console.error(e);
     }

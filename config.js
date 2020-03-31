@@ -1,6 +1,7 @@
 module.exports = {
     "token" : "NjQ0MzA0NTg0OTg2MTk4MDE2.Xn9hrw.6-rMlWZDz7gx3qUHYSTXitEkNxM",
     "prefix" : "~",
+    "server_id" : "500576147482869763",
 
     "admin_role": "Admins",
     "super_role": "Supers",

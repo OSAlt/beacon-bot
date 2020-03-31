@@ -156,13 +156,17 @@ module.exports = {
         // Get all rows of enabled triggers and add them to the triggerList
         Trigger.findAll({
             where: {
-                enabled: 1
+                enabled: 1 //make sure trigger is enabled; 0 = false 1 = true
             }
         }).then((data) => {
-            let triggers = {}
+            let triggers = {}; //obj for triggers
+
+            // Loop through each item found and add it to the triggers obj
             data.forEach((item) => {
                 triggers[item.get('trigger')] = item.get("severity");
             });
+
+            // Add the list of triggers to the local copy
             tl.list = triggers;
         }).catch((e) => {
              console.error("Error: "+e);
