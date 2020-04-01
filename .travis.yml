@@ -1,0 +1,27 @@
+dist: bionic
+services:
+- docker
+before_install:
+- sudo rm /usr/local/bin/docker-compose
+- curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname
+  -s`-`uname -m` > docker-compose
+- chmod +x docker-compose
+- sudo mv docker-compose /usr/local/bin
+- cp env.template .env
+env:
+  matrix:
+  - DOCKER_COMPOSE_VERSION=1.25.4
+  global:
+    secure: I9wBHFtabizHmo+u4DrLbLSpQhFB5oCaLwO9PxNwbhKZW8K6OlPoJ24UUxu0iJOpOliGoWbRDi2UjIrxr2MyLd1QXCeWJRQzVH0d5npG4IWbBGOK+8ZGlNJQhL3LbEz7OpnQ5NMgh7dhdnyYoGxYzItrUd1Rv/jwaaqT7cV5k0VLDsvGgOausaYus5B8VoDhgCzh2c+f55ttDymCrkqFgoths2GxSV7lHxpOQ3LUKxJcIrJMvvIb2hcjDOeuHJWPCZl01m1R0s7jiO73Po19gf1pLXSEYHeKFESDWYRQ/Pj9xtkes/vVjGPn2lvd0bw/uJZEh07NypHr13PeGusRPTX+m0V5R2aBIvNuicb+WylPqrmgONNXIpGunFxDZfVxfPDjAFzpWtemmG6kQVRwyz8HII69Z0R55IVQbDtaWlJEWnDi4udU3e8wqS6uvreUdALSto2boVp/C/PSRM7g8uEq5z/kT5jCcoFToKFFr2kYMErj0Qip22n2plTssBk54+8GiAHNFZLPaZkJazPqDoF+stVje4CLwHavsB6jVPgV6aVcbMSTx9aMy6Yx3iaqDx6OPA9AcrsfhMxT4+0ybtMrd8ECbaxt5dtrishkFKI1AFcrtSCMJtBR8hSgj+cTr3MH9xVH94w+Lh8CBfk2sdJYsFHwYpREnhqGr6AT4uE=
+jobs:
+  include:
+  - stage: build docker image
+    if: type = pull_request
+    script:
+    - "/usr/local/bin/docker-compose build bot"
+  - stage: deploy docker image
+    if: type != pull_request and branch = 'master'
+    script:
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+    - "/usr/local/bin/docker-compose build bot"
+    - docker push geekbeacon/beacon-bot:latest
