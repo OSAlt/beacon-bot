@@ -20,5 +20,5 @@ module.exports = {
     "db_host" : "localhost",
     "db_port" : 8889,
     "db_user" : "root",
-    "db_pass" : "root"
+    "db_pass" : "example"
 }
