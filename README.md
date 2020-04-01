@@ -1,0 +1,2 @@
+# beacon-bot
+Discord Bot
