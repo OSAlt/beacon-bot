@@ -1,0 +1,17 @@
+const token = node.env.TOKEN || "NjQ0MzA0NTg0OTg2MTk4MDE2.Xn9hrw.6-rMlWZDz7gx3qUHYSTXitEkNxM"
+const prefix = node.env.PREFIX || "~"
+const server_id = node.env.SERVER_ID || 500576147482869763
+const admin_role = node.env.ADMIN_ROLE || "Admins"
+const super_role = node.env.SUPER_ROLE || "Supers"
+const mod_role = node.env.MOD_ROLE || "Mods"
+const admin_channel = node.env.ADMIN_CHANNEL || "admin-channel"
+const super_channel = node.env.SUPER_CHANNEL || "super-channel"
+const mod_channel = node.env.mod_channel || "mod-channel"
+const super_log_channel = node.env.SUPER_LOG_CHANNEL || "super-log"
+const action_log_channel = node.env.ACTION_LOG_CHANNEL || "mod-log"
+const join_log_channel = node.env.JOIN_LOG_CHANNEL || "mod-log"
+const db_name = node.env.DB_NAME || localbeacon
+const db_host = node.env.DB_HOST || localhost
+const db_port = node.env.DB_PORT ||  8889
+const db_user = node.env.DB_USER || root
+const db_pass = node.env.DB_PASS || example

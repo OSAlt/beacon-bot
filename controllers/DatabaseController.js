@@ -1,7 +1,7 @@
 // Import the required files
 const Sequelize = require('sequelize');
 const moment = require("moment");
-const {prefix, db_name, db_host, db_port, db_user, db_pass, action_log_channel} = require("../config");
+const {prefix, db_name, db_host, db_port, db_user, db_pass, action_log_channel} = require("../env-config");
 const TriggersController = require("./TriggersController");
 const AutorolesController = require("./AutorolesController");
 const JoinableRolesController = require("./JoinableRolesController");

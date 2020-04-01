@@ -1,6 +1,6 @@
 // Import the required files
 const moment = require('moment');
-const {prefix, admin_role, super_role, mod_role, admin_channel, super_channel, mod_channel, super_log_channel, action_log_channel, db_name, db_host, db_port, db_user, db_pass} = require("../config");
+const {prefix, admin_role, super_role, mod_role, admin_channel, super_channel, mod_channel, super_log_channel, action_log_channel, db_name, db_host, db_port, db_user, db_pass} = require("../env-config");
 const Trigger = require("../models/Trigger");
 const Warning = require("../models/Warning");
 const shortid = require('shortid');
