@@ -45,6 +45,7 @@ module.exports = {
                 
                 if(reaction.emoji.id === "694295496885534730") {
                     member.roles.add(role);
+                    reaction.remove();
                 } else {
                     reaction.remove();
                 } 

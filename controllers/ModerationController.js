@@ -12,6 +12,7 @@ module.exports = {
         const actionLog = message.guild.channels.cache.find((c => c.name === action_log_channel)); //mod log channel
         let triggerArr = [];
 
+        // Add the trigger words/phrases to the local array
         for(key in triggerList.list) {
             triggerArr.push(key);
         }
