@@ -1,3 +1,8 @@
+---
+id: install
+title: Installation Guide
+sidebar_label: Install
+---
 # Installation 
 
 ## Requirements
