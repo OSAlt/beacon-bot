@@ -1,4 +1,4 @@
-aapiVersion: v1
+apiVersion: v1
 kind: PresistentVolumeClaim
 metadata: 
   name: db-pv-claim
