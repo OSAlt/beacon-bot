@@ -4,7 +4,7 @@ services:
     image: geekbeacon/beacon-bot:latest
     build:
         context: . 
-        dockerfile: compose/Dockerfile
+        dockerfile: compose/Dockerfile-bot
     env_file: .env
 #    volumes:
 #     - ./:/app
