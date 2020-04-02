@@ -4,9 +4,11 @@ RUN mkdir /app
 COPY . /app
 
 WORKDIR /app
-RUN yarn install  && \
+RUN rm -f /app/config-example.js ; \
+    cp /app/config-example.js /app/config.js;  \   
+    yarn install  && \
     npm install pm2 -g
 
-
+VOLUME /app
 # ENTRYPOINT [ "pm2", "start", "index.js" ]
 ENTRYPOINT [ "node",  "index.js" ]

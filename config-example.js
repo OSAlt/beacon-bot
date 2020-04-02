@@ -1,25 +1,25 @@
 module.exports = {
-    "token" : "BOT_TOKEN",
-    "prefix" : "PREFIX_CHARACTER",
+    "token" : process.env.BOT_TOKEN,
+    "prefix" : process.env.PREFIX_CHARACTER || "!",
 
-    "server_id" : "SERVER_ID",
-    "verify_emoji_name" : "EMOJI_NAME",
-    "verify_emoji_id" : "EMOJI_ID",
+    "server_id" : process.env.SERVER_ID,
+    "verify_emoji_name" : process.env.EMOJI_NAME,
+    "verify_emoji_id" : process.env.EMOJI_ID,
 
-    "admin_role" : "ADMINISTRATOR_ROLE_NAME",
-    "super_role" : "SUPER_MODERATOR_ROLE_NAME",
-    "mod_role" : "MODERATOR_ROLE_NAME",
+    "admin_role": process.env.ADMINISTRATOR_ROLE_NAME,
+    "super_role": process.env.SUPER_MODERATOR_ROLE_NAME,
+    "mod_role": process.env.MODERATOR_ROLE_NAME,
 
-    "admin_channel" : "ADMINISTRATOR_CHANNEL_NAME",
-    "super_channel" : "SUPER_MODERATOR_CHANNEL_NAME",
-    "mod_channel" : "MODERATOR_CHANNEL_NAME",
-    "super_log_channel" : "SUPER_MODERATOR_LOG_CHANNEL_NAME",
-    "action_log_channel": "MODERATOR_LOG_CHANNEL_NAME",
-    "join_log_channel" : "JOIN_LOG_CHANNEL_NAME",
+    "admin_channel": process.env.ADMINISTRATOR_CHANNEL_NAME,
+    "super_channel": process.env.SUPER_MODERATOR_CHANNEL_NAME,
+    "mod_channel": process.env.MODERATOR_CHANNEL_NAME,
+    "super_log_channel": process.env.SUPER_MODERATOR_LOG_CHANNEL_NAME,
+    "action_log_channel": process.env.MODERATOR_LOG_CHANNEL_NAME,
+    "join_log_channel" : process.env.JOIN_LOG_CHANNEL_NAME,
 
-    "db_name" : "DATABASE_NAME",
-    "db_host" : "DATABASE_HOST",
-    "db_port" : 1234,
-    "db_user" : "DATABASE_USER_NAME",
-    "db_pass" : "DATABASE_PASSWORD"
+    "db_name" : process.env.MYSQL_DATABASE || "beaconbot",
+    "db_host" : process.env.DATABASE_HOSTNAME || "localhost",
+    "db_port" : process.env.DATABASE_PORT || 3306,
+    "db_user" : process.env.MYSQL_USER || "user",
+    "db_pass" : process.env.MYSQL_PASSWORD || "secret"
 }
