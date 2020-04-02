@@ -1,4 +1,4 @@
-version: '3.7'
+version: '3.3'
 services:
   bot:
     image: geekbeacon/beacon-bot:latest
@@ -6,39 +6,40 @@ services:
         context: . 
         dockerfile: compose/Dockerfile
     env_file: .env
-    volumes:
-      - ./config.js:/app/config.js
+#    volumes:
+#     - ./:/app
   db:
-    image: mysql
+    image: mysql:5.7.29
     command: --default-authentication-plugin=mysql_native_password
     restart: always
     env_file: .env
     volumes:
         - ./sql:/docker-entrypoint-initdb.d
-  redis:
-    image: redis
-    env_file: .env
-  adminer:
-    image: adminer
-    env_file: .env
-    restart: always
-    ports:
-      - 8080:8080
-  docusaurus:
-    image: geekbeacon/beacon_bot:latest_docs
-    build:
-        context: . 
-        dockerfile: compose/Dockerfile-docs
-    ports:
-      - 3000:3000
-      - 35729:35729
-    volumes:
-      - ./docs:/app/docs
-      - ./website/blog:/app/website/blog
-      - ./website/core:/app/website/core
-      - ./website/i18n:/app/website/i18n
-      - ./website/pages:/app/website/pages
-      - ./website/static:/app/website/static
-      - ./website/sidebars.json:/app/website/sidebars.json
-      - ./website/siteConfig.js:/app/website/siteConfig.js
-    working_dir: /app/website
+        - ./data:/var/lib/mysql 
+#  redis:
+#    image: redis
+#    env_file: .env
+#  adminer:
+#    image: adminer
+#    env_file: .env
+#    restart: always
+#    ports:
+#      - 8080:8080
+#  docusaurus:
+#    image: geekbeacon/beacon_bot:latest_docs
+#    build:
+#        context: . 
+#        dockerfile: compose/Dockerfile-docs
+#    ports:
+#      - 3000:3000
+#      - 35729:35729
+#    volumes:
+#      - ./docs:/app/docs
+#      - ./website/blog:/app/website/blog
+#      - ./website/core:/app/website/core
+#      - ./website/i18n:/app/website/i18n
+#      - ./website/pages:/app/website/pages
+#      - ./website/static:/app/website/static
+#      - ./website/sidebars.json:/app/website/sidebars.json
+#      - ./website/siteConfig.js:/app/website/siteConfig.js
+#    working_dir: /app/website

@@ -9,3 +9,4 @@ config.*
 .DS_Store
 website/build
 .env
+data

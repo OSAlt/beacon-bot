@@ -26,6 +26,8 @@ class TriggerList {
 }
 const triggerList = new TriggerList(); //instantiate a new TriggerList class
 
+console.log(JSON.stringify(require("./config"), null, 4))
+
 // Handle unhandled promise rejection warnings
 process.on('unhandledRejection', error => console.error('Uncaught Promise Rejection', error));
 
