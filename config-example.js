@@ -1,6 +1,7 @@
 module.exports = {
     "token" : "BOT_TOKEN",
     "prefix" : "PREFIX_CHARACTER",
+
     "server_id" : "SERVER_ID",
     "verify_emoji_name" : "EMOJI_NAME",
     "verify_emoji_id" : "EMOJI_ID",

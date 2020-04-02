@@ -1,3 +1,4 @@
+
 const {server_id, verify_emoji_name, verify_emoji_id} = require('../config');
 
 // Create a new module export
@@ -22,6 +23,7 @@ module.exports = {
                     .then(sent => {
                         // React to the message with the proper emoji
                         sent.react(`${verify_emoji_id}`);      
+
                     });
                 }
             }
@@ -55,6 +57,7 @@ module.exports = {
                     member.roles.add(role);
                     // Remove the reaction
                     reaction.remove();
+
                 } else {
                     // Remove the reaction 
                     reaction.remove();

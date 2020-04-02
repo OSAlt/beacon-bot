@@ -7,3 +7,5 @@ package-lock.json
 test/*.log
 config.*
 .DS_Store
+website/build
+.env
