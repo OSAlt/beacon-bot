@@ -34,7 +34,6 @@ spec:
         - mountPath: /app/config.js
           name: bot-config
       restartPolicy: Always
-      serviceAccountName: ""
       volumes:
       - name: bot-config
         configMap:
@@ -65,4 +64,4 @@ data:
     "db_port" : 1234,
     "db_user" : "DATABASE_USER_NAME",
     "db_pass" : "DATABASE_PASSWORD"
-}
+    }
