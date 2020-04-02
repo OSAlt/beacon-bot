@@ -1,5 +1,5 @@
 // Import the required files
-const {prefix} = require('../config.json');
+const {prefix} = require('../../config');
 const DatabaseController = require("../../controllers/DatabaseController");
 
 // Create a new module export
@@ -8,7 +8,7 @@ module.exports = {
     description: 'Gets informations on a specific warning using the warning id, warnings from a specific user by username or user id, or the 10 most recent warnings with "recent".',
     aliases: ["warns", "infractions"],
     usage: "<user | specific | recent> [username | user id | warning id | recent count]",
-    mod: true, // Minimum level required is Mod (Manage messages permission)
+    mod: true, // Minimum level required is Mod
     super: false,
     admin: false,
     cooldown: 5,

@@ -5,7 +5,7 @@ const DatabaseController = require("../../controllers/DatabaseController");
 module.exports = {
     name: "listjoinableroles",
     description: "Lists all of the joinable roles",
-    aliases: ["listjoinableranks", "joinableroles", "joinableranks", "listjoinables", "joinables"],
+    aliases: ["ljr", "listjoinableranks", "joinableroles", "joinableranks", "listjoinables", "joinables"],
     usage: "[role]",
     mod: false,
     super: false,

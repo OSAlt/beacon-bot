@@ -1,19 +1,15 @@
 // Import the required files
 const moment = require('moment');
-const {prefix} = require('../config.json');
-const Sequelize = require('sequelize');
+const {prefix} = require('../config');
+const AutoRole = require("../models/AutoRole");
 
 // Create a new module export
 module.exports = {
 
     // Create a function with required args
-    autoroleHandler: function(cmd, s, c, a, m) {
+    autoroleHandler: function(cmd, c, a, m) {
         // Create vars
-        const command = cmd;
-        const sequelize = s;
-        const client = c;
-        const args = a;
-        const message = m;
+        const command = cmd, client = c, args = a, message = m;
         let autorole;
             
         // Check the length of the args
@@ -24,29 +20,11 @@ module.exports = {
             // If only 1 arg then assign it to autorole
             autorole = args[0].toLowerCase();
         };
-        
-        // Create an autorole model/table
-        const AutoRole = sequelize.define('autorole', {
-            // Create required autorole string column
-            role: {
-                type: Sequelize.STRING,
-                allowNull: false
-            },
-            // Create required user_id text column
-            user_id: {
-                type: Sequelize.TEXT,
-                allowNull: false
-            }
-        },
-        {
-            charset: 'utf8mb4',
-            collate: 'utf8mb4_bin',
-        });
 
         /*********** ADD AUTOROLE ***********/
         if (command.name === 'addautorole') {
             // Search for the role within the server
-            const role = message.guild.roles.find(role => role.name.toLowerCase() === autorole);
+            const role = message.guild.roles.cache.find(role => role.name.toLowerCase() === autorole);
             
             // Check if the role exists
             if (role) {
@@ -86,7 +64,7 @@ module.exports = {
         /*********** REMOVE AUTOROLE ***********/
         } else if (command.name === 'removeautorole') {
             // Find the role within the guild
-            const role = message.guild.roles.find(role => role.name.toLowerCase() === autorole);
+            const role = message.guild.roles.cache.find(role => role.name.toLowerCase() === autorole);
             // Query the database for the autorole passed in
             AutoRole.findOne({where: {role: role.name}}).then((ar) => {
                 // If the autorole was found, then remove it
@@ -133,7 +111,7 @@ module.exports = {
             // If user is a super mod and passed in args, then give all data about that autorole
             } else if (message.member.hasPermission("MANAGE_ROLES") && args.length) {
                 // Find the role within the guild
-                const role = message.guild.roles.find(role => role.name.toLowerCase() === autorole);
+                const role = message.guild.roles.cache.find(role => role.name.toLowerCase() === autorole);
                 let autoroleData = {};
 
                 // Get the data for the autorole
@@ -141,8 +119,8 @@ module.exports = {
                     autoroleData.id = data.get('id'); //get id
                     autoroleData.role = data.get('role'); //get role
                     autoroleData.creator = client.users.get(data.get('user_id')); //get user id
-                    autoroleData.created = moment(data.get('createdAt')).format('MMM Do, YYYY'); //get created date in MM-DD-YYYY format
-                    autoroleData.updated = moment(data.get('updatedAt')).format('MMM Do, YYYY'); //get updated date in MM-DD-YYYY format
+                    autoroleData.created = moment(data.get('createdAt')).format('YYYY-MM-DD HH:mm:ss'); //get created date in YYYY-MM-DD HH:mm:ss format
+                    autoroleData.updated = moment(data.get('updatedAt')).format('YYYY-MM-DD HH:mm:ss'); //get updated date in YYYY-MM-DD HH:mm:ss format
 
                 // Send the autorole to the user in a DM
                 }).then(() => {

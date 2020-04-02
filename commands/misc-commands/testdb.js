@@ -9,10 +9,10 @@ module.exports = {
     usage: " ",
     mod: false,
     super: false,
-    admin: true, // Minimum level required is Admin (administrator permission)
+    admin: true, // Minimum level required is Admin
     cooldown: 5,
-    execute(message, args) {
+    execute(message, args, client) {
         // Call the query handler from the database controller with the required args
-        DatabaseController.queryHandler(message, args);
+        DatabaseController.queryHandler(message, args, client);
     }
 }

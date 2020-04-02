@@ -1,21 +1,17 @@
 // Import the required files
 const moment = require('moment');
-const {prefix, super_role, admin_role} = require('../config.json');
-const Sequelize = require('sequelize');
+const {prefix, super_role, admin_role} = require('../config');
+const JoinableRole = require("../models/JoinableRole");
 
 // Create a new module export
 module.exports = {
 
     // Create a function with required args
-    joinableRolesHandler: function(cmd, s, c, a, m) {
+    joinableRolesHandler: function(cmd, c, a, m) {
         // Create vars
-        const command = cmd;
-        const sequelize = s;
-        const client = c;
-        const args = a;
-        const message = m;
-        const superRole = message.member.roles.find(role => role.name === super_role);
-        const adminRole = message.member.roles.find(role => role.name === admin_role);
+        const command = cmd, client = c, args = a, message = m;
+        const superRole = message.member.roles.cache.find(role => role.name === super_role);
+        const adminRole = message.member.roles.cache.find(role => role.name === admin_role);
         const ownerRole = message.member.guild.owner;
         let joinableRole;
             
@@ -27,36 +23,18 @@ module.exports = {
             // If only 1 arg then assign it to joinableRole
             joinableRole = args[0].toLowerCase();
         };
-        
-        // Create a joinable role model/table
-        const JoinableRole = sequelize.define('joinable_roles', {
-            // Create required role string column
-            role: {
-                type: Sequelize.STRING,
-                allowNull: false
-            },
-            // Create required user_id text column
-            user_id: {
-                type: Sequelize.TEXT,
-                allowNull: false
-            }
-        },
-        {
-            charset: 'utf8mb4',
-            collate: 'utf8mb4_bin',
-        });
 
         /*********** JOIN/LEAVE ROLE ***********/
         if (command.name === "joinrole" || command.name === "leaverole") {
             let role;
             // Check length of args
             if (args.length > 1) {
-                role = message.guild.roles.find(role => role.name.toLowerCase() === args.join(" ").toLowerCase()); // Find the role based on the args
+                role = message.guild.roles.cache.find(role => role.name.toLowerCase() === args.join(" ").toLowerCase()); // Find the role based on the args
             } else {
-                role = message.guild.roles.find(role => role.name.toLowerCase() === args[0].toLowerCase()); // Find the role based on the arg
+                role = message.guild.roles.cache.find(role => role.name.toLowerCase() === args[0].toLowerCase()); // Find the role based on the arg
             }
 
-            const joinedRole = message.member.roles.find(r => r === role); // Look for role in user's current roles
+            const joinedRole = message.member.roles.cache.find(r => r === role); // Look for role in user's current roles
 
             // If no role let user know
             if (!role) {
@@ -75,10 +53,10 @@ module.exports = {
                         // If a role was found in the db add it to/remove it from the user
                         if (data) {
                             if (command.name === "joinrole") {
-                                message.member.addRole(role); // add the role
+                                message.member.roles.add(role); // add the role
                                 return message.reply(`You've been successfully added to the ${role.name} role!`);
                             } else if (command.name === "leaverole") {
-                                message.member.removeRole(role); // remove the role
+                                message.member.roles.remove(role); // remove the role
                                 return message.reply(`You've have successfully left the ${role.name} role!`);
                             }
 
@@ -102,7 +80,7 @@ module.exports = {
         /*********** ADD JOINABLE ROLE ***********/
         } else if (command.name === 'addjoinablerole' && (superRole || adminRole || ownerRole)) {
             // Search for the role within the server
-            const role = message.guild.roles.find(role => role.name.toLowerCase() === joinableRole);
+            const role = message.guild.roles.cache.find(role => role.name.toLowerCase() === joinableRole);
             
             // Check if the role exists
             if (role) {
@@ -140,9 +118,9 @@ module.exports = {
             };
 
         /*********** REMOVE JOINABLE ROLE ***********/
-        } else if (command.name === 'removejoinablerole' && superRole) {
+        } else if (command.name === 'removejoinablerole' && (superRole || adminRole || ownerRole)) {
             // Find the role within the guild
-            const role = message.guild.roles.find(role => role.name.toLowerCase() === joinableRole);
+            const role = message.guild.roles.cache.find(role => role.name.toLowerCase() === joinableRole);
             // Query the database for the joinable role passed in
             JoinableRole.findOne({where: {role: role.name}}).then((ar) => {
                 // If the joinable role was found, then remove it
@@ -164,9 +142,9 @@ module.exports = {
         /*********** LIST JOINABLEROLES ***********/
         } else if (command.name === 'listjoinableroles') {
             // If user is a super and passed in any args give data for that role
-            if (superRole && args.length) {
+            if ((superRole || adminRole || ownerRole) && args.length) {
                 // Find the role within the guild
-                const role = message.guild.roles.find(role => role.name.toLowerCase() === joinableRole);
+                const role = message.guild.roles.cache.find(role => role.name.toLowerCase() === joinableRole);
                 let joinableRoleData = {};
 
                 // Get the data for the joinable role
@@ -175,8 +153,8 @@ module.exports = {
                     joinableRoleData.id = data.get('id'); //get id
                     joinableRoleData.role = data.get('role'); //get role
                     joinableRoleData.creator = client.users.get(data.get('user_id')); //get user id
-                    joinableRoleData.created = moment(data.get('createdAt')).format('MMM Do, YYYY'); //get created date in MM-DD-YYYY format
-                    joinableRoleData.updated = moment(data.get('updatedAt')).format('MMM Do, YYYY'); //get updated date in MM-DD-YYYY format
+                    joinableRoleData.created = moment(data.get('createdAt')).format('YYYY-MM-DD HH:mm:ss'); //get created date in YYYY-MM-DD HH:mm:ss format
+                    joinableRoleData.updated = moment(data.get('updatedAt')).format('YYYY-MM-DD HH:mm:ss'); //get updated date in YYYY-MM-DD HH:mm:ss format
 
                 // Send the joinable role to the user in a DM
                 }).then(() => {
@@ -216,7 +194,7 @@ module.exports = {
                 });
                 
             // If user isn't a super mod and passed in args let them know they can't use that command
-            } else if (!superRole && args.length) {
+            } else if ((!superRole || !adminRole || !ownerRole) && args.length) {
                 message.channel.send(`You do not have the proper permissions to use this command!\nIf you were trying to get the list of joinable roles, use \`${prefix}listjoinableroles\``);
 
             // If user didn't pass in any args just list the joinable roles

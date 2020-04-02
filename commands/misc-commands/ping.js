@@ -1,6 +1,6 @@
 module.exports = {
     name: 'ping',
-    description: 'Get response from bot with response time!',
+    description: 'Get response from bot with response time!\n*Default is Websocket ping*',
     aliases: ['rtime', 'responsetime'],
     cooldown: 5,
     mod: false,
@@ -14,7 +14,7 @@ module.exports = {
             });
         } else if(args[0] === "websocket") {
             message.channel.send("Pinging...").then(sent => {
-                sent.edit(`Pong! ${Math.round( ( message.client.ping + Number.EPSILON ) * 100 ) / 100}ms`);
+                sent.edit(`Pong! ${Math.round( ( message.client.ws.ping + Number.EPSILON ) * 100 ) / 100}ms`);
             });
         } else {
             message.channel.send("Pinging...").then(sent => {

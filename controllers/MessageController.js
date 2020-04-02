@@ -2,7 +2,7 @@
 const { readdirSync, statSync } = require("fs");
 const { join } = require("path");
 const Discord = require("discord.js");
-const {prefix, admin_role, super_role, mod_role} = require('../config.json');
+const {prefix, admin_role, super_role, mod_role} = require('../config');
 const TriggersController = require("./TriggersController");
 const cooldowns = new Discord.Collection();
 
@@ -11,20 +11,22 @@ module.exports = {
 
     // Create a function to be called
     messageHandler: function(m, c, tl) {
-        const message = m; //assign the message obj to the passed in msg parameter
-        const client = c;
-        const triggerList = tl;
+        // Create vars
+        const message = m, client = c, triggerList = tl;
+        let modRole, superRole, adminRole, ownerRole;
+        let triggerArr = [];
+
+        for(key in triggerList.list) {
+            triggerArr.push(key);
+        }
+        
         client.commands = new Discord.Collection(); // Create a new collection for commands
-        let modRole;
-        let superRole;
-        let adminRole;
-        let ownerRole;
 
         // Make sure the author isn't a bot before checking its' roles
         if(!message.author.bot) {
-            modRole = message.member.roles.find(role => role.name === mod_role);
-            superRole = message.member.roles.find(role => role.name === super_role);
-            adminRole = message.member.roles.find(role => role.name === admin_role);
+            modRole = message.member.roles.cache.find(role => role.name === mod_role);
+            superRole = message.member.roles.cache.find(role => role.name === super_role);
+            adminRole = message.member.roles.cache.find(role => role.name === admin_role);
             ownerRole = message.member.guild.owner;
         }
 
@@ -40,6 +42,8 @@ module.exports = {
             client.commands.set(cmd.name, cmd);
         };
 
+
+
         // If the message doesn't start with the prefix...
         if (!message.content.startsWith(prefix)) {
 
@@ -52,10 +56,10 @@ module.exports = {
             1. checks the triggerList to see if there is a trigger word
             2. parses the trigger with regex to ensure it is an exact match
             */
-            } else if (triggerList.list.some(trigger => message.content.toLowerCase().match(`\\b${trigger}\\b`))) {
+            } else if (triggerArr.some(trigger => message.content.toLowerCase().match(`\\b${trigger}\\b`))) {
 
                 // Store the trigger words
-                let triggers = triggerList.list.filter((trig) => message.content.toLowerCase().match(`\\b(${trig})\\b`));
+                let triggers = triggerArr.filter((trig) => message.content.toLowerCase().match(`\\b(${trig})\\b`));
                 
                 TriggersController.triggerHit(message, triggers, client);
 

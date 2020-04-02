@@ -5,10 +5,10 @@ const DatabaseController = require("../../controllers/DatabaseController");
 module.exports = {
     name: "addjoinablerole",
     description: "Adds a role to the joinable roles list",
-    aliases: ["addjoinablerank", "+joinablerole", "+joinablerank", "addjoinable", "+joinable"],
+    aliases: ["ajr", "addjoinablerank", "+joinablerole", "+joinablerank", "addjoinable", "+joinable"],
     usage: "<role>",
     mod: false,
-    super: true, // Minimum level required is Super (manage roles permission)
+    super: true, // Minimum level required is Super
     admin: false,
     cooldown: 5,
     execute(message, args, client) {
