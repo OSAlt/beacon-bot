@@ -5,6 +5,5 @@ node_modules/
 npm-debug.log
 package-lock.json
 test/*.log
-config.json
+config.*
 .DS_Store
-config.js
