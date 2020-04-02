@@ -52,12 +52,15 @@ spec:
           mountPath: /var/lib/mysql
         - name: mysql-initdb 
           mountPath: /docker-entrypoint-initdb.d
+          subPath: initdb.sql
       restartPolicy: Always
       volumes:
       - name: db-pv
         persistentVolumeClaim:
           claimName: db-pv-claim 
       - name: mysql-initdb
-          configMapKeyRef:
-            key: initdb.sql
-            name: env
+        configMap:
+          name: env
+          items:
+          - key: initdb.sql
+            path: initdb.sql
