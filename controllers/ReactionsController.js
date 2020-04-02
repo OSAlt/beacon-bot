@@ -1,4 +1,5 @@
-const {server_id} = require('../config');
+
+const {server_id, verify_emoji_name, verify_emoji_id} = require('../config');
 
 // Create a new module export
 module.exports = {
@@ -18,10 +19,11 @@ module.exports = {
                 // Make sure the arg is "create" and author is server owner
                 if(args.length === 1 && args[0] === "create" && message.guild.ownerID === message.author.id) {
                     // Send the message
-                    verifyChannel.send("Please React with <a:cube:487830988257361922> to verify that you are a human!")
+                    verifyChannel.send(`Please React with <a:${verify_emoji_name}:${verify_emoji_id}> to verify that you are a human!`)
                     .then(sent => {
                         // React to the message with the proper emoji
-                        sent.react("487830988257361922");
+                        sent.react(`${verify_emoji_id}`);      
+
                     });
                 }
             }
@@ -46,15 +48,16 @@ module.exports = {
                 return;
             };
     
-            // Fetch the member with the proper user id
+            // Get fetch the member with the proper user id
             guild.members.fetch(user.id).then((member) => {
                 
                 // Ensure the reaction is the right emoji
-                if(reaction.emoji.id === "487830988257361922") {
+                if(reaction.emoji.id === `${verify_emoji_id}`) {
                     // Add the member to the role
                     member.roles.add(role);
                     // Remove the reaction
-                    reaction.users.remove(member);
+                    reaction.remove();
+
                 } else {
                     // Remove the reaction 
                     reaction.remove();
