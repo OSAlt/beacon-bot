@@ -50,7 +50,7 @@ spec:
       - args:
         - --default-authentication-plugin=mysql_native_password
         name: beacon-bot-db
-        image: mysql
+        image: mysql:5.7.29
         ports:
         - containerPort: 3306
         env:
