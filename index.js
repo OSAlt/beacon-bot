@@ -5,7 +5,6 @@ const messageController = require("./controllers/MessageController");
 const joinController = require("./controllers/JoinController");
 const leaveController = require("./controllers/LeaveController");
 const databaseController = require("./controllers/DatabaseController");
-const pollsController = require("./controllers/PollsController");
 const moderationController = require("./controllers/ModerationController");
 const reactionsController = require("./controllers/ReactionsController");
 
