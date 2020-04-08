@@ -1,6 +1,6 @@
 // Import required files
 const Discord = require("discord.js");
-const {prefix, token} = require("./config");
+const config = require("./config");
 const messageController = require("./controllers/MessageController");
 const joinController = require("./controllers/JoinController");
 const leaveController = require("./controllers/LeaveController");
@@ -27,6 +27,25 @@ const triggerList = new TriggerList(); //instantiate a new TriggerList class
 
 console.log(JSON.stringify(require("./config"), null, 4)) //shows the running config
 
+// Stop the bot if any config vars are unassigned
+let unassignedVars = [];
+Object.entries(config).forEach(([key, value]) => {
+    // Check the types to avoid a false positive with db_port
+    if(typeof value === "string" || typeof value === "object") {
+        // Check if the string or array is empty
+        if(value === "" || !value.length) {
+            // Add the key to the unassignedVars array
+            unassignedVars.push(`${key}`);
+        }
+    }
+})
+// Check if there are any config vars without values
+if(unassignedVars.length) {
+    // If so then output them to the console and stop the process
+    console.error(`Stopping process due to the following config variables missing values: ${unassignedVars.join(", ")}`)
+    process.exit();
+}
+
 // Handle unhandled promise rejection warnings
 process.on('unhandledRejection', error => console.error('Uncaught Promise Rejection', error));
 
@@ -36,7 +55,7 @@ client.once('ready', () => {
     console.log('Bot Online!');
     
     // Set the status of the bot
-    client.user.setPresence({activity: {name: `${prefix}help`}, status: 'online'});
+    client.user.setPresence({activity: {name: `${config.prefix}help`}, status: 'online'});
 
     // Populate the triggerList and check for unbans
     try {
@@ -105,10 +124,6 @@ client.on("messageDelete", message => {
     /* Uncached messages contain less data than caches */
     if (message.author) {
 
-        if(message.partial) {
-            console.log("dix")
-        }
-
         // Make sure the message isn't from a bot
         if (message.author.bot === false) {
 
@@ -175,4 +190,4 @@ client.on("messageUpdate", (oldMsg, newMsg) => {
 });
 
 // Log the client in
-client.login(token);
+client.login(config.token);
