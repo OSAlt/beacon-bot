@@ -40,7 +40,11 @@ For Docker Deployments Please see [Docker Install](docs/DOCKER.md)
 
 Make a copy of config-example.js and update the configuration accordingly.
 
-Follow the [Createing a Bot Account](https://discordpy.readthedocs.io/en/latest/discord.html) Gudde in Discord's documentation for instructions on getting a token and setting up your Bot on your server.
+Follow the Doscord documentation linked below for instructions on getting a token and setting up your Bot on your server.
+
+[Setting up a bot application](https://discordjs.guide/preparations/setting-up-a-bot-application.html#your-token)
+
+[Adding your bot to servers](https://discordjs.guide/preparations/adding-your-bot-to-servers.html)
 
 We recommend the following minimum permissions for security but you can also just assign the Administrator role if you would like. 
 
