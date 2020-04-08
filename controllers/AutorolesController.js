@@ -1,6 +1,6 @@
 // Import the required files
 const moment = require('moment');
-const {prefix} = require('../config');
+const {prefix, special_permission_flags} = require('../config');
 const AutoRole = require("../models/AutoRole");
 
 // Create a new module export
@@ -11,9 +11,6 @@ module.exports = {
         // Create vars
         const command = cmd, client = c, args = a, message = m;
         let autorole;
-
-        // These are permissions we want to ensure a member can't gain access to
-        const permissionFlags = ["KICK_MEMBERS", "BAN_MEMBERS", "ADMINISTRATOR", "MANAGE_CHANNELS", "MANAGE_GUILD", "MANAGE_MESSAGES", "MANAGE_ROLES", "MANAGE_WEBHOOKS", "MANAGE_EMOJIS", "MANAGE_NICKNAMES", "VIEW_GUILD_INSIGHTS"];
             
         // Check the length of the args
         if (args.length > 1) {
@@ -29,7 +26,7 @@ module.exports = {
             // Search for the role within the server
             const role = message.guild.roles.cache.find(role => role.name.toLowerCase().includes(autorole));
 
-            if(role.permissions.any(permissionFlags)) {
+            if(role.permissions.any(special_permission_flags)) {
                 return message.reply(`uh oh! It seems that \`${autorole}\` has moderator or special permissions, please check to make sure you have the right role!`)
             }
             
@@ -61,9 +58,9 @@ module.exports = {
                                 */
                                 AutoRole.sync({ force: false }).then(() => {
                                     // Query the database for the autorole
-                                    AutoRole.findOne({where:{role: autorole}}).then((ar) => {
+                                    AutoRole.findOne({where:{role: autorole}}).then((arole) => {
                                         // If there is no autorole add it
-                                        if (!ar) {
+                                        if (!arole) {
                                             AutoRole.create({
                                                 role: role.name, // add the role string to the role column
                                                 user_id: message.author.id // add the creator's id
@@ -98,16 +95,16 @@ module.exports = {
             // Find the role within the guild
             const role = message.guild.roles.cache.find(role => role.name.toLowerCase().includes(autorole));
             // Query the database for the autorole passed in
-            AutoRole.findOne({where: {role: role.name}}).then((ar) => {
+            AutoRole.findOne({where: {role: role.name}}).then((arole) => {
                 // If the autorole was found, then remove it
-                if (ar) {
+                if (arole) {
                     AutoRole.destroy({
                         where: {
                             role: autorole
                         }
                     // Let the user know it was removed
                     }).then(() => {
-                        message.channel.send(`I have successfully removed \`${ar.get('role')}\` from the autorole list!`);
+                        message.channel.send(`I have successfully removed \`${arole.get('role')}\` from the autorole list!`);
                     });
                 // If the autorole wasn't found let the user know
                 } else {
