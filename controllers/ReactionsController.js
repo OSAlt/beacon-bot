@@ -1,4 +1,4 @@
-const {server_id, verify_emoji_name, verify_emoji_id} = require('../config');
+const {server_id, verify_emoji_name, verify_emoji_id, user_role} = require('../config');
 
 // Create a new module export
 module.exports = {
@@ -34,7 +34,7 @@ module.exports = {
         const client = reaction.client;
         const guild = client.guilds.cache.find((g => g.id === server_id)); //guild
         const verifyChannel = guild.channels.cache.find((c => c.name.includes("verify"))); //verify channel
-        const role = guild.roles.cache.find(r => r.name === "Users"); //Users role
+        const role = guild.roles.cache.find(r => r.name === user_role); //Users role
 
         // Fetch the message from the verify channel
         verifyChannel.messages.fetch({limit:1}).then(message => {

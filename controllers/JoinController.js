@@ -18,7 +18,7 @@ module.exports = {
 
         function kickUser() {
             const guild = client.guilds.cache.find((g => g.id === server_id));
-            const actionLog = guild.channels.cache.find((c => c.name === action_log_channel)); //mod log channel
+            const actionLog = guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
             // Create the kicked embed
             const kickEmbed = {
                 color: 0xFFA500,
@@ -59,7 +59,7 @@ module.exports = {
                 const joinedDate = moment(member.joinedAt).format(`YYYY-MM-DD`); //joined date only
                 const joinedTime = moment(member.joinedAt).format(`HH:mm:ss`); //joined time only
                 const joinedTimezone = moment(member.joinedAt).tz(moment.tz.guess()).format(`z`); // timezone for the joined time
-                const joinLog = member.guild.channels.cache.find((c => c.name === join_log_channel)); //join log channel
+                const joinLog = member.guild.channels.cache.find((c => c.name.includes(join_log_channel))); //join log channel
 
                 // Create the embed to display a new member join
                 const joinEmbed = {

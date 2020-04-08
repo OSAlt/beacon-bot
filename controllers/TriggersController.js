@@ -16,9 +16,9 @@ module.exports = {
         const message = m;
         const triggerList = tl;
         let trigger;
-        const modRole = message.member.roles.cache.find(role => role.name === mod_role);
-        const superRole = message.member.roles.cache.find(role => role.name === super_role);
-        const adminRole = message.member.roles.cache.find(role => role.name === admin_role);
+        const modRole = message.member.roles.cache.find(role => role.name.includes(mod_role));
+        const superRole = message.member.roles.cache.find(role => role.name.includes(super_role));
+        const adminRole = message.member.roles.cache.find(role => role.name.includes(admin_role));
         const ownerRole = message.member.guild.owner;
             
         // Check the length of the args
@@ -278,9 +278,9 @@ module.exports = {
         
         let warnId = shortid.generate(); // generate a uid
         let severityArr = [];
-        const modRole = message.member.roles.cache.find(role => role.name === mod_role);
-        const superRole = message.member.roles.cache.find(role => role.name === super_role);
-        const adminRole = message.member.roles.cache.find(role => role.name === admin_role);
+        const modRole = message.member.roles.cache.find(role => role.name.includes(mod_role));
+        const superRole = message.member.roles.cache.find(role => role.name.includes(super_role));
+        const adminRole = message.member.roles.cache.find(role => role.name.includes(admin_role));
 
         // Find the trigger(s) in the database
         Trigger.findAll({where: {trigger: triggers},raw:true}).then((data) => {
@@ -421,11 +421,11 @@ module.exports = {
 
         // Sends reports of triggers based on user's permissions and the existence of specific channels
         function reportLadder(t, e) {
-            const modChannel = message.guild.channels.cache.find((c => c.name === mod_channel)); //mod channel
-            const superChannel = message.guild.channels.cache.find((c => c.name === super_channel)); //super channel
-            const adminChannel = message.guild.channels.cache.find((c => c.name === admin_channel)); //admin channel
-            const superLog = message.guild.channels.cache.find((c => c.name === super_log_channel)); //super log channel
-            const logChannel = message.guild.channels.cache.find((c => c.name === action_log_channel)); //action log channel
+            const modChannel = message.guild.channels.cache.find((c => c.name.includes(mod_channel))); //mod channel
+            const superChannel = message.guild.channels.cache.find((c => c.name.includes(super_channel))); //super channel
+            const adminChannel = message.guild.channels.cache.find((c => c.name.includes(admin_channel))); //admin channel
+            const superLog = message.guild.channels.cache.find((c => c.name.includes(super_log_channel))); //super log channel
+            const logChannel = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //action log channel
             const owner = client.users.cache.get(message.guild.ownerID); // server owner
             // Gets the guildMember instance of the user so we can get more information on them and their information within our server.
             warnedUser = client.guilds.cache.get(message.guild.id).members.cache.get(message.author.id);

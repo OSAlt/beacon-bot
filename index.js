@@ -103,6 +103,10 @@ client.on("messageDelete", message => {
     /* Uncached messages contain less data than caches */
     if (message.author) {
 
+        if(message.partial) {
+            console.log("dix")
+        }
+
         // Make sure the message isn't from a bot
         if (message.author.bot === false) {
 
@@ -121,20 +125,47 @@ client.on("messageDelete", message => {
 });
 
 client.on("messageUpdate", (oldMsg, newMsg) => {
+    let fullMsg; //var in case of partial
 
     // Attempt to run the editHandler method
     try {
 
-        // Make sure the message isn't from a bot
-        /* Embeds counts as an edit so when the bot sends the embed it triggers this again.
-         * Making this ignore bot messages prevent infinite loops or crashes.
-        */
-        if(newMsg.author.bot === false) {
-            moderationController.editHandler(oldMsg, newMsg, client);
+        // Check if the message is a partial (not cached)
+        if(newMsg.partial) {
+            // If a partial then fetch the full message
+            newMsg.fetch().then(fullMessage => {
+                fullMsg = fullMessage; //assign full message
+            }).catch(e => {
+                console.log("Error: ", e);
 
-        // If the message is from a bot, ignore it
+            // Once the full message is obtained proceed with the new fullMsg var instead of newMsg
+            }).then(() => {
+                // Make sure the message isn't from a bot
+                /* Embeds counts as an edit so when the bot sends the embed it triggers this again.
+                * Making this ignore bot messages prevent infinite loops or crashes.
+                */
+                if(fullMsg.author.bot === false) {
+                    moderationController.editHandler(oldMsg, fullMsg, client);
+
+                // If the message is from a bot, ignore it
+                } else {
+                    return;
+                }
+            });
+
+        // If not a partial then proceed as normal
         } else {
-            return;
+            // Make sure the message isn't from a bot
+            /* Embeds counts as an edit so when the bot sends the embed it triggers this again.
+            * Making this ignore bot messages prevent infinite loops or crashes.
+            */
+            if(newMsg.author.bot === false) {
+                moderationController.editHandler(oldMsg, newMsg, client);
+
+            // If the message is from a bot, ignore it
+            } else {
+                return;
+            }
         }
     } catch (e) {
         console.error(e);

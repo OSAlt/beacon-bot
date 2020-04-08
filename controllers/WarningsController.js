@@ -33,6 +33,11 @@ module.exports = {
 
                 // If warnings were found
                 if (data) {
+                    // If the table is empty then let the user know
+                    if(data.length === 0) {
+                        return message.reply("there are currently no warnings in the database!");
+                    }
+
                     let i = 1; // counter
                     // Create the embed
                     let recentEmbed = new Discord.MessageEmbed()
@@ -44,8 +49,8 @@ module.exports = {
 
                     // Add a new field for each warning
                     data.forEach(warning => {
-                        warnedUser = client.guilds.cache.get(message.guild.id).members.cache.get(warning.user_id.toString());
-                        let date = moment(warning.createdAt).format("YYYY-MM-DD HH:mm:ss"); // format date
+                        warnedUser = client.users.cache.get(warning.user_id); //get the user
+                        let date = moment(warning.createdAt).format("YYYY-MM-DD HH:mm:ss"); //format date
 
                         // Create a new field depending on the type of warning
                         if(warning.type === "Trigger") {
@@ -53,7 +58,7 @@ module.exports = {
                             // Warning from a Trigger
                             recentEmbed.addField(
                                 `Warning #${i}`, // title
-                                `Warning Id: **${warning.warning_id}**\rUser: **${warnedUser}**\rType: **${warning.type}**\rDate: **${date}**\rSeverity: **${warning.severity}**\rTrigger(s): **${warning.triggers}**`); // value
+                                `Warning Id: **${warning.warning_id}**\rUser: **${warnedUser}**\rType: **${warning.type}**\rDate: **${date}**\rSeverity: **${warning.severity}**\rTrigger(s): **${warning.triggers}**`); //value
                         } else if(warning.type === "Note") {
 
                             // Warning from a mod note
@@ -85,20 +90,34 @@ module.exports = {
                     // If a warning was found
                     if (warning) {
                         
-                        // Find the warned user
-                        warnedUser = client.guilds.cache.get(message.guild.id).members.cache.get(warning.user_id.toString());
+                        warnedUser = client.users.cache.get(warning.user_id); //get the user
+                        guildUser = client.guilds.cache.get(message.guild.id).members.cache.get(warning.user_id.toString()); //get the guild member
                         let embedColor = 0xff5500; // embed color; default to orange
+                        let specificEmbed = new Discord.MessageEmbed(); //create the embed
 
-                        // Create the embed
-                        let specificEmbed = new Discord.MessageEmbed()
-                        .setTitle(`Warning for ${args[1]}`)
-                        .setAuthor(warnedUser.user.username, warnedUser.user.displayAvatarURL())
-                        .addField(`User Id`, warnedUser.id, false)
-                        .addField(`User`, warnedUser, true)
-                        .addField(`Server Nickname`, `${warnedUser.nickname || "None"}`, true)
-                        .addField(`Warning Type`, warning.type, true)
-                        .addField(`User Roles`, warnedUser.roles.cache.map(role => role.name).join(", "))
-                        .setTimestamp();
+                        // If user isn't in the guild
+                        if(!guildUser) {
+                            // Assign values to the embed
+                            specificEmbed.setTitle(`Warning for ${args[1]}`)
+                            .setAuthor(warnedUser.username)
+                            .addField(`User Id`, warnedUser.id, false)
+                            .addField(`User`, warnedUser, true)
+                            .addField(`Server Nickname`, `${warnedUser.nickname || "None"}`, true)
+                            .addField(`Warning Type`, warning.type, true)
+                            .setTimestamp();
+
+                        // If user is in the guild
+                        } else {
+                            // Assign values to the embed
+                            specificEmbed.setTitle(`Warning for ${args[1]}`)
+                            .setAuthor(warnedUser.user.username, warnedUser.user.displayAvatarURL())
+                            .addField(`User Id`, warnedUser.id, false)
+                            .addField(`User`, warnedUser, true)
+                            .addField(`Server Nickname`, `${warnedUser.nickname || "None"}`, true)
+                            .addField(`Warning Type`, warning.type, true)
+                            .addField(`User Roles`, warnedUser.roles.cache.map(role => role.name).join(", "))
+                            .setTimestamp();
+                        }
                         
                         // If the warning is a trigger
                         if(warning.type === "Trigger") {
@@ -158,6 +177,7 @@ module.exports = {
                         });
                     }
                 }).catch((e) => {
+                    console.log(e)
                     // If unable to find warning/user
                     return message.reply(`uh oh! I wasn't able to find the a warning with that warning id!\r If you think the warning exists, please check your warning id and try again!`);
                 });

@@ -12,7 +12,7 @@ module.exports = {
 
         const member = m;
         let lastMessage;
-        const superLog = member.guild.channels.cache.find((c => c.name === super_log_channel)); //super log channel
+        const superLog = member.guild.channels.cache.find((c => c.name.includes(super_log_channel))); //super log channel
         const timezone = moment(member.joinedAt).tz(moment.tz.guess()).format(`z`); // server timezone
         const joinedDate = moment(member.joinedAt).format("YYYY-MM-DD HH:mm:ss"); // joined date
         const joinedTimeStamp = moment(member.joinedTimestamp); // timestamp user joined
