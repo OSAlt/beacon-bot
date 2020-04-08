@@ -36,7 +36,7 @@ For Docker Deployments Please see [Docker Install](docs/DOCKER.md)
   yarn install
   ```
 
-### Running the Bot
+## Running the Bot
 
 Make a copy of config-example.js and update the configuration accordingly.
 
