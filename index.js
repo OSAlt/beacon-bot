@@ -1,3 +1,7 @@
+require('dotenv').config()
+
+
+
 // Import required files
 const Discord = require("discord.js");
 const config = require("./config");
