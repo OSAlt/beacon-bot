@@ -12,7 +12,11 @@ I am sure that 'OMG Best Language Ever', hence forth refered to as OMG is the mo
 
   - I want feature X It would be so great if the bot did X
 
-  If you have a feature you'd love to see please open an issue and we'll get to it as soon as we can.  It may not be useful for us so it could be a very low priority item.  Please vote with emojis the internet's way of showing popularity these days if you agree with the PR.  Please note that even if we don't write it you can feel free to submit a pull requests.
+If you have a feature you'd love to see please open an issue and we'll get to it as soon as we can.  It may not be useful for us so it could be a very low priority item.  Please vote with emojis the internet's way of showing popularity these days if you agree with the issue/feature request.  Please note that even if we don't write it you can feel free to submit a pull requests.
+
+  - Do I need to create an issue first? 
+
+No, but it would be helpful to track if it's a non-trivial change.  If you think your change is fairly straightforward feel free to just submit a PR against the master branch.
 
   - How can I help?
 
