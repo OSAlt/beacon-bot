@@ -9,7 +9,7 @@ const shortid = require('shortid');
 module.exports = {
     deleteHandler: function(m, tl) {
         const message = m, triggerList = tl;
-        const actionLog = message.guild.channels.cache.find((c => c.name === action_log_channel)); //mod log channel
+        const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
         let triggerArr = [];
 
         // Add the trigger words/phrases to the local array
@@ -57,7 +57,7 @@ module.exports = {
     },
     purgeHandler: function(a, m) {
         const args = a, message = m; //create vars for parameter values
-        const superLog = message.guild.channels.cache.find((c => c.name === super_log_channel)); //super log channel
+        const superLog = message.guild.channels.cache.find((c => c.name.includes(super_log_channel))); //super log channel
         const regex = /(^\d{1,10}$)/;
 
         // Check if the argument given was a number
@@ -66,6 +66,11 @@ module.exports = {
             return message.reply(`uh oh! You have provided an incorrect value for the amount of messages to delete!`);
         } else {
             let count = parseInt(args[0]); //count var
+
+            // Ensure message limit isn't exceeded
+            if(count > 100) {
+                return message.reply(`you can only delete 100 messages at a time, please try again!`)
+            }
 
             // Perform bulk deletion
             message.channel.bulkDelete(count).then(() => {
@@ -104,7 +109,7 @@ module.exports = {
     },
     editHandler: function(o, n, c) {
         const oldMsg = o, newMsg = n, client = c; // create vars for parameter values
-        const superLog = newMsg.guild.channels.cache.find((c => c.name === super_log_channel)); //super log channel
+        const superLog = newMsg.guild.channels.cache.find((c => c.name.includes(super_log_channel))); //super log channel
 
         // Create author var
         const author = client.users.cache.get(newMsg.author.id);
@@ -122,7 +127,7 @@ module.exports = {
             fields: [
                 {
                     name: `Original Message`,
-                    value: ` ${oldMsg.content}`,
+                    value: ` ${oldMsg.content || "*Unable to fetch original message*"}`,
                 },
                 {
                     name: `New Message`,
@@ -138,7 +143,7 @@ module.exports = {
     kickHandler: function(a, m) {
         const args = a;
         const message = m;
-        const actionLog = message.guild.channels.cache.find((c => c.name === action_log_channel)); //mod log channel
+        const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
         let user; // user var
 
         // Check if the first arg is a number
@@ -248,7 +253,7 @@ module.exports = {
     banHandler: function(a, m) {
         const args = a;
         const message = m;
-        const actionLog = message.guild.channels.cache.find((c => c.name === action_log_channel)); //mod log channel
+        const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
         const timezone = moment.tz(moment.tz.guess()).zoneAbbr(); // server timezone
         let user; // user var
 
@@ -421,7 +426,7 @@ module.exports = {
         const args = a;
         const message = m;
         const client = c;
-        const actionLog = message.guild.channels.cache.find((c => c.name === action_log_channel)); //mod log channel
+        const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
         let user; // user var
 
         // Check if the first arg is a number
@@ -554,7 +559,7 @@ module.exports = {
     warnHandler: function(a, m, c) {
         const args = a, message = m, client = c;
         let warnId = shortid.generate(); //generate a short id for the warning
-        const actionLog = message.guild.channels.cache.find((c => c.name === action_log_channel)); //mod log channel
+        const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
         let reason = args.slice(1).join(" "); //remove the user from the array then join to get the reason
         reason = reason.replace(",", ""); //remove the comma
         reason = reason.trim(); //remove any excess whitespace

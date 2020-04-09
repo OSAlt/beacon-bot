@@ -6,7 +6,6 @@ const TriggersController = require("./TriggersController");
 const AutorolesController = require("./AutorolesController");
 const JoinableRolesController = require("./JoinableRolesController");
 const WarningsController = require("./WarningsController");
-//const PollsController = require("./PollsController");
 const ModerationController = require("./ModerationController");
 const Trigger = require("../models/Trigger");
 const Ban = require("../models/Ban");
@@ -44,15 +43,6 @@ module.exports = {
 
             // Call the trigger handler function from the TriggersController file
             TriggersController.triggerHandler(command, client, args, message, triggerList);
-
-        /*
-        ###################################
-        ########## poll commands ##########
-        ###################################
-        */
-        // } else if (command.name.includes("poll")) {
-        //     // Call the poll handler function from the PollsController file
-        //    PollsController.pollHandler(command, client, args, message);
 
         /*
         #######################################

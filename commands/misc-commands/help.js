@@ -13,12 +13,11 @@ module.exports = {
     cooldown: 5,
     execute(message, args) {
         const help = {};
-        const cmd = {};
         let cmdArr = [];
         const {commands} = message.client;
-        const modRole = message.member.roles.cache.find(role => role.name === mod_role);
-        const superRole = message.member.roles.cache.find(role => role.name === super_role);
-        const adminRole = message.member.roles.cache.find(role => role.name === admin_role);
+        const modRole = message.member.roles.cache.find(role => role.name.includes(mod_role));
+        const superRole = message.member.roles.cache.find(role => role.name.includes(super_role));
+        const adminRole = message.member.roles.cache.find(role => role.name.includes(admin_role));
         const ownerRole = message.member.guild.owner;
 
         // Check if any args were passed in
@@ -32,7 +31,7 @@ module.exports = {
                 // If command is admin only
                 if (cmd.admin === true) {
                     // If user is an admin add the command name to cmdArr
-                    if (adminRole) {
+                    if (adminRole || ownerRole) {
                         cmdArr.push(cmd.name);
                     // If user isn't an admin skip loop iteration
                     } else {
@@ -41,7 +40,7 @@ module.exports = {
                 // If command is super only
                 } else if (cmd.super === true) {
                     // If user is a super or admin add the command name to cmdArr
-                    if (superRole || adminRole) {
+                    if (superRole || adminRole || ownerRole) {
                         cmdArr.push(cmd.name);
                     // If user isn't a super or admin skip loop iteration
                     } else {
@@ -50,7 +49,7 @@ module.exports = {
                 // If command is mod only
                 } else if (cmd.mod === true) {
                     // If user is a mod, super, or admin add the command name to cmdArr
-                    if (modRole || superRole || adminRole) {
+                    if (modRole || superRole || adminRole || ownerRole) {
                         cmdArr.push(cmd.name);
                     // If user isn't a mod, super, or admin skip loop iteration
                     } else {

@@ -2,7 +2,7 @@
 const { readdirSync, statSync } = require("fs");
 const { join } = require("path");
 const Discord = require("discord.js");
-const {prefix, admin_role, super_role, mod_role} = require('../config');
+const {prefix, admin_role, super_role, mod_role, excluded_trigger_channels} = require('../config');
 const TriggersController = require("./TriggersController");
 const cooldowns = new Discord.Collection();
 
@@ -24,9 +24,9 @@ module.exports = {
 
         // Make sure the author isn't a bot before checking its' roles
         if(!message.author.bot) {
-            modRole = message.member.roles.cache.find(role => role.name === mod_role);
-            superRole = message.member.roles.cache.find(role => role.name === super_role);
-            adminRole = message.member.roles.cache.find(role => role.name === admin_role);
+            modRole = message.member.roles.cache.find(role => role.name.includes(mod_role));
+            superRole = message.member.roles.cache.find(role => role.name.includes(super_role));
+            adminRole = message.member.roles.cache.find(role => role.name.includes(admin_role));
             ownerRole = message.member.guild.owner;
         }
 
@@ -58,6 +58,15 @@ module.exports = {
             */
             } else if (triggerArr.some(trigger => message.content.toLowerCase().match(`\\b${trigger}\\b`))) {
 
+                // Check if the channel the message was sent from is in the excluded channels array
+                const channelExcluded = excluded_trigger_channels.some(name => name === message.channel.name);
+                
+                // If within an excluded channel then ignore
+                if(channelExcluded) {
+                    return;
+                };
+
+                //if(excluded_trigger_channels.indexOf(message.channel.name))
                 // Store the trigger words
                 let triggers = triggerArr.filter((trig) => message.content.toLowerCase().match(`\\b(${trig})\\b`));
                 

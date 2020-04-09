@@ -1,6 +1,6 @@
 // Import the required files
 const moment = require('moment');
-const {prefix, super_role, admin_role} = require('../config');
+const {prefix, super_role, admin_role, special_permission_flags} = require('../config');
 const JoinableRole = require("../models/JoinableRole");
 
 // Create a new module export
@@ -10,8 +10,8 @@ module.exports = {
     joinableRolesHandler: function(cmd, c, a, m) {
         // Create vars
         const command = cmd, client = c, args = a, message = m;
-        const superRole = message.member.roles.cache.find(role => role.name === super_role);
-        const adminRole = message.member.roles.cache.find(role => role.name === admin_role);
+        const superRole = message.member.roles.cache.find(role => role.name.includes(super_role));
+        const adminRole = message.member.roles.cache.find(role => role.name.includes(admin_role));
         const ownerRole = message.member.guild.owner;
         let joinableRole;
             
@@ -24,17 +24,19 @@ module.exports = {
             joinableRole = args[0].toLowerCase();
         };
 
+
+
         /*********** JOIN/LEAVE ROLE ***********/
         if (command.name === "joinrole" || command.name === "leaverole") {
             let role;
             // Check length of args
             if (args.length > 1) {
-                role = message.guild.roles.cache.find(role => role.name.toLowerCase() === args.join(" ").toLowerCase()); // Find the role based on the args
+                role = message.guild.roles.cache.find(role => role.name.toLowerCase().includes(args.join(" ").toLowerCase())); // Find the role based on the args
             } else {
-                role = message.guild.roles.cache.find(role => role.name.toLowerCase() === args[0].toLowerCase()); // Find the role based on the arg
+                role = message.guild.roles.cache.find(role => role.name.toLowerCase().includes(args[0].toLowerCase())); // Find the role based on the arg
             }
 
-            const joinedRole = message.member.roles.cache.find(r => r === role); // Look for role in user's current roles
+            const joinedRole = message.member.roles.cache.find(r => r.includes(role)); // Look for role in user's current roles
 
             // If no role let user know
             if (!role) {
@@ -80,37 +82,65 @@ module.exports = {
         /*********** ADD JOINABLE ROLE ***********/
         } else if (command.name === 'addjoinablerole' && (superRole || adminRole || ownerRole)) {
             // Search for the role within the server
-            const role = message.guild.roles.cache.find(role => role.name.toLowerCase() === joinableRole);
+            const role = message.guild.roles.cache.find(role => role.name.toLowerCase().includes(joinableRole));
+
+            if(role.permissions.any(special_permission_flags)) {
+                return message.reply(`uh oh! It seems that \`${joinableRole}\` has moderator or special permissions, please check to make sure you have the right role!`)
+            }
             
             // Check if the role exists
             if (role) {
-                /* 
-                * Sync the model to the table
-                * Creates a new table if table doesn't exist, otherwise just inserts new row
-                * id, createdAt, and updatedAt are set by default; DO NOT ADD
-                !!!!
-                    Keep force set to false otherwise it will overwrite the table instead of making new row!
-                !!!!
-                */
-               JoinableRole.sync({ force: false }).then(() => {
-                    // Query the database for the joinable role
-                    JoinableRole.findOne({where:{role: joinableRole}}).then((ar) => {
-                        // If there is no joinable role add it
-                        if (!ar) {
-                            JoinableRole.create({
-                                role: role.name, // add the role string to the role column
-                                user_id: message.author.id // add the creator's id
-                            })
-                            // Let the user know it was added
-                            .then(() => {
-                                message.channel.send(`I have successfully added \`${role.name}\` to the joinable roles!`);
+                // Create a filter for the message collector
+                const filter = m => {
+                    // If user says "yes" or "no" then return true
+                    if(m.author.id === message.author.id && (m.content.toLowerCase() === "yes" || m.content.toLowerCase() === "no")) {
+                        return true;
+                    }
+                }
+
+                // Ask the user if that is the right role they want to add
+                message.channel.send(`Is \`${role.name}\` the right role you wish to add?\nPlease answer with either **yes** or **no**!`).then(() => {
+
+                    // Listen for the user's response; giving them 10 seconds to reply
+                    message.channel.awaitMessages(filter, {max: 1, maxprocessed: 1, idle: 10000, errors:["idle"]}).then(res => {
+                        // If the reply was "yes" then proceed with adding the role
+                        if(res.first().content.toLowerCase() === "yes") {
+                            /* 
+                            * Sync the model to the table
+                            * Creates a new table if table doesn't exist, otherwise just inserts new row
+                            * id, createdAt, and updatedAt are set by default; DO NOT ADD
+                            !!!!
+                                Keep force set to false otherwise it will overwrite the table instead of making new row!
+                            !!!!
+                            */
+                            JoinableRole.sync({ force: false }).then(() => {
+                                // Query the database for the joinable role
+                                JoinableRole.findOne({where:{role: joinableRole}}).then((jrole) => {
+                                    // If there is no joinable role add it
+                                    if (!jrole) {
+                                        JoinableRole.create({
+                                            role: role.name, // add the role string to the role column
+                                            user_id: message.author.id // add the creator's id
+                                        })
+                                        // Let the user know it was added
+                                        .then(() => {
+                                            message.channel.send(`I have successfully added \`${role.name}\` to the joinable roles!`);
+                                        });
+                                    // If there was a role, let user know it exists already
+                                    } else {
+                                        message.channel.send(`It looks like \`${role.name}\` has already been added!`);
+                                    };
+                                }).catch((err) => {
+                                    console.error("Error: "+err);
+                                });
                             });
-                        // If there was a role, let user know it exists already
-                        } else {
-                            message.channel.send(`It looks like \`${role.name}\` has already been added!`);
-                        };
-                    }).catch((err) => {
-                        console.error("Error: "+err);
+                            // If the reply was "no" then abandon the process
+                        } else if(res.first().content.toLowerCase() === "no") {
+                            message.reply(`I have not added that role to the joinableroles list!`)
+                        }
+                    // If the user goes idle for 10 seconds let them know they timed out
+                    }).catch(e => {
+                        message.reply(`uh oh! It seems that you got distracted, please try again!`)
                     });
                 });
             } else {
@@ -120,18 +150,18 @@ module.exports = {
         /*********** REMOVE JOINABLE ROLE ***********/
         } else if (command.name === 'removejoinablerole' && (superRole || adminRole || ownerRole)) {
             // Find the role within the guild
-            const role = message.guild.roles.cache.find(role => role.name.toLowerCase() === joinableRole);
+            const role = message.guild.roles.cache.find(role => role.name.toLowerCase().includes(joinableRole));
             // Query the database for the joinable role passed in
-            JoinableRole.findOne({where: {role: role.name}}).then((ar) => {
+            JoinableRole.findOne({where: {role: role.name}}).then((jrole) => {
                 // If the joinable role was found, then remove it
-                if (ar) {
+                if (jrole) {
                     JoinableRole.destroy({
                         where: {
                             role: joinableRole
                         }
                     // Let the user know it was removed
                     }).then(() => {
-                        message.channel.send(`I have successfully removed \`${ar.get('role')}\` from the joinable roles!`);
+                        message.channel.send(`I have successfully removed \`${jrole.get('role')}\` from the joinable roles!`);
                     });
                 // If the joinable role wasn't found let the user know
                 } else {
@@ -144,7 +174,7 @@ module.exports = {
             // If user is a super and passed in any args give data for that role
             if ((superRole || adminRole || ownerRole) && args.length) {
                 // Find the role within the guild
-                const role = message.guild.roles.cache.find(role => role.name.toLowerCase() === joinableRole);
+                const role = message.guild.roles.cache.find(role => role.name.toLowerCase().includes(joinableRole));
                 let joinableRoleData = {};
 
                 // Get the data for the joinable role

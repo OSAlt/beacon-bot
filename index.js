@@ -1,11 +1,14 @@
+require('dotenv').config()
+
+
+
 // Import required files
 const Discord = require("discord.js");
-const {prefix, token} = require("./config");
+const config = require("./config");
 const messageController = require("./controllers/MessageController");
 const joinController = require("./controllers/JoinController");
 const leaveController = require("./controllers/LeaveController");
 const databaseController = require("./controllers/DatabaseController");
-const pollsController = require("./controllers/PollsController");
 const moderationController = require("./controllers/ModerationController");
 const reactionsController = require("./controllers/ReactionsController");
 
@@ -26,7 +29,26 @@ class TriggerList {
 }
 const triggerList = new TriggerList(); //instantiate a new TriggerList class
 
-console.log(JSON.stringify(require("./config"), null, 4))
+console.log(JSON.stringify(require("./config"), null, 4)) //shows the running config
+
+// Stop the bot if any config vars are unassigned
+let unassignedVars = [];
+Object.entries(config).forEach(([key, value]) => {
+    // Check the types to avoid a false positive with db_port
+    if(typeof value === "string" || typeof value === "object") {
+        // Check if the string or array is empty
+        if(value === "" || !value.length) {
+            // Add the key to the unassignedVars array
+            unassignedVars.push(`${key}`);
+        }
+    }
+})
+// Check if there are any config vars without values
+if(unassignedVars.length) {
+    // If so then output them to the console and stop the process
+    console.error(`Stopping process due to the following config variables missing values: ${unassignedVars.join(", ")}`)
+    process.exit();
+}
 
 // Handle unhandled promise rejection warnings
 process.on('unhandledRejection', error => console.error('Uncaught Promise Rejection', error));
@@ -37,7 +59,7 @@ client.once('ready', () => {
     console.log('Bot Online!');
     
     // Set the status of the bot
-    client.user.setPresence({activity: {name: `${prefix}help`}, status: 'online'});
+    client.user.setPresence({activity: {name: `${config.prefix}help`}, status: 'online'});
 
     // Populate the triggerList and check for unbans
     try {
@@ -124,20 +146,47 @@ client.on("messageDelete", message => {
 });
 
 client.on("messageUpdate", (oldMsg, newMsg) => {
+    let fullMsg; //var in case of partial
 
     // Attempt to run the editHandler method
     try {
 
-        // Make sure the message isn't from a bot
-        /* Embeds counts as an edit so when the bot sends the embed it triggers this again.
-         * Making this ignore bot messages prevent infinite loops or crashes.
-        */
-        if(newMsg.author.bot === false) {
-            moderationController.editHandler(oldMsg, newMsg, client);
+        // Check if the message is a partial (not cached)
+        if(newMsg.partial) {
+            // If a partial then fetch the full message
+            newMsg.fetch().then(fullMessage => {
+                fullMsg = fullMessage; //assign full message
+            }).catch(e => {
+                console.log("Error: ", e);
 
-        // If the message is from a bot, ignore it
+            // Once the full message is obtained proceed with the new fullMsg var instead of newMsg
+            }).then(() => {
+                // Make sure the message isn't from a bot
+                /* Embeds counts as an edit so when the bot sends the embed it triggers this again.
+                * Making this ignore bot messages prevent infinite loops or crashes.
+                */
+                if(fullMsg.author.bot === false) {
+                    moderationController.editHandler(oldMsg, fullMsg, client);
+
+                // If the message is from a bot, ignore it
+                } else {
+                    return;
+                }
+            });
+
+        // If not a partial then proceed as normal
         } else {
-            return;
+            // Make sure the message isn't from a bot
+            /* Embeds counts as an edit so when the bot sends the embed it triggers this again.
+            * Making this ignore bot messages prevent infinite loops or crashes.
+            */
+            if(newMsg.author.bot === false) {
+                moderationController.editHandler(oldMsg, newMsg, client);
+
+            // If the message is from a bot, ignore it
+            } else {
+                return;
+            }
         }
     } catch (e) {
         console.error(e);
@@ -145,4 +194,4 @@ client.on("messageUpdate", (oldMsg, newMsg) => {
 });
 
 // Log the client in
-client.login(token);
+client.login(config.token);
