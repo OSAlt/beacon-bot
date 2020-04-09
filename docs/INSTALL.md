@@ -40,3 +40,17 @@ sidebar_label: Install
 make a copy of config-example.js and update the configuration accordingly.
  
 For Discord configuration please see the [Main README](../README.md)
+
+
+## Discord Configuration
+
+Follow the Doscord documentation linked below for instructions on getting a token and setting up your Bot on your server.
+
+[Setting up a bot application](https://discordjs.guide/preparations/setting-up-a-bot-application.html#your-token)
+
+[Adding your bot to servers](https://discordjs.guide/preparations/adding-your-bot-to-servers.html)
+
+We recommend the following minimum permissions for security but you can also just assign the Administrator role if you would like. 
+
+![Discord Permissions](docs/assets/discord_permissions.png)
+
