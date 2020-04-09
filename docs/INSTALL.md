@@ -37,10 +37,9 @@ sidebar_label: Install
 
 # Configuring the Bot
 
-make a copy of config-example.js and update the configuration accordingly.
+make a copy of config-example.js and update the configuration accordingly.  Optionally you may copy env-template to .env and you can use it 
+to override any settings.  As long as the settings being printed when the bot starts look correct either pattern is valid.
  
-For Discord configuration please see the [Main README](../README.md)
-
 
 ## Discord Configuration
 
@@ -54,3 +53,9 @@ We recommend the following minimum permissions for security but you can also jus
 
 ![Discord Permissions](assets/discord_permissions.png)
 
+
+## Running the bot
+
+```
+node index.js
+```
