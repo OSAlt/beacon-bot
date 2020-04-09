@@ -19,7 +19,8 @@ module.exports = {
     "join_log_channel" : process.env.JOIN_LOG_CHANNEL_NAME,
 
     "excluded_trigger_channels" : process.env.EXCLUDED_CHANNELS.split(","),
-
+    "special_permission_flags" : process.env.SPECIAL_PERMISSION_FLAGS.split(","),
+    
     "db_name" : process.env.MYSQL_DATABASE || "beaconbot",
     "db_host" : process.env.DATABASE_HOSTNAME || "localhost",
     "db_port" : process.env.DATABASE_PORT || 3306,
