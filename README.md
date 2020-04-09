@@ -1,5 +1,8 @@
 # Beacon Bot
 
+![BeaconBot](/docs/assets/BeaconBot_small.png)
+
+
 Beacon bot is a javascript [Discord](https://discordapp.com/) bot being built by the [GeekBeacon](www.geekbeacon.org) community.  We are a community of nerds and geeks come together to be your guiding light to all things geek.  Please join us in our [discord](https://discord.gg/geekbeacon) to see the bot in action and learn more about us.  If would like to contribute we would love your help to make things better!
 
 Beacon Bot project is pre-alpha and is being built with a generic design in mind though it is very much geared towards our use case. Our hope in open sourcing it is that others will find value in our work.
