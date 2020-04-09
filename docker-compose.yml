@@ -2,6 +2,7 @@ version: '3.3'
 services:
   bot:
     image: geekbeacon/beacon-bot:latest
+    restart: always
     build:
         context: . 
         dockerfile: compose/Dockerfile-bot
@@ -16,9 +17,6 @@ services:
     volumes:
         - ./sql:/docker-entrypoint-initdb.d
         - ./data:/var/lib/mysql 
-#  redis:
-#    image: redis
-#    env_file: .env
 #  adminer:
 #    image: adminer
 #    env_file: .env
