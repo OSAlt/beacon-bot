@@ -10,8 +10,8 @@ module.exports = {
     joinableRolesHandler: function(cmd, c, a, m) {
         // Create vars
         const command = cmd, client = c, args = a, message = m;
-        const superRole = message.member.roles.cache.find(role => role.name.includes(super_role));
-        const adminRole = message.member.roles.cache.find(role => role.name.includes(admin_role));
+        const superRole = message.member.roles.cache.some(role => role.name.includes(super_role));
+        const adminRole = message.member.roles.cache.some(role => role.name.includes(admin_role));
         const ownerRole = message.member.guild.owner;
         let joinableRole;
             
@@ -80,7 +80,7 @@ module.exports = {
             }
 
         /*********** ADD JOINABLE ROLE ***********/
-        } else if (command.name === 'addjoinablerole' && (superRole || adminRole || ownerRole)) {
+        } else if (command.name === 'addjoinablerole' && (superRole || adminRole || message.member === ownerRole)) {
             // Search for the role within the server
             const role = message.guild.roles.cache.find(role => role.name.toLowerCase().includes(joinableRole));
 

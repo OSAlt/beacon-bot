@@ -16,9 +16,9 @@ module.exports = {
         const message = m;
         const triggerList = tl;
         let trigger;
-        const modRole = message.member.roles.cache.find(role => role.name.includes(mod_role));
-        const superRole = message.member.roles.cache.find(role => role.name.includes(super_role));
-        const adminRole = message.member.roles.cache.find(role => role.name.includes(admin_role));
+        const modRole = message.member.roles.cache.some(role => role.name.includes(mod_role));
+        const superRole = message.member.roles.cache.some(role => role.name.includes(super_role));
+        const adminRole = message.member.roles.cache.some(role => role.name.includes(admin_role));
         const ownerRole = message.member.guild.owner;
             
         // Check the length of the args

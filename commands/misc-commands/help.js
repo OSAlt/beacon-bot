@@ -13,12 +13,14 @@ module.exports = {
     cooldown: 5,
     execute(message, args) {
         const help = {};
-        let cmdArr = [];
+        let adminCmds = [],superCmds = [],modCmds = [],userCmds = [];
+        let adminCmdsStr,superCmdsStr,modCmdsStr;
         const {commands} = message.client;
-        const modRole = message.member.roles.cache.find(role => role.name.includes(mod_role));
-        const superRole = message.member.roles.cache.find(role => role.name.includes(super_role));
-        const adminRole = message.member.roles.cache.find(role => role.name.includes(admin_role));
-        const ownerRole = message.member.guild.owner;
+        const modRole = message.member.roles.cache.some(role => role.name.includes(mod_role));
+        const superRole = message.member.roles.cache.some(role => role.name.includes(super_role));
+        const adminRole = message.member.roles.cache.some(role => role.name.includes(admin_role));
+        const ownerRole = message.member.guild.ownerID;
+        
 
         // Check if any args were passed in
         if (!args.length) {
@@ -28,46 +30,51 @@ module.exports = {
 
             // Loop through all the commands
             commands.forEach((cmd) => {
-                // If command is admin only
-                if (cmd.admin === true) {
-                    // If user is an admin add the command name to cmdArr
-                    if (adminRole || ownerRole) {
-                        cmdArr.push(cmd.name);
-                    // If user isn't an admin skip loop iteration
-                    } else {
-                        return;
-                    }
-                // If command is super only
+                // Assign to proper array based on permissions
+                if(cmd.admin === true) {
+                    adminCmds.push(cmd.name); //admin
                 } else if (cmd.super === true) {
-                    // If user is a super or admin add the command name to cmdArr
-                    if (superRole || adminRole || ownerRole) {
-                        cmdArr.push(cmd.name);
-                    // If user isn't a super or admin skip loop iteration
-                    } else {
-                        return;
-                    }
-                // If command is mod only
+                    superCmds.push(cmd.name); //super
                 } else if (cmd.mod === true) {
-                    // If user is a mod, super, or admin add the command name to cmdArr
-                    if (modRole || superRole || adminRole || ownerRole) {
-                        cmdArr.push(cmd.name);
-                    // If user isn't a mod, super, or admin skip loop iteration
-                    } else {
-                        return;
-                    }
-                // If user doesn't have permissions for the command go to next loop iteration
+                    modCmds.push(cmd.name); //mod
                 } else {
-                    cmdArr.push(cmd.name);
+                    userCmds.push(cmd.name); //user
                 }
             });
 
-            // If commands were added to the array add them to the help object
-            if (cmdArr.length) {
-                help["commands"] = cmdArr.join(", ");
+            // Get the index for the verify command
+            let verifyIndex = adminCmds.indexOf("verify");
 
-            // If no commands found let user know
+            // If owner don't strikethrough any commands
+            if(message.author.id === ownerRole) {
+                modCmdsStr = `${modCmds.join("\n")}`;
+                superCmdsStr = `${superCmds.join("\n")}`;
+                adminCmdsStr = `${adminCmds.join("\n")}`;
+
+            // If admin only strikethrough verify commands
+            } else if (adminRole) {
+                modCmdsStr = `${modCmds.join("\n")}`;
+                superCmdsStr = `${superCmds.join("\n")}`;
+                adminCmds[verifyIndex] = `~~verify~~` // strikethrough verify
+                adminCmdsStr = `${adminCmds.join("\n")}`;
+
+            // If super strikethrough admin commands
+            } else if (superRole) {
+                modCmdsStr = `${modCmds.join("\n")}`;
+                superCmdsStr = `${superCmds.join("\n")}`;
+                adminCmdsStr = `~~${adminCmds.join("\n")}~~`;
+
+            // If mod strikethrough super + admin commands
+            } else if (modRole) {
+                modCmdsStr = `${modCmds.join("\n")}`;
+                superCmdsStr = `~~${superCmds.join("\n")}~~`;
+                adminCmdsStr = `~~${adminCmds.join("\n")}~~`;
+
+            // If user strikethrough mod + super + admin commands
             } else {
-                return message.reply("uh oh! It seems there are no commands enabled that you can use!")
+                modCmdsStr = `~~${modCmds.join("\n")}~~`;
+                superCmdsStr = `~~${superCmds.join("\n")}~~`;
+                adminCmdsStr = `~~${adminCmds.join("\n")}~~`;
             }
 
             // Create the embed
@@ -77,22 +84,31 @@ module.exports = {
                 description: `${help.description}`,
                 fields: [
                     {
-                        name: "Commands",
-                        value: `${help.commands}`,
+                        name: "User Commands",
+                        value: `${userCmds.join(" | ")}`,
+                        inline: false,
+                    },
+                    {
+                        name: "Moderator Commands",
+                        value: `${modCmdsStr}`,
+                        inline: true,
+                    },
+                    {
+                        name: "Super Commands",
+                        value: `${superCmdsStr}`,
+                        inline: true,
+                    },
+                    {
+                        name: "Admin Commands",
+                        value: `${adminCmdsStr}`,
+                        inline: true,
                     },
                 ],
                 timestamp: new Date(),
             };
 
-            // Send the embed in a dm
-            return message.author.send({embed:helpEmbed}).then(() => {
-                // Let the user know they have been messaged
-                message.reply("I've sent you a DM with all my commands!");
-
-            // If unable to dm the user let them know
-            }).catch(() => {
-                message.reply("It seems like I can't DM you! Do you have DMs disables?");
-            });
+            // Send the embed
+            return message.channel.send({embed:helpEmbed})
         }
 
         // Search for the command

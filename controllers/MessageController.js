@@ -24,9 +24,9 @@ module.exports = {
 
         // Make sure the author isn't a bot before checking its' roles
         if(!message.author.bot) {
-            modRole = message.member.roles.cache.find(role => role.name.includes(mod_role));
-            superRole = message.member.roles.cache.find(role => role.name.includes(super_role));
-            adminRole = message.member.roles.cache.find(role => role.name.includes(admin_role));
+            modRole = message.member.roles.cache.some(role => role.name.includes(mod_role));
+            superRole = message.member.roles.cache.some(role => role.name.includes(super_role));
+            adminRole = message.member.roles.cache.some(role => role.name.includes(admin_role));
             ownerRole = message.member.guild.owner;
         }
 

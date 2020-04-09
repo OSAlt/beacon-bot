@@ -5,7 +5,7 @@ const reactionsController = require("../../controllers/ReactionsController");
 module.exports = {
     name: "verify",
     description: "Creates the initial verify message in the verify channel!",
-    aliases: "",
+    aliases: [],
     usage: "<create>",
     mod: false,
     super: false,
