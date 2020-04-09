@@ -52,5 +52,5 @@ Follow the Doscord documentation linked below for instructions on getting a toke
 
 We recommend the following minimum permissions for security but you can also just assign the Administrator role if you would like. 
 
-![Discord Permissions](docs/assets/discord_permissions.png)
+![Discord Permissions](assets/discord_permissions.png)
 
