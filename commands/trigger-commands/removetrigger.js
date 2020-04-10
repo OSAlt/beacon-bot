@@ -8,8 +8,8 @@ module.exports = {
     aliases: ["-trigger", "deletetrigger", "deltrigger"],
     usage: "<word or phrase>",
     mod: false,
-    super: true, // Minimum level required is Super (manage roles permission)
-    admin: false,
+    super: false,
+    admin: true,
     cooldown: 5,
     execute(message, args, client, triggerList) {
         // Check if any arguments were given, it not let user know
