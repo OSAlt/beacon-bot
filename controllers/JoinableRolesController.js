@@ -36,7 +36,7 @@ module.exports = {
                 role = message.guild.roles.cache.find(role => role.name.toLowerCase().includes(args[0].toLowerCase())); // Find the role based on the arg
             }
 
-            const joinedRole = message.member.roles.cache.find(r => r.includes(role)); // Look for role in user's current roles
+            const joinedRole = message.member.roles.cache.some(r => r.name.includes(role.name)); // Look for role in user's current roles
 
             // If no role let user know
             if (!role) {

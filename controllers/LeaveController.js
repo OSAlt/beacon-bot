@@ -48,10 +48,7 @@ module.exports = {
                     value: `${lastMessage}`,
                 }
             ],
-            timestamp: timestamp,
-            footer: {
-                text: `All times are in ${timezone}`,
-            }
+            timestamp: timestamp
         };
 
         // Send the leave embed to the super log

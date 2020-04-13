@@ -1,6 +1,6 @@
 // Import the required files
 const moment = require('moment');
-const {prefix, special_permission_flags} = require('../config');
+const {prefix, super_role, admin_role, special_permission_flags} = require('../config');
 const AutoRole = require("../models/AutoRole");
 
 // Create a new module export
@@ -114,8 +114,13 @@ module.exports = {
 
         /*********** LIST AUTOROLES ***********/
         } else if (command.name === 'listautoroles') {
+            // See if the user is a super, admin, or owner
+            superRole = message.member.roles.cache.some(role => role.name.includes(super_role));
+            adminRole = message.member.roles.cache.some(role => role.name.includes(admin_role));
+            ownerRole = message.member.guild.owner === message.author;
+
             // If user is a mod and didn't pass in any args, list autoroles
-            if (message.member.hasPermission("KICK_MEMBERS") && !args.length) {
+            if (!args.length) {
                 let autoroles = [];
 
                 // Get all rows and add their role to the autoroles arr
@@ -138,16 +143,16 @@ module.exports = {
                 });
 
             // If user is a super mod and passed in args, then give all data about that autorole
-            } else if (message.member.hasPermission("MANAGE_ROLES") && args.length) {
+            } else if ((superRole || adminRole || ownerRole) && args.length) {
                 // Find the role within the guild
-                const role = message.guild.roles.cache.find(role => role.name.toLowerCase().includes(autorole));
+                const role = message.guild.roles.cache.find(role => role.name.includes(autorole));
                 let autoroleData = {};
 
                 // Get the data for the autorole
                 AutoRole.findOne({where: {role: role.name}}).then((data) => {
                     autoroleData.id = data.get('id'); //get id
                     autoroleData.role = data.get('role'); //get role
-                    autoroleData.creator = client.users.get(data.get('user_id')); //get user id
+                    autoroleData.creator = client.users.cache.get(data.get('user_id')); //get user id
                     autoroleData.created = moment(data.get('createdAt')).format('YYYY-MM-DD HH:mm:ss'); //get created date in YYYY-MM-DD HH:mm:ss format
                     autoroleData.updated = moment(data.get('updatedAt')).format('YYYY-MM-DD HH:mm:ss'); //get updated date in YYYY-MM-DD HH:mm:ss format
 
@@ -158,7 +163,7 @@ module.exports = {
                         color: 0x330066,
                         author: {
                             name: autoroleData.creator.username+'#'+autoroleData.creator.discriminator,
-                            icon_url: autoroleData.creator.displayAvatarURL,
+                            icon_url: autoroleData.creator.displayAvatarURL(),
                         },
 
                         fields: [

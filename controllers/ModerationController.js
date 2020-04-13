@@ -1,5 +1,5 @@
 const moment = require("moment");
-const {prefix, admin_role, super_role, mod_role, action_log_channel, super_log_channel} = require('../config');
+const {prefix, admin_role, super_role, mod_role, mod_trainee_role, action_log_channel, super_log_channel} = require('../config');
 const Kick = require("../models/Kick");
 const Ban = require("../models/Ban");
 const Unban = require("../models/Unban");
@@ -111,6 +111,11 @@ module.exports = {
         const oldMsg = o, newMsg = n, client = c; // create vars for parameter values
         const superLog = newMsg.guild.channels.cache.find((c => c.name.includes(super_log_channel))); //super log channel
 
+        // If pinned message or embed change then ignore
+        if(oldMsg.pinned !== newMsg.pinned || oldMsg.embeds !== newMsg.embeds) {
+            return;
+        }
+
         // Create author var
         const author = client.users.cache.get(newMsg.author.id);
         
@@ -145,6 +150,11 @@ module.exports = {
         const message = m;
         const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
         let user; // user var
+        // Get the mod+ roles
+        const modTraineeRole = message.guild.roles.cache.find(role => role.name.includes(mod_trainee_role));
+        const modRole = message.guild.roles.cache.find(role => role.name.includes(mod_role));
+        const superRole = message.guild.roles.cache.find(role => role.name.includes(super_role));
+        const adminRole = message.guild.roles.cache.find(role => role.name.includes(admin_role));
 
         // Check if the first arg is a number
         if(isNaN(args[0])) {
@@ -171,6 +181,15 @@ module.exports = {
                 } else {
                     user = message.guild.members.cache.get(args[0]);
                 }
+            }
+
+            // Check if user has any mod/staff roles
+            if(user.roles.cache.some(r => [modTraineeRole.name, modRole.name, superRole.name, adminRole.name].includes(r.name))) {
+                return message.reply(`you got guts, trying to kick a ${user.roles.highest}!`);
+
+            // Check if server owner
+            } else if (user.user.id === user.guild.ownerID) {
+                return message.reply(`...I hope you didn't really think you could kick the server owner...`);
             }
 
             // If a reason was given then kick the user and log the action to the database
@@ -256,6 +275,11 @@ module.exports = {
         const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
         const timezone = moment.tz(moment.tz.guess()).zoneAbbr(); // server timezone
         let user; // user var
+        // Get the mod+ roles
+        const modTraineeRole = message.guild.roles.cache.find(role => role.name.includes(mod_trainee_role));
+        const modRole = message.guild.roles.cache.find(role => role.name.includes(mod_role));
+        const superRole = message.guild.roles.cache.find(role => role.name.includes(super_role));
+        const adminRole = message.guild.roles.cache.find(role => role.name.includes(admin_role));
 
         const argsStr = args.join(" "); //create a string out of the args
         const newArgs = argsStr.split(",").map(i => i.trim()); //create a new args array and trim the whitespace from the items
@@ -278,7 +302,7 @@ module.exports = {
 
                 // Try to get the user
                 try {
-                    user = message.mentions.members.first().user; // get user tag
+                    user = message.mentions.members.first(); // get user tag
                 } catch(e) {
                     // If unable to get the user, let the mod know
                     return message.reply(`uh oh! That user isn't a member of this guild!`);
@@ -288,7 +312,7 @@ module.exports = {
 
                 // Try to get the user
                 try {
-                    user = message.guild.members.cache.get(args[0]).user;
+                    user = message.guild.members.cache.get(args[0]);
                 } catch(e) {
                     // If unable to get the user, let the mod know
                     return message.reply(`uh oh! That user isn't a member of this guild!`);
@@ -299,6 +323,18 @@ module.exports = {
                     return message.reply(`uh oh! Looks like I wasn't able to find that user, please check the user id and try again or try using a user mention like so: \`@Username\``)
                 }
             }
+
+            // Check if user has any mod/staff roles
+            if(user.roles.cache.some(r => [modTraineeRole.name, modRole.name, superRole.name, adminRole.name].includes(r.name))) {
+                return message.reply(`you got guts, trying to ban a ${user.roles.highest}!`);
+
+            // Check if server owner
+            } else if (user.user.id === user.guild.ownerID) {
+                return message.reply(`...I hope you didn't really think you could ban the server owner...`);
+            }
+
+            // Reassign the user to be a user role and not a guildMember role
+            user = user.user;
 
             // Check if a reason was given
             if(args[1] && user !== undefined) {
@@ -584,20 +620,20 @@ module.exports = {
 
             // Check if a user mention was given
             if(args[0].startsWith("<@")) {
-                user = message.mentions.members.first().user; // get user tag
+                user = message.mentions.members.first(); // get user tag
             // If not, find the user by the provided id
             } else {
                 // Get the user
                 user = message.guild.members.cache.get(args[0]);
 
                 // If user is undefined let the moderator know
-                if(user === undefined) {
+                if(user.user === undefined) {
                     return message.reply(`uh oh! Looks like I wasn't able to find that user, please check the user id and try again or try using a user mention like so: \`@Username\``)
                 }
             }
 
             // Check if a reason was given
-            if(args[1] && user !== undefined) {
+            if(args[1] && user.user !== undefined) {
             // Create a new table if one doesn't exist
             Warning.sync({ force: false }).then(() => { 
                 // See if the warning id exists already
@@ -610,7 +646,7 @@ module.exports = {
                     // Create a new warning
                     Warning.create({
                         warning_id: warnId, // add the warning Id
-                        user_id: user.id, // add the user's id
+                        user_id: user.user.id, // add the user's id
                         type: "Note", // assign the type of warning
                         reason: reason, // add the reason for the warning
                         mod_id: message.author.id
@@ -623,11 +659,11 @@ module.exports = {
                                 name: message.author.username,
                                 icon_url: message.author.displayAvatarURL(),
                             },
-                            description: `${message.author} has added a warning to ${user}!`,
+                            description: `${message.author} has added a warning to ${user.user}!`,
                             fields: [
                                 {
                                     name: `User Warned`,
-                                    value: `${user}`,
+                                    value: `${user.user}`,
                                     inline: true,
                                 },
                                 {
@@ -647,8 +683,9 @@ module.exports = {
                             }
                         };
 
-                        actionLog.send({embed: warnEmbed});
-                        message.reply(`${user.username} was successfully warned!`);
+                        actionLog.send({embed: warnEmbed}); //send embed
+                        message.reply(`${user.user.username} was successfully warned!`);
+                        
                     });
                 });
             });

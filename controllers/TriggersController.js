@@ -462,36 +462,9 @@ module.exports = {
 
             // If not server owner
             if(message.author.id !== message.guild.ownerID) {
-                // If admin uses a trigger
-                if (adminRole) {
-                    e.title = `A Member Of The ${admin_role} Group Has Hit A Trigger!`
-
-                    if (severity === "high") {
-                        // Delete the message
-                        message.delete().then(() => {
-                            // Send the embed with a copy of the message to the owner
-                            owner.send({embed: delMsgEmbed}).then (d => {
-                                // Update the db's message link
-                                Warning.update({message_link: d.url}, {
-                                    where: {
-                                        warning_id: warnId
-                                    }
-                                });
-                            }).catch(() => {
-                                // If unable to dm owner
-                                console.log(`Unable to dm server owner`);
-                            });
-                        });
-                    } else {
-                        // Message the server owner
-                        owner.send({embed: e}).catch(() => {
-                            // If unable to dm owner
-                            console.log(`Unable to dm server owner`);
-                        });
-                    }
 
                 // If super uses a trigger
-                } else if (superRole) {
+                if (superRole) {
                     // Set embed title
                     e.title = `A Member Of The ${super_role} Group Has Hit A Trigger!`
 
@@ -629,7 +602,7 @@ module.exports = {
                                 // Change the url for the mod channel's embed to link to log in the log channel
                                 e.fields[4].value = d.url;
                                 // Send embed to the mod channel
-                                modChannel.send("@everyone", {embed: e});
+                                modChannel.send("@ everyone", {embed: e});
 
                                 // Update the db's message link
                                 Warning.update({message_link: d.url}, {
@@ -644,7 +617,7 @@ module.exports = {
                         message.reply(`please try to refrain from using words such as: \`${t}\``);
 
                         // Send embed to the moderation channel with here tag
-                        modChannel.send("@here", {embed: e});
+                        modChannel.send("@ here", {embed: e});
                     } else if (severity === "low") {
                         // Warn the user
                         message.reply(`please try to refrain from using words such as: \`${t}\``);

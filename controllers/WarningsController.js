@@ -110,12 +110,12 @@ module.exports = {
                         } else {
                             // Assign values to the embed
                             specificEmbed.setTitle(`Warning for ${args[1]}`)
-                            .setAuthor(warnedUser.user.username, warnedUser.user.displayAvatarURL())
-                            .addField(`User Id`, warnedUser.id, false)
-                            .addField(`User`, warnedUser, true)
-                            .addField(`Server Nickname`, `${warnedUser.nickname || "None"}`, true)
+                            .setAuthor(guildUser.username, warnedUser.displayAvatarURL())
+                            .addField(`User Id`, guildUser.id, false)
+                            .addField(`User`, guildUser, true)
+                            .addField(`Server Nickname`, `${guildUser.nickname || "None"}`, true)
                             .addField(`Warning Type`, warning.type, true)
-                            .addField(`User Roles`, warnedUser.roles.cache.map(role => role.name).join(", "))
+                            .addField(`User Roles`, guildUser.roles.cache.map(role => role.name).join(", "))
                             .setTimestamp();
                         }
                         

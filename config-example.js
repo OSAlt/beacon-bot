@@ -9,6 +9,7 @@ module.exports = {
     "admin_role": process.env.ADMINISTRATOR_ROLE_NAME,
     "super_role": process.env.SUPER_MODERATOR_ROLE_NAME,
     "mod_role": process.env.MODERATOR_ROLE_NAME,
+    "mod_trainee_role": process.env.MOD_TRAINEE_ROLE_NAME,
     "user_role": process.env.USER_ROLE_NAME,
 
     "admin_channel": process.env.ADMINISTRATOR_CHANNEL_NAME,

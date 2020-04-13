@@ -2,7 +2,7 @@
 const { readdirSync, statSync } = require("fs");
 const { join } = require("path");
 const Discord = require("discord.js");
-const {prefix, admin_role, super_role, mod_role, excluded_trigger_channels} = require('../config');
+const {prefix, admin_role, super_role, mod_role, mod_trainee_role, excluded_trigger_channels} = require('../config');
 const TriggersController = require("./TriggersController");
 const cooldowns = new Discord.Collection();
 
@@ -22,12 +22,21 @@ module.exports = {
         
         client.commands = new Discord.Collection(); // Create a new collection for commands
 
-        // Make sure the author isn't a bot before checking its' roles
-        if(!message.author.bot) {
+        // Make sure the author isn't a bot and message is from a text channel before checking its' roles
+        if(!message.author.bot && message.channel.type === "text") {
+            modTrineeRole = message.member.roles.cache.some(role => role.name.includes(mod_trainee_role));
             modRole = message.member.roles.cache.some(role => role.name.includes(mod_role));
             superRole = message.member.roles.cache.some(role => role.name.includes(super_role));
             adminRole = message.member.roles.cache.some(role => role.name.includes(admin_role));
             ownerRole = message.member.guild.owner;
+
+        // If not a bot and not in a text channel
+        } else if(!message.author.bot && message.channel.type !== "text") {
+            return message.channel.send(`Ohai, ${message.author.username}!\n\nIt seems you tried to message me within a dm, I appreciate you sliding up into my dms, but at this time I do not support any dm-based commands!`);
+
+        // Else (if a bot) then just ignore
+        } else {
+            return;
         }
 
         // Create the path for the commands directory
@@ -59,14 +68,13 @@ module.exports = {
             } else if (triggerArr.some(trigger => message.content.toLowerCase().match(`\\b${trigger}\\b`))) {
 
                 // Check if the channel the message was sent from is in the excluded channels array
-                const channelExcluded = excluded_trigger_channels.some(name => name === message.channel.name);
+                const channelExcluded = excluded_trigger_channels.some(name => message.channel.name.includes(name));
                 
                 // If within an excluded channel then ignore
                 if(channelExcluded) {
                     return;
                 };
 
-                //if(excluded_trigger_channels.indexOf(message.channel.name))
                 // Store the trigger words
                 let triggers = triggerArr.filter((trig) => message.content.toLowerCase().match(`\\b(${trig})\\b`));
                 
@@ -86,7 +94,9 @@ module.exports = {
         const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
 
         // If the command doesn't exist, then ignore the message
-        if (!command) return;
+        if (!command) {
+            return message.reply(`uh oh! It seems you tried to use a command that doesn't exist!`);
+        };
 
         // Check if the channel is a text channel and the command is for guild only
         if (command.guildOnly && message.channel.type !== "text") {
@@ -110,7 +120,7 @@ module.exports = {
             return message.reply(`uh oh! Looks like you tried to use a command that is only for users in the ${admin_role} group!`);
         } else if (command.super === true && !(superRole || adminRole || message.member === ownerRole)) {
             return message.reply(`uh oh! Looks like you tried to use a command that is only for users in the ${super_role} group!`);
-        } else if (command.mod === true && !(modRole || superRole || adminRole || message.member === ownerRole)) {
+        } else if (command.mod === true && !(modTrineeRole || modRole || superRole || adminRole || message.member === ownerRole)) {
             return message.reply(`uh oh! Looks like you tried to use a command that is only for users in the ${mod_role} group!`);
         }
 
