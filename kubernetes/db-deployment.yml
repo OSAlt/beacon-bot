@@ -1,0 +1,82 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: beacon-bot-db
+  labels:
+    app: beacon-bot
+spec:
+  ports:
+  - port: 3306
+    protocol: TCP
+    targetPort: 3306
+  selector:
+    app: beacon-bot
+    tier: db
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata: 
+  name: db-pv-claim
+  labels: 
+    app: beacon-bot
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: beacon-bot-db
+  labels:
+    app: beacon-bot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: beacon-bot
+      tier: db
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: beacon-bot
+        tier: db
+    spec:
+      containers:
+      - args:
+        - --default-authentication-plugin=mysql_native_password
+        name: beacon-bot-db
+        image: mysql:5.7.29
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MYSQL_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              key: MYSQL_DATABASE
+              name: env
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              key: MYSQL_ROOT_PASSWORD
+              name: env
+        volumeMounts:
+        - name: db-pv
+          mountPath: /var/lib/mysql
+        - name: mysql-initdb 
+          mountPath: /docker-entrypoint-initdb.d
+      restartPolicy: Always
+      volumes:
+      - name: db-pv
+        persistentVolumeClaim:
+          claimName: db-pv-claim 
+      - name: mysql-initdb
+        configMap:
+          name: env
+          items:
+          - key: initdb.sql
+            path: initdb.sql

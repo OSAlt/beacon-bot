@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: becon-bot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: becon-bot
+      tier: bot
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: becon-bot
+        tier: bot
+    spec:
+      containers:
+      - env:
+        - name: MYSQL_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              key: MYSQL_DATABASE
+              name: env
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              key: MYSQL_ROOT_PASSWORD
+              name: env
+        envFrom:
+          - configMapRef:
+              name: env
+        image: geekbeacon/beacon-bot:latest
+        name: becon-bot
+      restartPolicy: Always
+      
