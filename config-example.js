@@ -3,8 +3,6 @@ module.exports = {
     "prefix" : process.env.PREFIX_CHARACTER || "!",
 
     "server_id" : process.env.SERVER_ID,
-    "verify_emoji_name" : process.env.EMOJI_NAME,
-    "verify_emoji_id" : process.env.EMOJI_ID,
 
     "admin_role": process.env.ADMINISTRATOR_ROLE_NAME,
     "super_role": process.env.SUPER_MODERATOR_ROLE_NAME,

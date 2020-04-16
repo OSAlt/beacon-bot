@@ -1,4 +1,6 @@
-const {server_id, verify_emoji_name, verify_emoji_id, user_role} = require('../config');
+const Discord = require("discord.js");
+const {server_id, user_role} = require('../config');
+const thumb = new Discord.MessageAttachment('./assets/verify-thumbnail.gif');
 
 // Create a new module export
 module.exports = {
@@ -17,11 +19,38 @@ module.exports = {
             } else {
                 // Make sure the arg is "create" and author is server owner
                 if(args.length === 1 && args[0] === "create" && message.guild.ownerID === message.author.id) {
-                    // Send the message
-                    verifyChannel.send(`Please React with <a:${verify_emoji_name}:${verify_emoji_id}> to verify that you are a human!`)
+                    // Create the embed
+                    const verifyEmbed = {
+                        color: 0x886ce4,
+                        title: `Welcome To GeekBeacon!`,
+                        description: `GeekBeacon is a community of geeks that transcent language barriers, cultural differences, and political climates!`,
+                        thumbnail: {
+                            url: `attachment://verify-thumbnail.gif`,
+                        },
+                        fields: [
+                            {
+                                name: `**Rules**`,
+                                value: `• Be polite and kind.\n• No racism, sexism, or bigotry of any kind.\n• No excessive political or religious discussions.\n• No spamming, even in DMs.\n• No NSFW content.\n• Do not mention/tag/ping (@) Nixie or any other staff member multiple times, one is enough.\n• Do not beg for roles.\n• Do not share anyone's personal information, even with permission.\n• Do not post content that breaks [Discord’s Terms of Service](https://discordapp.com/terms).\n• If a staff member asks you to stop doing something, stop it. If you want clarification, feel free to DM them for information. If you feel the need you can request an oversight by a member of Master Control.\n• Keep all conversations within their respective channels.\n• No insulting or explicit profile pictures or names, impersonating others, and avoid names made out of special characters that would make it difficult to tag and/or read your name.\n• Do not use ANY link shorteners. If your link isn't trustworthy by its destination URL, it doesn't need to be here.`,
+                                inline: false,
+                            },
+                            {
+                                name: `**Resources**`,
+                                value: `• [Discord How-To](https://support.discordapp.com/hc/en-us)\n• [Ask Nixie](https://forum.geekbeacon.org/c/ask-nixie)\n• [Suggestions](https://forum.geekbeacon.org/c/feedback)\n• [Invite Others Here](https://discord.gg/geekbeacon) or <#363750021436276746>`,
+                                inline: false,
+                            },
+                            {
+                                name: `**Access Full Server!**`,
+                                value: `**To view all the channels, you need to verify you are a human by simply clicking on the emoji below this message (✅)**`,
+                                inline: false,
+                            }
+                        ],
+                        timestamp: `Last updated: ${new Date()}`,
+                    }
+                    // Send the embed along with the file for the thumbnail
+                    verifyChannel.send({ files: [thumb], embed: verifyEmbed})
                     .then(sent => {
                         // React to the message with the proper emoji
-                        sent.react(`${verify_emoji_id}`);      
+                        sent.react(`✅`);
                     });
                 }
             }
@@ -50,7 +79,7 @@ module.exports = {
             guild.members.fetch(user.id).then((member) => {
                 
                 // Ensure the reaction is the right emoji
-                if(reaction.emoji.id === `${verify_emoji_id}`) {
+                if(reaction.emoji.name === `✅`) {
                     // Add the member to the role
                     member.roles.add(role);
                     // Remove the reaction
