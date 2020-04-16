@@ -5,6 +5,7 @@ const Ban = require("../models/Ban");
 const Unban = require("../models/Unban");
 const Warning = require("../models/Warning");
 const shortid = require('shortid');
+const Discord = require('discord.js');
 
 module.exports = {
     deleteHandler: function(m, tl) {
@@ -110,26 +111,54 @@ module.exports = {
     editHandler: function(o, n, c) {
         const oldMsg = o, newMsg = n, client = c; // create vars for parameter values
         const superLog = newMsg.guild.channels.cache.find((c => c.name.includes(super_log_channel))); //super log channel
-
-        // If pinned message or embed change then ignore
-        if(oldMsg.pinned !== newMsg.pinned || oldMsg.embeds !== newMsg.embeds) {
-            return;
-        }
-
         // Create author var
         const author = client.users.cache.get(newMsg.author.id);
-        
-        // Create the edit embed
-        const editEmbed = {
-            color: 0x00ff00,
-            title: `Message was edited in ${newMsg.channel.name}`,
-            url: `${newMsg.url}`,
-            author: {
-                name: `${author.username}#${author.discriminator}`,
-                icon_url: author.displayAvatarURL(),
-            },
-            description: `${newMsg.author} has edited a message in ${newMsg.channel}`,
-            fields: [
+
+        // Create embed and attach the shared fields
+        let editEmbed = new Discord.MessageEmbed()
+        .setColor(0x00ff00)
+        .setURL(newMsg.url)
+        .setTimestamp();
+
+        // If pinned message
+        if(oldMsg.pinned !== newMsg.pinned) {
+            // Set the fields for the pinned version of the editEmbed
+            if(oldMsg.pinned === false) {
+                editEmbed.setTitle(`New Pinned Message`)
+                .setDescription(`A message was pinned a message in ${newMsg.channel}`);
+
+            // Set the fields for the pinned version of the editEmbed
+            } else {
+                editEmbed.setTitle(`New Unpinned Message`)
+                .setDescription(`A message was unpinned a message in ${newMsg.channel}`);
+            }
+        // If the message contains an embed
+        } else if(newMsg.embeds.length) {
+            // If the content (not embed) of the message is the same then ignore
+            if(oldMsg.content === newMsg.content) {
+                return;
+            } else {
+                // Add the editEmbed data
+                editEmbed.setTitle(`Message was edited in ${newMsg.channel.name}`)
+                .setAuthor(`${author.username}#${author.discriminator}`, author.displayAvatarURL())
+                .setDescription(`${newMsg.author} has edited a message in ${newMsg.channel}`)
+                .addFields(
+                    {
+                        name: `Original Message`,
+                        value: ` ${oldMsg.content || "*Unable to fetch original message*"}`,
+                    },
+                    {
+                        name: `New Message`,
+                        value: ` ${newMsg.content}`,
+                    }
+                );
+            }
+        } else {
+            // Add the editEmbed data
+            editEmbed.setTitle(`Message was edited in ${newMsg.channel.name}`)
+            .setAuthor(`${author.username}#${author.discriminator}`, author.displayAvatarURL())
+            .setDescription(`${newMsg.author} has edited a message in ${newMsg.channel}`)
+            .addFields(
                 {
                     name: `Original Message`,
                     value: ` ${oldMsg.content || "*Unable to fetch original message*"}`,
@@ -137,11 +166,10 @@ module.exports = {
                 {
                     name: `New Message`,
                     value: ` ${newMsg.content}`,
-                },
-            ],
-            timestamp: new Date()
-        }
+                }
 
+            );
+        }
         // Send the edit embed to the super log channel
         superLog.send({embed: editEmbed});
     },
@@ -163,13 +191,13 @@ module.exports = {
         }
 
         // Make sure the first arg was a user mention or a user id
-        if(isNaN(args[0]) && !args[0].startsWith("<@!")) {
+        if(isNaN(args[0]) && !args[0].startsWith("<@")) {
             // Let user know they need to provide a user mention or a valid user id
             message.reply(`uh oh! Looks like you gave an invalid user mention or user id. Make sure that you are either mentioning a user or providing a valid user id!`);
         } else {
 
             // Check if a user mention was given
-            if(args[0].startsWith("<@!")) {
+            if(args[0].startsWith("<@")) {
                 user = message.mentions.members.first(); // get user tag
             // If not, find the user by the provided id
             } else {
@@ -183,13 +211,18 @@ module.exports = {
                 }
             }
 
-            // Check if user has any mod/staff roles
-            if(user.roles.cache.some(r => [modTraineeRole.name, modRole.name, superRole.name, adminRole.name].includes(r.name))) {
+            // If user is a bot then deny kicking it
+            if(user.user.bot) {
+                return message.channel.send(`You can't kick no beep boop!`);
+            // If the user tries to kick themselves then deny kicking them
+            } else if(user.user.id === message.author.id) {
+                return message.reply(`you can't kick yourself from the server, silly!`);
+            // If the user is a mod+ then deny kicking them
+            } else if(user.roles.cache.some(r => [modTraineeRole.name, modRole.name, superRole.name, adminRole.name].includes(r.name))) {
                 return message.reply(`you got guts, trying to kick a ${user.roles.highest}!`);
-
-            // Check if server owner
+            // If the user is the server owner then deny kicking them
             } else if (user.user.id === user.guild.ownerID) {
-                return message.reply(`...I hope you didn't really think you could kick the server owner...`);
+                return message.reply(`I hope you didn't really think you could kick the server owner...`);
             }
 
             // If a reason was given then kick the user and log the action to the database
@@ -292,7 +325,7 @@ module.exports = {
         }
 
         // Make sure the first arg was a user mention or a user id
-        if(isNaN(args[0]) && !args[0].startsWith("<@!")) {
+        if(isNaN(args[0]) && !args[0].startsWith("<@")) {
             // Let user know they need to provide a user mention or a valid user id
             message.reply(`uh oh! Looks like you gave an invalid user mention or user id. Make sure that you are either mentioning a user or providing a valid user id!`);
         } else {
@@ -324,13 +357,18 @@ module.exports = {
                 }
             }
 
-            // Check if user has any mod/staff roles
-            if(user.roles.cache.some(r => [modTraineeRole.name, modRole.name, superRole.name, adminRole.name].includes(r.name))) {
+            // If user is a bot then deny banning it
+            if(user.user.bot) {
+                return message.channel.send(`You can't ban no beep boop!`);
+            // If the user tries to ban themselves then deny banning them
+            } else if(user.user.id === message.author.id) {
+                return message.reply(`you can't ban yourself from the server, silly!`);
+            // If the user is a mod+ then deny banning them
+            } else if(user.roles.cache.some(r => [modTraineeRole.name, modRole.name, superRole.name, adminRole.name].includes(r.name))) {
                 return message.reply(`you got guts, trying to ban a ${user.roles.highest}!`);
-
-            // Check if server owner
+            // If the user is the server owner then deny banning them
             } else if (user.user.id === user.guild.ownerID) {
-                return message.reply(`...I hope you didn't really think you could ban the server owner...`);
+                return message.reply(`I hope you didn't really think you could ban the server owner...`);
             }
 
             // Reassign the user to be a user role and not a guildMember role
@@ -347,29 +385,24 @@ module.exports = {
 
                     const reason = newArgs[1]; //assign the ban reason
                     let banLength = newArgs[2]; //assign the ban length
-                    const banArr = banLength.split(" "); //create a ban array
-                    let banUnit;
-                    let banValue;
+                    let banValue = banLength.replace(/\D+/, '').trim(); //assign the ban value
+                    let banUnit = banLength.replace(/\d+/, '').trim(); //assign the ban unit
                     const now = moment();
+                    const banLengthRegex = /(\d+\s*\D+$|^permanent$|^perma$|^perm$|^p{1}){1}/; //regex for ban time format
 
-                    // Check the length of the ban array
-                    if(banArr.length > 1) {
-                            banValue = banArr[0]; //assign the ban value
-                            banUnit = banArr[1]; //assign the ban unit
-
-                            if (banUnit === "s" || banUnit === "sec" || banUnit === "secs" || banUnit === "seconds" || banUnit === "second") {
-                                return message.reply(`please give a duration that is at least 1 minute in length!`);
-                            }
-                    } else {
-                        // If a permanent option was provided set the ban value to 999
-                        if(banArr[0].toLowerCase() === "p" || banArr[0].toLowerCase().includes("perm")) {
-                            banValue = 999;
-                            banUnit = "years";
-                            banLength = "an indefinite amount of time";
-                        } else {
-                            return message.reply(`uh oh! It seems like you entered an invalue ban duration! Please use formats such as these for the ban duration: \`6 years\`, \`17 d\`, \`permanent\`, \`3 wks\``);
-                        }
+                    // Check if the user input for a perma ban
+                    if(banUnit.toLowerCase() === "p" || banUnit.toLowerCase().includes("perm")) {
+                        banValue = 999; // assign value
+                        banUnit = "years"; // set unit
+                        banLength = "an indefinite amount of time"; // set length for description
+                    // Check if the user provided an accepted format
+                    } else if(!banLength.match(banLengthRegex)) {
+                        return message.reply(`uh oh! It seems like you entered an invalue ban duration! Please use formats such as these for the ban duration: \`6 years\`, \`17d\`, \`permanent\`, \`3 wks\``)
+                    // Ensure the ban duration is at least 1 minute
+                    } else if (banUnit === "s" || banUnit === "sec" || banUnit === "secs" || banUnit === "seconds" || banUnit === "second") {
+                        return message.reply(`please give a duration that is at least 1 minute in length!`);
                     }
+
                     let unbanDate = now.add(banValue, banUnit); //create the unban date
 
                     // Make sure the unban date is after the current time
@@ -608,7 +641,7 @@ module.exports = {
         }
 
         // Make sure the first arg was a user mention or a user id
-        if(isNaN(args[0]) && !args[0].startsWith("<@!")) {
+        if(isNaN(args[0]) && !args[0].startsWith("<@")) {
             // Let user know they need to provide a user mention or a valid user id
             message.reply(`uh oh! Looks like you gave an invalid user mention or user id. Make sure that you are either mentioning a user or providing a valid user id!`);
         
