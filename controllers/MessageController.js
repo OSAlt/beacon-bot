@@ -24,7 +24,7 @@ module.exports = {
 
         // Make sure the author isn't a bot and message is from a text channel before checking its' roles
         if(!message.author.bot && message.channel.type === "text") {
-            modTrineeRole = message.member.roles.cache.some(role => role.name.includes(mod_trainee_role));
+            modTraineeRole = message.member.roles.cache.some(role => role.name.includes(mod_trainee_role));
             modRole = message.member.roles.cache.some(role => role.name.includes(mod_role));
             superRole = message.member.roles.cache.some(role => role.name.includes(super_role));
             adminRole = message.member.roles.cache.some(role => role.name.includes(admin_role));
@@ -119,7 +119,7 @@ module.exports = {
             return message.reply(`uh oh! Looks like you tried to use a command that is only for users in the ${admin_role} group!`);
         } else if (command.super === true && !(superRole || adminRole || message.member === ownerRole)) {
             return message.reply(`uh oh! Looks like you tried to use a command that is only for users in the ${super_role} group!`);
-        } else if (command.mod === true && !(modTrineeRole || modRole || superRole || adminRole || message.member === ownerRole)) {
+        } else if (command.mod === true && !(modTraineeRole || modRole || superRole || adminRole || message.member === ownerRole)) {
             return message.reply(`uh oh! Looks like you tried to use a command that is only for users in the ${mod_role} group!`);
         }
 

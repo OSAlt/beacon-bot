@@ -61,7 +61,7 @@ module.exports = {
 
                 const sequelize = new Sequelize(`mysql://${db_user}:${db_pass}@${db_host}:${db_port}/${db_name}`, {logging: false}); //create the sequelize connection
                 const roles = []; //create the roles array
-                const joinedDate = moment(member.joinedAt).format(`YYYY-MM-DD`); //joined date only
+                const joinedDate = moment(member.joinedAt).format(`MMM DD, YYYY`); //joined date only
                 const joinedTime = moment(member.joinedAt).format(`HH:mm:ss`); //joined time only
                 const joinLog = member.guild.channels.cache.find((c => c.name.includes(join_log_channel))); //join log channel
 

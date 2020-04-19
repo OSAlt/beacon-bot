@@ -13,7 +13,7 @@ module.exports = {
         const member = m;
         let lastMessage;
         const superLog = member.guild.channels.cache.find((c => c.name.includes(super_log_channel))); //super log channel
-        const joinedDate = moment(member.joinedAt).format("YYYY-MM-DD HH:mm:ss"); // joined date
+        const joinedDate = moment(member.joinedAt).format("MMM DD, YYYY HH:mm:ss"); // joined date
         const joinedTimeStamp = moment(member.joinedTimestamp); // timestamp user joined
         const currentTime = moment(); // create a new moment obj with current time
         const memberLength = moment.duration(currentTime.diff(joinedTimeStamp)).format("Y[y] D[d] H[h] m[m] s[s]"); //get the duration of the membership and format it
