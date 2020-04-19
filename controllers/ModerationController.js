@@ -129,9 +129,9 @@ module.exports = {
                 return;
             } else {
                 // Add the editEmbed data
-                editEmbed.setTitle(`Message was edited in ${newMsg.channel.name} | [Jump To Message](${newMsg.url})`)
+                editEmbed.setTitle(`Message was edited in ${newMsg.channel.name}`)
                 .setAuthor(`${author.username}#${author.discriminator}`, author.displayAvatarURL())
-                .setDescription(`${newMsg.author} has edited a message in ${newMsg.channel}`)
+                .setDescription(`${newMsg.author} has edited a message in ${newMsg.channel} | [Jump To Message](${newMsg.url})`)
                 .addFields(
                     {
                         name: `Original Message`,
@@ -145,9 +145,9 @@ module.exports = {
             }
         } else {
             // Add the editEmbed data
-            editEmbed.setTitle(`Message was edited in ${newMsg.channel.name} | [Jump To Message](${newMsg.url})`)
+            editEmbed.setTitle(`Message was edited in ${newMsg.channel.name}`)
             .setAuthor(`${author.username}#${author.discriminator}`, author.displayAvatarURL())
-            .setDescription(`${newMsg.author} has edited a message in ${newMsg.channel}`)
+            .setDescription(`${newMsg.author} has edited a message in ${newMsg.channel} | [Jump To Message](${newMsg.url})`)
             .addFields(
                 {
                     name: `Original Message`,

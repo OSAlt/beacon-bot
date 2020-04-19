@@ -39,6 +39,9 @@ module.exports = {
                 const joinTime = moment(user.joinedAt).format("h:mm A"); // joined time
                 const registerDate = moment(user.user.createdAt).format("ddd, MMM, YYYY"); // joined date
                 const registerTime = moment(user.user.createdAt).format("h:mm A"); // joined time
+                const boostDate = moment(user.premiumSince).format("ddd, MMM, YYYY"); // boost date
+                const boostTime = moment(user.premiumSince).format("h:mm A"); // boost time
+                let boostString = "Not Boosting";
                 let bot;
                 let permissions;
 
@@ -51,6 +54,10 @@ module.exports = {
                         bot = "I be beep boop";
                         break;
                 };
+
+                if(user.premiumSince) {
+                    boostString = `${boostDate}\n${boostTime}`;
+                }
 
                 // If user is admin just set permissions to "All"
                 if(user.hasPermission("ADMINISTRATOR")) {
@@ -88,7 +95,7 @@ module.exports = {
                         },
                         {
                             name: `Server Booster`,
-                            value: `${user.premiumSince || "Not Boosting"}`,
+                            value: `${boostString}`,
                             inline: true,
                         },
                         {
