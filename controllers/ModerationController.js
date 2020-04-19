@@ -117,21 +117,11 @@ module.exports = {
         // Create embed and attach the shared fields
         let editEmbed = new Discord.MessageEmbed()
         .setColor(0x00ff00)
-        .setURL(newMsg.url)
         .setTimestamp();
 
-        // If pinned message
+        // If pinned message then ignore
         if(oldMsg.pinned !== newMsg.pinned) {
-            // Set the fields for the pinned version of the editEmbed
-            if(oldMsg.pinned === false) {
-                editEmbed.setTitle(`New Pinned Message`)
-                .setDescription(`A message was pinned a message in ${newMsg.channel}`);
-
-            // Set the fields for the pinned version of the editEmbed
-            } else {
-                editEmbed.setTitle(`New Unpinned Message`)
-                .setDescription(`A message was unpinned a message in ${newMsg.channel}`);
-            }
+            return;
         // If the message contains an embed
         } else if(newMsg.embeds.length) {
             // If the content (not embed) of the message is the same then ignore
@@ -139,7 +129,7 @@ module.exports = {
                 return;
             } else {
                 // Add the editEmbed data
-                editEmbed.setTitle(`Message was edited in ${newMsg.channel.name}`)
+                editEmbed.setTitle(`Message was edited in ${newMsg.channel.name} | [Jump To Message](${newMsg.url})`)
                 .setAuthor(`${author.username}#${author.discriminator}`, author.displayAvatarURL())
                 .setDescription(`${newMsg.author} has edited a message in ${newMsg.channel}`)
                 .addFields(
@@ -155,7 +145,7 @@ module.exports = {
             }
         } else {
             // Add the editEmbed data
-            editEmbed.setTitle(`Message was edited in ${newMsg.channel.name}`)
+            editEmbed.setTitle(`Message was edited in ${newMsg.channel.name} | [Jump To Message](${newMsg.url})`)
             .setAuthor(`${author.username}#${author.discriminator}`, author.displayAvatarURL())
             .setDescription(`${newMsg.author} has edited a message in ${newMsg.channel}`)
             .addFields(

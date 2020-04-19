@@ -31,7 +31,8 @@ Here is a quick list of features/modules, click on any one to jump to its' infor
 * [Moderation](#moderation)
 * [Triggers (blacklisted words/phrases)](#triggers)
 * [Fun](#fun)
-* [Miscellaneous](#miscelleneous)
+* [Informative](#Informative)
+* [Miscellaneous](#Miscellaneous)
 
 ___
 
@@ -92,8 +93,6 @@ Moderation commands are used to enable moderators and super moderators (Master C
 * Logs
    * Message Deleted
    * Message Edited
-   * Message Pinned
-   * Message Unpinned
    * User Joined
    * User Left
    * User Kicked
@@ -158,6 +157,18 @@ These commands are simply for fun, they have no specific purpose except to give 
 | --- | :---: | --- | :---: | --- |
 numberfact | [number] [type] | Provides a random trivia/fact about a number, date, or year given. If no arguments are given, it will give a random number fact | Users | !numberfact 2000 year
 
+___
+
+## Informative
+These are commands that provide information about various things within the server.
+
+### **Command(s) Usage**
+
+| Command     | Argument(s) | Description | Role | Example |
+| --- | :---: | --- | :---: | --- |
+userinfo | \<mention \| user id\> | Gives information on a specific user | Users | !userinfo @user
+roleinfo | \<role name \| role mention \| role id\> | Gives information on a specific role | Users | !roleinfo Space Cowgirl
+serverinfo | N/A | Gives information on the guild | Users | !serverinfo
 ___
 
 ## Miscellaneous

@@ -33,7 +33,7 @@ module.exports = {
         const leaveEmbed = {
             color: 0xff5500,
             title: `Member Left`,
-            description: `${member} (${member.user.username}#${member.user.discriminator}) has left the server\n*${member.guild.name} now has ${member.guild.memberCount} members*`,
+            description: `${member.user} has left the server\n*${member.guild.name} now has ${member.guild.memberCount} members*`,
             fields: [
                 {
                     name: `Joined`,

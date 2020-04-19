@@ -179,7 +179,7 @@ module.exports = {
                                 specificEmbed.addField(`Message URL`, warning.message_link, false)
                             } else if(warning.type === "Note") {
                                 // Find the moderator
-                                moderator = client.guilds.get(message.guild.id).members.get(warning.mod_id.toString());
+                                moderator = client.guilds.cache.get(message.guild.id).members.cache.get(warning.mod_id.toString());
 
                                 // Add the color for the embed
                                 specificEmbed.setColor(embedColor);
