@@ -10,6 +10,7 @@ module.exports = {
     joinHandler: function(m, c) {
         const member = m; //assign the member var to the passed in member parameter
         const client = c;
+        let user = client.users.cache.get(member.user.id); //get the user
 
         // Set timer to 30 mins before user is kicked
         const timer = setTimeout(kickUser, 1800000);
@@ -29,7 +30,7 @@ module.exports = {
                     name: `${member.user.username}#${member.user.discriminator}`,
                     icon_url: member.user.displayAvatarURL(),
                 },
-                description: `${member} was kicked from the server`,
+                description: `${user} was kicked from the server`,
                 fields: [
                     {
                         name: `User Kicked`,
@@ -67,7 +68,7 @@ module.exports = {
                 const joinEmbed = {
                     color: 0x886CE4, //purple
                     title: `New Member`,
-                    description: `${member.user} has just joined the server!\n*${member.guild.name} now has ${member.guild.memberCount} members*`,
+                    description: `${user} has just joined the server!\n*${member.guild.name} now has ${member.guild.memberCount} members*`,
                     fields: [
                         {
                             name: `Date`,

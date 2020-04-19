@@ -13,12 +13,12 @@ module.exports = {
         const member = m;
         let lastMessage;
         const superLog = member.guild.channels.cache.find((c => c.name.includes(super_log_channel))); //super log channel
-        const timezone = moment(member.joinedAt).tz(moment.tz.guess()).format(`z`); // server timezone
         const joinedDate = moment(member.joinedAt).format("YYYY-MM-DD HH:mm:ss"); // joined date
         const joinedTimeStamp = moment(member.joinedTimestamp); // timestamp user joined
         const currentTime = moment(); // create a new moment obj with current time
         const memberLength = moment.duration(currentTime.diff(joinedTimeStamp)).format("Y[y] D[d] H[h] m[m] s[s]"); //get the duration of the membership and format it
         const timestamp = moment(currentTime).valueOf();
+        let user = client.users.cache.get(member.user.id); //get the user
 
         // See if the user has a last message
         if (member.lastMessage) {
@@ -33,7 +33,7 @@ module.exports = {
         const leaveEmbed = {
             color: 0xff5500,
             title: `Member Left`,
-            description: `${member.user} has left the server\n*${member.guild.name} now has ${member.guild.memberCount} members*`,
+            description: `${user} has left the server\n*${member.guild.name} now has ${member.guild.memberCount} members*`,
             fields: [
                 {
                     name: `Joined`,
