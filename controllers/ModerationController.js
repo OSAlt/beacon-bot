@@ -36,6 +36,10 @@ module.exports = {
             })
             
         } else {
+
+            // If message is a purge command name or alias then ignore it
+            if(message.startsWith(`${prefix}purge`) || message.startsWith(`${prefix}clear`) || message.startsWith(`${prefix}clean`) || message.startsWith(`${prefix}delete`)) return;
+
             // Create the delete embed
             const delEmbed = {
                 color: 0xff0000,
@@ -73,11 +77,14 @@ module.exports = {
 
             // Ensure message limit isn't exceeded
             if(count > 100) {
-                return message.reply(`you can only delete 100 messages at a time, please try again!`)
+                return message.reply(`you can only delete 100 messages at a time, please try again!`);
             }
 
+            // Delete the command message itself
+            message.delete();
+
             // Perform bulk deletion
-            message.channel.bulkDelete(count+1).then(() => {
+            message.channel.bulkDelete(count).then((messages) => {
                 bulkEmbed = {
                     color: 0xFF5500,
                     title: "Bulk Deleted Messages",
@@ -85,10 +92,10 @@ module.exports = {
                         name: `${message.author.username}#${message.author.discriminator}`,
                         icon_url: message.author.displayAvatarURL({dynamic:true}),
                     },
-                    description: `${count} messages were deleted in ${message.channel.name}`,
+                    description: `${messages.size} messages were deleted in ${message.channel.name}`,
                     fields: [
                         {
-                            name: "Deletion Count",
+                            name: "Count Given",
                             value: `${count}`,
                             inline: true,
                         },
@@ -407,7 +414,7 @@ module.exports = {
                     }
                     
                     // Format the unban date
-                    unbanDate = unbanDate.format(`YYYY-MM-DD HH:mm:ss`);
+                    unbanDate = unbanDate.format(`MMM DD, YYYY HH:mm:ss`);
 
                     /* 
                     * Sync the model to the table
@@ -527,7 +534,7 @@ module.exports = {
 
                             // Make sure data was retrieved
                             if(data) {
-                                const banDate = moment(data.createdAt).format(`YYYY-MM-DD HH:mm:ss`); //assign ban date
+                                const banDate = moment(data.createdAt).format(`MMM DD, YYYY HH:mm:ss`); //assign ban date
                                 const banReason = data.reason; //assign ban reason
                                 /* 
                                 * Sync the model to the table
