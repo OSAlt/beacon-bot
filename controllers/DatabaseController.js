@@ -223,7 +223,7 @@ module.exports = {
                         title: "User Unbanned",
                         author: {
                             name: `${user.username}#${user.discriminator}`,
-                            icon_url: user.displayAvatarURL(),
+                            icon_url: user.displayAvatarURL({dynamic:true}),
                         },
                         description: `${user.username}'s ban has expired`,
                         fields: [

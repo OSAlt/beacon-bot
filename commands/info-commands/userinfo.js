@@ -51,7 +51,7 @@ module.exports = {
                         bot = "I ain't no beep boop";
                         break;
                     case true:
-                        bot = "I be beep boop";
+                        bot = "🤖beep boop";
                         break;
                 };
 
@@ -77,10 +77,10 @@ module.exports = {
                     description: `Information for ${user}`,
                     author: {
                         name: `${user.user.username}#${user.user.discriminator}`,
-                        icon_url: user.user.displayAvatarURL(),
+                        icon_url: user.user.displayAvatarURL({dynamic:true}), //use dynamic true to display as gif if user has a gif avatar
                     },
                     thumbnail: {
-                        url: user.user.displayAvatarURL(),
+                        url: user.user.displayAvatarURL({dynamic:true}), //use dynamic true to display as gif if user has a gif avatar
                     },
                     fields: [
                         {

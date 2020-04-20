@@ -95,7 +95,7 @@ module.exports = {
                         if(guildUser) {
                             // Assign values to the embed
                             specificEmbed.setTitle(`Warning for ${args[1]}`)
-                            .setAuthor(guildUser.user.username, guildUser.user.displayAvatarURL())
+                            .setAuthor(guildUser.user.username, guildUser.user.displayAvatarURL({dynamic:true}))
                             .addField(`User Id`, guildUser.id, false)
                             .addField(`User`, guildUser, true)
                             .addField(`Server Nickname`, `${guildUser.nickname || "None"}`, true)
@@ -120,7 +120,7 @@ module.exports = {
                             client.users.fetch(warning.user_id.toString()).then((usr) => {
                                 // Assign values to the embed
                                 specificEmbed.setTitle(`Warning for ${args[1]}`)
-                                .setAuthor(usr.username, usr.displayAvatarURL())
+                                .setAuthor(usr.username, usr.displayAvatarURL({dynamic:true}))
                                 .addField(`User Id`, usr.id, true)
                                 .addField(`User`, usr, true)
                                 .addField(`Warning Type`, warning.type, true)
@@ -255,7 +255,7 @@ module.exports = {
             const userWarningsEmbed = new Discord.MessageEmbed() 
                 .setColor('#FF0000')
                 .setTitle(`${warnedUser.user.username} has a total of ${Object.keys(warnings).length} warnings`)
-                .setAuthor(`${warnedUser.user.username}`, `${warnedUser.user.displayAvatarURL()}`)
+                .setAuthor(`${warnedUser.user.username}`, `${warnedUser.user.displayAvatarURL({dynamic:true})}`)
                 .addField(`User Id`, `${warnedUser.id}`)
                 .addField(`User`, `${warnedUser}`, true)
                 .addField(`Server Nickname`, `${warnedUser.nickname || "None"}`, true)

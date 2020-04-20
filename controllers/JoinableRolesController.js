@@ -196,7 +196,7 @@ module.exports = {
                         color: 0x330066,
                         author: {
                             name: joinableRoleData.creator.username+'#'+joinableRoleData.creator.discriminator,
-                            icon_url: joinableRoleData.creator.displayAvatarURL(),
+                            icon_url: joinableRoleData.creator.displayAvatarURL({dynamic:true}),
                         },
 
                         fields: [

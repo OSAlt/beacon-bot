@@ -71,16 +71,13 @@ module.exports = {
                 const channelExcluded = excluded_trigger_channels.some(name => message.channel.name.includes(name));
                 
                 // If within an excluded channel then ignore
-                if(channelExcluded === true) {
+                if(channelExcluded) {
                     return;
-
-                // If not in an excluded channel then activate triggerHit function
-                } else {
-                    // Store the trigger words
-                    let triggers = triggerArr.filter((trig) => message.content.toLowerCase().match(`\\b(${trig})\\b`));
-                    
-                    TriggersController.triggerHit(message, triggers, client);
-                }
+                } 
+                // Store the trigger words
+                let triggers = triggerArr.filter((trig) => message.content.toLowerCase().match(`\\b(${trig})\\b`));
+                
+                TriggersController.triggerHit(message, triggers, client);
 
             // If not a trigger word/phrase or a bot message then ignore
             } else {

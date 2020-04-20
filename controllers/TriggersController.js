@@ -97,7 +97,7 @@ module.exports = {
                         color: color,
                         author: {
                             name: triggerData.creator.username+'#'+triggerData.creator.discriminator,
-                            icon_url: triggerData.creator.displayAvatarURL(),
+                            icon_url: triggerData.creator.displayAvatarURL({dynamic:true}),
                         },
 
                         fields: [
@@ -341,7 +341,7 @@ module.exports = {
                             title: "A User Has Hit A Trigger!",
                             author: {
                                 name: `${message.author.username}#${message.author.discriminator}`,
-                                icon_url: message.author.displayAvatarURL(),
+                                icon_url: message.author.displayAvatarURL({dynamic:true}),
                             },
                             description: `${message.author} has been warned for saying a trigger!`,
                             fields: [
@@ -435,7 +435,7 @@ module.exports = {
                 title: `Trigger Message Deleted!`,
                 author: {
                     name: `${message.author.username}#${message.author.discriminator}`,
-                    icon_url: message.author.displayAvatarURL(),
+                    icon_url: message.author.displayAvatarURL({dynamic:true}),
                 },
                 description: `A message by ${message.author} has been deleted because it has hit a high severity trigger, disciplinary action should be taken as soon as possible!`,
                 fields: [

@@ -160,7 +160,7 @@ module.exports = {
                         color: 0x330066,
                         author: {
                             name: autoroleData.creator.username+'#'+autoroleData.creator.discriminator,
-                            icon_url: autoroleData.creator.displayAvatarURL(),
+                            icon_url: autoroleData.creator.displayAvatarURL({dynamic:true}),
                         },
 
                         fields: [

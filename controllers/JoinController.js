@@ -10,7 +10,6 @@ module.exports = {
     joinHandler: function(m, c) {
         const member = m; //assign the member var to the passed in member parameter
         const client = c;
-        let user = client.users.cache.get(member.user.id); //get the user
 
         // Set timer to 30 mins before user is kicked
         const timer = setTimeout(kickUser, 1800000);
@@ -28,13 +27,13 @@ module.exports = {
                 title: `User Was Kicked!`,
                 author: {
                     name: `${member.user.username}#${member.user.discriminator}`,
-                    icon_url: member.user.displayAvatarURL(),
+                    icon_url: member.user.displayAvatarURL({dynamic:true}),
                 },
-                description: `${user} was kicked from the server`,
+                description: `<@${member.user.id}> was kicked from the server`,
                 fields: [
                     {
                         name: `User Kicked`,
-                        value: `${member}`,
+                        value: `${member.user.tag}`,
                         inline: true,
                     },
                     {
@@ -44,6 +43,9 @@ module.exports = {
                     }
                 ],
                 timestamp: new Date(),
+                footer: {
+                    text: `User ID: ${member.user.id}`
+                }
             };
             member.kick("Verification Timeout").then(() => {
                 // Send the embed to the action log channel
@@ -61,15 +63,19 @@ module.exports = {
                 const roles = []; //create the roles array
                 const joinedDate = moment(member.joinedAt).format(`YYYY-MM-DD`); //joined date only
                 const joinedTime = moment(member.joinedAt).format(`HH:mm:ss`); //joined time only
-                const joinedTimezone = moment(member.joinedAt).tz(moment.tz.guess()).format(`z`); // timezone for the joined time
                 const joinLog = member.guild.channels.cache.find((c => c.name.includes(join_log_channel))); //join log channel
 
                 // Create the embed to display a new member join
                 const joinEmbed = {
                     color: 0x886CE4, //purple
                     title: `New Member`,
-                    description: `${user} has just joined the server!\n*${member.guild.name} now has ${member.guild.memberCount} members*`,
+                    description: `<@${member.user.id}> has just joined the server!\n*${member.guild.name} now has ${member.guild.memberCount} members*`,
                     fields: [
+                        {
+                            name: `User`,
+                            value: `${member.user.tag}`,
+                            inline: true,
+                        },
                         {
                             name: `Date`,
                             value: `${joinedDate}`,
@@ -83,7 +89,7 @@ module.exports = {
                     ],
                     timestamp: new Date(),
                     footer: {
-                        text: `All times are in ${joinedTimezone}`,
+                        text: `User ID: ${member.user.id}`,
                     }
                 }
 

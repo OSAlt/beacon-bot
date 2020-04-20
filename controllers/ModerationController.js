@@ -13,6 +13,9 @@ module.exports = {
         const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
         let triggerArr = [];
 
+        // Exclude master control and pokecord channels
+        if(message.channel.name.includes("master-control") || message.channel.name.includes("pokecord")) return;
+
         // Add the trigger words/phrases to the local array
         for(key in triggerList.list) {
             triggerArr.push(key);
@@ -39,7 +42,7 @@ module.exports = {
                 title: `Message Deleted in ${message.channel.name}`,
                 author: {
                     name: `${message.author.username}#${message.author.discriminator}`,
-                    icon_url: message.author.displayAvatarURL()
+                    icon_url: message.author.displayAvatarURL({dynamic:true})
                 },
                 description: `A message by ${message.author} was deleted in ${message.channel}`,
                 fields: [
@@ -80,7 +83,7 @@ module.exports = {
                     title: "Bulk Deleted Messages",
                     author: {
                         name: `${message.author.username}#${message.author.discriminator}`,
-                        icon_url: message.author.displayAvatarURL(),
+                        icon_url: message.author.displayAvatarURL({dynamic:true}),
                     },
                     description: `${count} messages were deleted in ${message.channel.name}`,
                     fields: [
@@ -113,6 +116,8 @@ module.exports = {
         const superLog = newMsg.guild.channels.cache.find((c => c.name.includes(super_log_channel))); //super log channel
         // Create author var
         const author = client.users.cache.get(newMsg.author.id);
+        // Exclude pokecord channel
+        if(newMsg.channel.name.includes("pokecord")) return;
 
         // Create embed and attach the shared fields
         let editEmbed = new Discord.MessageEmbed()
@@ -130,7 +135,7 @@ module.exports = {
             } else {
                 // Add the editEmbed data
                 editEmbed.setTitle(`Message was edited in ${newMsg.channel.name}`)
-                .setAuthor(`${author.username}#${author.discriminator}`, author.displayAvatarURL())
+                .setAuthor(`${author.username}#${author.discriminator}`, author.displayAvatarURL({dynamic:true}))
                 .setDescription(`${newMsg.author} has edited a message in ${newMsg.channel} | [Jump To Message](${newMsg.url})`)
                 .addFields(
                     {
@@ -146,7 +151,7 @@ module.exports = {
         } else {
             // Add the editEmbed data
             editEmbed.setTitle(`Message was edited in ${newMsg.channel.name}`)
-            .setAuthor(`${author.username}#${author.discriminator}`, author.displayAvatarURL())
+            .setAuthor(`${author.username}#${author.discriminator}`, author.displayAvatarURL({dynamic:true}))
             .setDescription(`${newMsg.author} has edited a message in ${newMsg.channel} | [Jump To Message](${newMsg.url})`)
             .addFields(
                 {
@@ -248,7 +253,7 @@ module.exports = {
                             title: `User Was Kicked!`,
                             author: {
                                 name: `${user.user.username}#${user.user.discriminator}`,
-                                icon_url: user.user.displayAvatarURL(),
+                                icon_url: user.user.displayAvatarURL({dynamic:true}),
                             },
                             description: `${user} was kicked from the server by ${message.author}`,
                             fields: [
@@ -429,7 +434,7 @@ module.exports = {
                                 title: `User Was Banned!`,
                                 author: {
                                     name: `${user.username}#${user.discriminator}`,
-                                    icon_url: user.displayAvatarURL(),
+                                    icon_url: user.displayAvatarURL({dynamic:true}),
                                 },
                                 description: `${user} was banned from the server by ${message.author} for ${banLength}!`,
                                 fields: [
@@ -550,7 +555,7 @@ module.exports = {
                                             title: `User Was Unbanned!`,
                                             author: {
                                                 name: `${user.username}#${user.discriminator}`,
-                                                icon_url: user.displayAvatarURL(),
+                                                icon_url: user.displayAvatarURL({dynamic:true}),
                                             },
                                             description: `${user} was unbanned from the server by ${message.author}`,
                                             fields: [
@@ -680,7 +685,7 @@ module.exports = {
                             title: `A New Warning Was Issued To A User`,
                             author: {
                                 name: message.author.username,
-                                icon_url: message.author.displayAvatarURL(),
+                                icon_url: message.author.displayAvatarURL({dynamic:true}),
                             },
                             description: `${message.author} has added a warning to ${user.user}!`,
                             fields: [
