@@ -11,13 +11,21 @@
       "install": {
         "title": "Installation Guide",
         "sidebar_label": "Install"
+      },
+      "k8s": {
+        "title": "Kubernetes"
+      },
+      "user_guide": {
+        "title": "User Guide",
+        "sidebar_label": "User Guide"
       }
     },
     "links": {
       "Docs": "Docs"
     },
     "categories": {
-      "Docusaurus": "Docusaurus"
+      "TechnicalGuides": "TechnicalGuides",
+      "UserGuides": "UserGuides"
     }
   },
   "pages-strings": {

@@ -1,3 +1,8 @@
+---
+id: user_guide
+title: User Guide
+sidebar_label: User Guide
+---
 # BeaconBot Usage Guide
 
 BeaconBot is a bot created with GeekBeacon in mind. There are many commands for this bot, and more to come. Because of this, we thought it would be best to have a guide explaining how to use each command and feature of the bot!
@@ -42,7 +47,7 @@ Verification is used to ensure that a user is a human before assigning them auto
 
 *Currently this isn't an optional feature, so you must have at least one autorole!*
 
-### **Command(s) Usage**
+#### **Command(s) Usage**
 
 | Command     | Argument(s) | Description | Role Required | Example |
 | --- | :---: | --- | :---: | --- |
@@ -58,7 +63,7 @@ ___
 
 Autoroles are a way to automatically assign roles when a member joins the server. Currently these do not persist if a user leaves, but they will be reassigned if they join again!
 
-### **Command(s) Usage**
+#### **Command(s) Usage**
 
 | Command     | Argument(s) | Description | Role | Example |
 | --- | :---: | --- | :---: | --- |
@@ -73,7 +78,7 @@ ___
 
 Joinable roles are a way that users can join a specific role. This feature can be used for various things, however GeekBeacon uses them to enable members to see/hide specific channels/categories.
 
-### **Command(s) Usage**
+#### **Command(s) Usage**
 
 | Command     | Argument(s) | Description | Role | Example |
 | --- | :---: | --- | :---: | --- |
@@ -105,7 +110,7 @@ Moderation commands are used to enable moderators and super moderators (Master C
 * Unban User
 * Warn Member
 
-### **Command(s) Usage**
+#### **Command(s) Usage**
 
 | Command     | Argument(s) | Description | Role | Example |
 | --- | :---: | --- | :---: | --- |
@@ -136,7 +141,7 @@ Triggers have severity levels; low, medium, and high. These are used to determin
 * **Low** - These triggers aren't as serious, but might need to be kept in specific channels. When these are seen the bot will ask the user to refrain from using the word/phrase.
 
 
-### **Command(s) Usage**
+#### **Command(s) Usage**
 
 | Command     | Argument(s) | Description | Role | Example |
 | --- | :---: | --- | :---: | --- |
@@ -151,7 +156,7 @@ ___
 ## Fun
 These commands are simply for fun, they have no specific purpose except to give users a little bit of interactivity with the bot! Currently there aren't many commands in this category, but that is planned to change!
 
-### **Command(s) Usage**
+#### **Command(s) Usage**
 
 | Command     | Argument(s) | Description | Role | Example |
 | --- | :---: | --- | :---: | --- |
@@ -162,7 +167,7 @@ ___
 ## Informative
 These are commands that provide information about various things within the server.
 
-### **Command(s) Usage**
+#### **Command(s) Usage**
 
 | Command     | Argument(s) | Description | Role | Example |
 | --- | :---: | --- | :---: | --- |
@@ -174,7 +179,7 @@ ___
 ## Miscellaneous
 These are commands that don't fit into any other category. Not much to say about these 😛
 
-### **Command(s) Usage**
+#### **Command(s) Usage**
 
 | Command     | Argument(s) | Description | Role | Example |
 | --- | :---: | --- | :---: | --- |
