@@ -10,3 +10,5 @@ config.*
 website/build
 .env
 data
+.docusaurus/
+build

@@ -4,13 +4,15 @@
   "description": "Custom Discord bot for GeekBeacon",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "docusaurus start",
+    "build": "docusaurus build",
+    "swizzle": "docusaurus swizzle",
+    "deploy": "docusaurus deploy"
   },
   "author": "Toby Horn (Kankuro)",
   "license": "ISC",
   "dependencies": {
     "discord.js": "^12.1.1",
-    "docusaurus": "^1.14.4",
     "dotenv": "^8.2.0",
     "lodash": "^4.17.15",
     "moment": "^2.24.0",
@@ -18,6 +20,24 @@
     "moment-timezone": "^0.5.27",
     "mysql2": "^2.1.0",
     "sequelize": "^5.21.3",
-    "shortid": "^2.2.15"
+    "shortid": "^2.2.15",
+    "@docusaurus/core": "^2.0.0-alpha.50",
+    "@docusaurus/preset-classic": "^2.0.0-alpha.50",
+    "classnames": "^2.2.6",
+    "react": "^16.8.4",
+    "react-dom": "^16.8.4"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
+
 }
