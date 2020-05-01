@@ -51,7 +51,7 @@ module.exports = {
                     // Add a new field for each warning
                     data.forEach(warning => {
                         warnedUser = client.users.cache.get(warning.user_id.toString()); //get the user
-                        let date = moment(warning.createdAt).format("YYYY-MM-DD HH:mm:ss"); //format date
+                        let date = moment(warning.createdAt).format("MMM DD, YYYY HH:mm:ss"); //format date
 
                         // Create a new field depending on the type of warning
                         if(warning.type === "Trigger") {
@@ -174,7 +174,7 @@ module.exports = {
                                 specificEmbed.addField(`Trigger(s) Hit`, warning.triggers, false);
                                 specificEmbed.addField(`Severity`, warning.severity, false);
                                 specificEmbed.addField(`Channel`, warnedChannel, false);
-                                specificEmbed.addField(`Time Trigger Was Hit`, moment(warning.createdAt).tz(moment.tz.guess()).format('YYYY-MM-DD HH:mm:ss'), false);
+                                specificEmbed.addField(`Time Trigger Was Hit`, moment(warning.createdAt).tz(moment.tz.guess()).format('MMM DD, YYYY HH:mm:ss'), false);
                                 specificEmbed.addField(`Full Message`, fullMessage, false);
                                 specificEmbed.addField(`Message URL`, warning.message_link, false)
                             } else if(warning.type === "Note") {

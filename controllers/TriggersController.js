@@ -72,8 +72,8 @@ module.exports = {
                     triggerData.creator = client.users.cache.get(data.get('user_id'));
                     triggerData.severity = data.get('severity'); //get severity level
                     triggerData.enabled = data.get('enabled'); //get enabled
-                    triggerData.created = moment(data.get('createdAt')).format('YYYY-MM-DD HH:mm:ss'); //get created date in YYYY-MM-DD HH:mm:ss format
-                    triggerData.updated = moment(data.get('updatedAt')).format('YYYY-MM-DD HH:mm:ss'); //get updated date in YYYY-MM-DD HH:mm:ss format
+                    triggerData.created = moment(data.get('createdAt')).format('MMM DD, YYYY HH:mm:ss'); //get created date
+                    triggerData.updated = moment(data.get('updatedAt')).format('MMM DD, YYYY HH:mm:ss'); //get updated date
 
                 // Send the trigger to the user in a DM
                 }).then(() => {

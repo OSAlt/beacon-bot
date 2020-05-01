@@ -185,8 +185,8 @@ module.exports = {
                     joinableRoleData.id = data.get('id'); //get id
                     joinableRoleData.role = data.get('role'); //get role
                     joinableRoleData.creator = client.users.cache.get(data.get('user_id')); //get user id
-                    joinableRoleData.created = moment(data.get('createdAt')).format('YYYY-MM-DD HH:mm:ss'); //get created date in YYYY-MM-DD HH:mm:ss format
-                    joinableRoleData.updated = moment(data.get('updatedAt')).format('YYYY-MM-DD HH:mm:ss'); //get updated date in YYYY-MM-DD HH:mm:ss format
+                    joinableRoleData.created = moment(data.get('createdAt')).format('MMM DD, YYYY HH:mm:ss'); //get created date in YYYY-MM-DD HH:mm:ss format
+                    joinableRoleData.updated = moment(data.get('updatedAt')).format('MMM DD, YYYY HH:mm:ss'); //get updated date in YYYY-MM-DD HH:mm:ss format
 
                 // Send the joinable role to the user in a DM
                 }).then(() => {

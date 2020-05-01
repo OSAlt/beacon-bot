@@ -7,8 +7,7 @@ const AutorolesController = require("./AutorolesController");
 const JoinableRolesController = require("./JoinableRolesController");
 const WarningsController = require("./WarningsController");
 const ModerationController = require("./ModerationController");
-const Trigger = require("../models/Trigger");
-const Ban = require("../models/Ban");
+const Models = require("../models/AllModels");
 
 // Create a new module export
 module.exports = {
@@ -143,8 +142,29 @@ module.exports = {
     // Function for when bot starts up
     botReconnect: function(tl) {
 
+        /*
+        ##################################
+        ######## create db tables ########
+        ##################################
+        */
+        // Loop through the models object
+        for (const key of Object.keys(Models)) {
+            /*
+            * Sync each model to create the table if needed
+            !!!!
+            Keep force set to false otherwise it will overwrite the table if one exists!
+            !!!!
+            */
+            Models[key].sync({force: false});
+        };
+        
+        /*
+        ###################################
+        ######## populate triggers ########
+        ###################################
+        */
         // Get all rows of enabled triggers and add them to the triggerList
-        Trigger.findAll({
+        Models.trigger.findAll({
             where: {
                 enabled: 1 //make sure trigger is enabled; 0 = false 1 = true
             }
@@ -166,13 +186,13 @@ module.exports = {
     // Function to handle unbans
     unbanCheck: function(c) {
         const client = c;
-        const now = moment().format("YYYY-MM-DD HH:mm:ss");
+        const now = moment().format("MMM DD, YYYY HH:mm:ss");
         let bannedUsers = []; // array for all banned users
         let logChannel; // var for action log channel(s)
         const timezone = moment().tz(moment.tz.guess()).format(`z`); // server timezone
 
         // Find all uncompleted bans
-        Ban.findAll({where: {completed: false},raw:true}).then((data) => {
+        Models.ban.findAll({where: {completed: false},raw:true}).then((data) => {
             // If the ban(s) were found...
             if (data) {
                 // Loop through each row from the db
@@ -212,10 +232,10 @@ module.exports = {
                 guild.members.unban(item.userId, "Ban Expiration").then(() => {
                     const user = client.users.cache.get(item.userId); //get the user that was banned
                     const moderator = client.users.cache.get(item.modId); //get the moderator that performed the ban
-                    let banDate = moment(item.created).format(`YYYY-MM-DD HH:mm:ss`);
+                    let banDate = moment(item.created).format(`MMM DD, YYYY HH:mm:ss`);
 
                     // Update the completed field
-                    Ban.update({completed: true}, {where: {id: item.id}});
+                    Models.ban.update({completed: true}, {where: {id: item.id}});
 
                     // Create the unban embed
                     const unbanEmbed = {

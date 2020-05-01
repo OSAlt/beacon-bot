@@ -13,13 +13,14 @@ module.exports = {
         const server = message.guild;
         // Make sure the server is available
         if(server.available) {
-            const createDate = moment(server.createdAt).format("ddd, MMM, YYYY"); // created date
+            const createDate = moment(server.createdAt).format("MMM DD, YYYY"); // created date
             let channels = server.channels.cache.array();
             let roleCount = server.roles.cache.array().length;
             let categoryCount = 0;
             let newsChannelCount = 0;
             let textChannelCount = 0;
             let voiceChannelCount = 0;
+            let serverURL;
 
             channels.forEach((channel) => {
                 switch(channel.type) {
@@ -39,6 +40,14 @@ module.exports = {
                         break;
                 };
             });
+
+            // If server has no vanity url then assign N/A
+            if(server.vanityURLCode === null) {
+                serverURL = `N/A`;
+            // If server has vanity url then build invite link
+            } else {
+                serverURL = `https://discord.gg/${server.vanityURLCode}`;
+            }
 
             // Create the embed
             const serverEmbed = {
@@ -99,8 +108,8 @@ module.exports = {
                         inline: true,
                     },
                     {
-                        name: `Invite Link`,
-                        value: `https://discord.gg/${server.vanityURLCode}`,
+                        name: `Vanity URL`,
+                        value: `${serverURL}`,
                         inline: true,
                     },
                     {

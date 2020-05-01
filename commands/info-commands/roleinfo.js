@@ -75,8 +75,8 @@ module.exports = {
                             inline: true,
                         },
                         {
-                            name: `Permissions`,
-                            value: `${permissions}`,
+                            name: `Special Permissions`,
+                            value: `${permissions || "None"}`,
                             inline: false,
                         },
                     ],

@@ -35,11 +35,11 @@ module.exports = {
             }
 
             if(user) {
-                const joinDate = moment(user.joinedAt).format("ddd, MMM, YYYY"); // joined date
+                const joinDate = moment(user.joinedAt).format("MMM DD, YYYY"); // joined date
                 const joinTime = moment(user.joinedAt).format("h:mm A"); // joined time
-                const registerDate = moment(user.user.createdAt).format("ddd, MMM, YYYY"); // joined date
-                const registerTime = moment(user.user.createdAt).format("h:mm A"); // joined time
-                const boostDate = moment(user.premiumSince).format("ddd, MMM, YYYY"); // boost date
+                const registerDate = moment(user.user.createdAt).format("MMM DD, YYYY"); // register date
+                const registerTime = moment(user.user.createdAt).format("h:mm A"); // register time
+                const boostDate = moment(user.premiumSince).format("MMM DD, YYYY"); // boost date
                 const boostTime = moment(user.premiumSince).format("h:mm A"); // boost time
                 let boostString = "Not Boosting";
                 let bot;
@@ -51,7 +51,7 @@ module.exports = {
                         bot = "I ain't no beep boop";
                         break;
                     case true:
-                        bot = "🤖beep boop";
+                        bot = "🤖 beep boop";
                         break;
                 };
 

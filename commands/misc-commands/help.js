@@ -1,5 +1,5 @@
 // Import required files
-const {prefix, admin_role, super_role, mod_role} = require('../../config');
+const {prefix, admin_role, super_role, mod_role, mod_trainee_role} = require('../../config');
 
 // Create a new module export
 module.exports = {
@@ -16,6 +16,7 @@ module.exports = {
         let adminCmds = [],superCmds = [],modCmds = [],userCmds = [];
         let adminCmdsStr,superCmdsStr,modCmdsStr;
         const {commands} = message.client;
+        modTraineeRole = message.member.roles.cache.some(role => role.name.includes(mod_trainee_role));
         const modRole = message.member.roles.cache.some(role => role.name.includes(mod_role));
         const superRole = message.member.roles.cache.some(role => role.name.includes(super_role));
         const adminRole = message.member.roles.cache.some(role => role.name.includes(admin_role));
@@ -65,7 +66,7 @@ module.exports = {
                 adminCmdsStr = `~~${adminCmds.join("\n")}~~`;
 
             // If mod strikethrough super + admin commands
-            } else if (modRole) {
+            } else if (modRole || modTraineeRole) {
                 modCmdsStr = `${modCmds.join("\n")}`;
                 superCmdsStr = `~~${superCmds.join("\n")}~~`;
                 adminCmdsStr = `~~${adminCmds.join("\n")}~~`;
@@ -166,7 +167,7 @@ module.exports = {
         // If command is mod only
         } else if (command.mod === true) {
             // If user is a mod, super, or admin send embed
-            if (modRole || superRole || adminRole || message.member === ownerRole) {
+            if (modTraineeRole || modRole || superRole || adminRole || message.member === ownerRole) {
                 message.channel.send({embed:cmdEmbed});
             // If user isn't a mod, super, or admin let them know they don't have permissions
             } else {
