@@ -36,7 +36,7 @@ module.exports = {
                             },
                             {
                                 name: `**If You Need Help**`,
-                                value: `• <#706323208416002109>\n• [GeekBeacon Forums Support](https://forum.geekbeacon.org/t/discord-verification-help/735)`,
+                                value: `• <#706372949980086312>\n• [GeekBeacon Forums Support](https://forum.geekbeacon.org/t/discord-verification-help/735)`,
                                 inline: false,
                             }
                         ]
