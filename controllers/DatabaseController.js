@@ -100,7 +100,7 @@ module.exports = {
         */
         } else if(command.name === "ban") {
             // Call the ban handler function from the ModerationController file
-            ModerationController.banHandler(args, message);
+            ModerationController.banHandler(args, message, client);
 
         /*
         #################################
@@ -119,6 +119,24 @@ module.exports = {
         } else if(command.name === "warn") {
             // Call the warn handler function from the ModerationController file
             ModerationController.warnHandler(args, message, client);
+            
+        /*
+        ##################################
+        ########## mute command ##########
+        ##################################
+        */
+        } else if(command.name === "mute") {
+            // Call the mute handler function from the ModerationController file
+            ModerationController.muteHandler(args, message);
+            
+        /*
+        ##################################
+        ######### unmute command #########
+        ##################################
+        */
+        } else if(command.name === "unmute") {
+            // Call the mute handler function from the ModerationController file
+            ModerationController.unmuteHandler(args, message);
 
         /*
         ####################################
@@ -186,7 +204,7 @@ module.exports = {
     // Function to handle unbans
     unbanCheck: function(c) {
         const client = c;
-        const now = moment().format("MMM DD, YYYY HH:mm:ss");
+        const now = moment().utc();
         let bannedUsers = []; // array for all banned users
         let logChannel; // var for action log channel(s)
         const timezone = moment().tz(moment.tz.guess()).format(`z`); // server timezone

@@ -42,7 +42,7 @@ module.exports = {
                         ]
                     }
                     // Send the embed along with the file for the thumbnail
-                    verifyChannel.send({ files: [thumb], embed: verifyEmbed})
+                    verifyChannel.send(`**Verify by clicking the emoji.**\nNote: If you don't see the below embed or emoji reaction you need to enable embeds by going to \`User Settings > Text & Images\` and turning on \`Show website preview info from links pasted into chat\` or \`Show emoji reactions on messages.\``,{ files: [thumb], embed: verifyEmbed})
                     .then(sent => {
                         // React to the message with the proper emoji
                         sent.react(`✅`);

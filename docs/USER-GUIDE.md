@@ -120,10 +120,14 @@ ban | \<mention \| user id\>, \<reason\>, \<time\>* | Bans a user from the guild
 unban | \<user id\>, \<reason\> | Unbans a user from the guild | Mod | !unban 12345, apologized
 purge | \<count\>* | Bulk deletes messages in the channel this command was used in | Super | !purge 25
 warnings | \<recent \| specific \| user\> \<count \| warn id \| user id \| mention\> | Get the warning(s) for a user or recent warning(s) | Mod | !warnings specific 1hsj3ls
+mute* | \<mention \| user id\> | Removes the user's ability to send messages, add reactions, or speak in voice | Mod | !mute @User
+unmute | \<mention \| user id\> | Removes the user's muted status | Mod | !unmute @User
 
 \*count - The maximum count for a single purge is 100
 
 \*time - This can be any format supported by [Moment's Add method (including shorthands)](https://momentjs.com/docs/#/manipulating/add/) or `p`, `perm`, `perma`, and `permanent` for a permanent ban (999 years)
+
+\*mute - An optional timed function will be added soon along with database logging
 
 ___
 

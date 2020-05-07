@@ -1,5 +1,5 @@
 // Import required files
-const {db_name, db_host, db_port, db_user, db_pass, join_log_channel, action_log_channel, server_id} = require("../config");
+const {db_name, db_host, db_port, db_user, db_pass, join_log_channel, user_role} = require("../config");
 const Sequelize = require('sequelize');
 const moment = require("moment-timezone")
 
@@ -15,6 +15,7 @@ module.exports = {
         const joinedDate = moment(member.joinedAt).format(`MMM DD, YYYY`); //joined date only
         const joinedTime = moment(member.joinedAt).format(`HH:mm:ss`); //joined time only
         const joinLog = member.guild.channels.cache.find((c => c.name.includes(join_log_channel))); //join log channel
+        const users = member.guild.roles.cache.find(r => r.name === user_role); //users role
 
         // Check the user's roles each second
         const interval = setInterval(assignRoles, 1000);
@@ -23,18 +24,11 @@ module.exports = {
 
             if(member.roles.cache.find(r => r.name === "Users")) {
                 clearInterval(interval);
-
-                const sequelize = new Sequelize(`mysql://${db_user}:${db_pass}@${db_host}:${db_port}/${db_name}`, {logging: false}); //create the sequelize connection
-                const roles = []; //create the roles array
-                const joinedDate = moment(member.joinedAt).format(`YYYY-MM-DD`); //joined date only
-                const joinedTime = moment(member.joinedAt).format(`HH:mm:ss`); //joined time only
-                const joinLog = member.guild.channels.cache.find((c => c.name.includes(join_log_channel))); //join log channel
-
                 // Create the embed to display a new member join
                 const joinEmbed = {
                     color: 0x886CE4, //purple
                     title: `New Member`,
-                    description: `<@${member.user.id}> has just joined the server!\n*${member.guild.name} now has ${member.guild.memberCount} members*`,
+                    description: `<@${member.user.id}> has just joined the server!\n*${member.guild.name} now has ${member.guild.memberCount} total members, ${users.members.array().length} of which are verified!*`,
                     fields: [
                         {
                             name: `User`,

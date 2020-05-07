@@ -1,5 +1,5 @@
 const moment = require("moment");
-const {prefix, admin_role, super_role, mod_role, mod_trainee_role, action_log_channel, super_log_channel} = require('../config');
+const {prefix, admin_role, super_role, mod_role, mod_trainee_role, action_log_channel, super_log_channel, user_role} = require('../config');
 const Models = require("../models/AllModels");
 const shortid = require('shortid');
 const Discord = require('discord.js');
@@ -297,12 +297,11 @@ module.exports = {
             }
         }
     },
-    banHandler: function(a, m) {
-        const args = a;
-        const message = m;
+    banHandler: async function(a, m, c) {
+        const args = a, message = m, client = c;
         const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
         const timezone = moment.tz(moment.tz.guess()).zoneAbbr(); // server timezone
-        let user; // user var
+        let user, bans;
         // Get the mod+ roles
         const modTraineeRole = message.guild.roles.cache.find(role => role.name.includes(mod_trainee_role));
         const modRole = message.guild.roles.cache.find(role => role.name.includes(mod_role));
@@ -335,39 +334,50 @@ module.exports = {
                     // If unable to get the user, let the mod know
                     return message.reply(`uh oh! That user isn't a member of this guild!`);
                 }
+
+                // If user is a bot then deny banning it
+                if(user.user.bot) {
+                    return message.channel.send(`You can't ban no beep boop!`);
+                // If the user tries to ban themselves then deny banning them
+                } else if(user.user.id === message.author.id) {
+                    return message.reply(`you can't ban yourself from the server, silly!`);
+                // If the user is a mod+ then deny banning them
+                } else if(user.roles.cache.some(r => [modTraineeRole.name, modRole.name, superRole.name, adminRole.name].includes(r.name))) {
+                    return message.reply(`you got guts, trying to ban a ${user.roles.highest}!`);
+                // If the user is the server owner then deny banning them
+                } else if (user.user.id === user.guild.ownerID) {
+                    return message.reply(`I hope you didn't really think you could ban the server owner...`);
+                }
+
+                // Reassign the user to be a user role and not a guildMember role
+                user = user.user;
+
             // If not, find the user by the provided id
             } else {
 
                 // Try to get the user
                 try {
-                    user = message.guild.members.cache.get(args[0]);
+                    user = await client.users.fetch(args[0]);
                 } catch(e) {
                     // If unable to get the user, let the mod know
                     return message.reply(`uh oh! That user isn't a member of this guild!`);
                 }
 
+                // Get bans from the server
+                bans = await message.guild.fetchBans();
+
+                // Check if user is banned
+                if(bans.has(user.id)) {
+                    // If user is banned then use the mod know
+                    return message.reply(`you silly! ${user} is already banned!`);
+                };
+                
+
                 // If user is undefined let the moderator know
                 if(user === undefined) {
-                    return message.reply(`uh oh! Looks like I wasn't able to find that user, please check the user id and try again or try using a user mention like so: \`@Username\``)
+                    return message.reply(`uh oh! Looks like I wasn't able to find that user, please check the user id and try again or try using a user mention like so: \`@Username\``);
                 }
             }
-
-            // If user is a bot then deny banning it
-            if(user.user.bot) {
-                return message.channel.send(`You can't ban no beep boop!`);
-            // If the user tries to ban themselves then deny banning them
-            } else if(user.user.id === message.author.id) {
-                return message.reply(`you can't ban yourself from the server, silly!`);
-            // If the user is a mod+ then deny banning them
-            } else if(user.roles.cache.some(r => [modTraineeRole.name, modRole.name, superRole.name, adminRole.name].includes(r.name))) {
-                return message.reply(`you got guts, trying to ban a ${user.roles.highest}!`);
-            // If the user is the server owner then deny banning them
-            } else if (user.user.id === user.guild.ownerID) {
-                return message.reply(`I hope you didn't really think you could ban the server owner...`);
-            }
-
-            // Reassign the user to be a user role and not a guildMember role
-            user = user.user;
 
             // Check if a reason was given
             if(args[1] && user !== undefined) {
@@ -463,7 +473,7 @@ module.exports = {
                             };
 
                             // Ban the user from the server
-                            message.guild.members.ban(user.id).then(() => {
+                            message.guild.members.ban(user.id, {reason: reason}).then(() => {
                                 // Send the embed to the action log channel
                                 actionLog.send({embed: banEmbed});
                             });
@@ -537,10 +547,10 @@ module.exports = {
                                     Keep force set to false otherwise it will overwrite the table instead of making a new row!
                                 !!!!
                                 */
-                                Models.ban.sync({ force: false }).then(() => {
+                                Models.unban.sync({ force: false }).then(() => {
 
                                     // Add the unban record to the database
-                                    Models.ban.create({
+                                    Models.unban.create({
                                         user_id: userId,
                                         reason: reason,
                                         type: "Manual",
@@ -731,6 +741,93 @@ module.exports = {
                     message.reply(`uh oh! It seems you forgot to give a reason for warning, please be sure to provide a reason for this action!\nExample: \`${prefix}warn ${user}, reason\``);
                 }
             }
+        }
+    },
+    muteHandler: async function(a, m) {
+        const args = a, message = m;
+        let user;
+        let usersRole = message.member.guild.roles.cache.find(r => r.name === user_role); //users role
+        let mutedRole = message.member.guild.roles.cache.find(r => r.name === "Muted"); //muted role
+
+        // Check for user by id
+        if(!isNaN(args[0])) {
+            // If invalid id let the user know
+            if(message.guild.members.cache.get(args[0]) === undefined) {
+                return message.reply(`uh oh! Looks like I wasn't able to find that user, please check the user id and try again or try using a user mention like so: \`@Username\``);
+
+            // If user found, assign it to the user var
+            } else {
+                user = message.guild.members.cache.get(args[0]);
+            }
+        // Check if a user mention was given
+        } else if (args[0].startsWith("<@")) {
+            user = message.mentions.members.first(); // get user tag
+            if(!user) {
+                // Let the user know they provided an invalid user mention
+                return message.reply(`uh oh! Looks like you gave an invalid user mention. Make sure that you are mentioning a valid user!`);
+            }
+        } else {
+            // Let user know they need to provide a user mention or a valid user id
+            return message.reply(`uh oh! You must provide me with a user mention or id so I know who to mute!`);
+        }
+
+        // Check if the muted role exists
+        if(!mutedRole) {
+            // If no muted role then create one
+            mutedRole = await message.guild.roles.create({
+                data: {
+                    name: `Muted`,
+                    color: `#818386`,
+                    position: `${usersRole.position + 1}`,
+                    permissions: [], //set permissions to an empty array so no permissions are given
+                },
+                reason: `No muted role, need one to mute users!`,
+            });
+        }
+
+        // Loop through all channels channels
+        message.guild.channels.cache.forEach(async (channel) => {
+            // Deny the ability to send messages, speak, add reactions, and use voice activity for each channel for the muted role
+            await channel.updateOverwrite(mutedRole, {
+                SEND_MESSAGES: false,
+                SPEAK: false,
+                ADD_REACTIONS: false,
+                USE_VAD: false
+            });
+        });
+
+        // Add the user to the muted role
+        user.roles.add(mutedRole);
+    },
+    unmuteHandler: function(a, m) {
+        const args = a, message = m;
+        let mutedRole = message.member.guild.roles.cache.find(r => r.name === "Muted"); //muted role
+
+        // Check for user by id
+        if(!isNaN(args[0])) {
+            // If invalid id let the user know
+            if(message.guild.members.cache.get(args[0]) === undefined) {
+                return message.reply(`uh oh! Looks like I wasn't able to find that user, please check the user id and try again or try using a user mention like so: \`@Username\``);
+
+            // If user found, assign it to the user var
+            } else {
+                user = message.guild.members.cache.get(args[0]);
+            }
+        // Check if a user mention was given
+        } else if (args[0].startsWith("<@")) {
+            user = message.mentions.members.first(); // get user tag
+            if(!user) {
+                // Let the user know they provided an invalid user mention
+                return message.reply(`uh oh! Looks like you gave an invalid user mention. Make sure that you are mentioning a valid user!`);
+            }
+        } else {
+            // Let user know they need to provide a user mention or a valid user id
+            return message.reply(`uh oh! You must provide me with a user mention or id so I know who to mute!`);
+        }
+
+        //If user exists then remove from muted role
+        if(user) {
+            user.roles.remove(mutedRole);
         }
     }
 }
