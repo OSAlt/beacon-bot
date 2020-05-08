@@ -743,11 +743,18 @@ module.exports = {
             }
         }
     },
-    muteHandler: async function(a, m) {
+    muteHandler: function(a, m) {
         const args = a, message = m;
         let user;
-        let usersRole = message.member.guild.roles.cache.find(r => r.name === user_role); //users role
-        let mutedRole = message.member.guild.roles.cache.find(r => r.name === "Muted"); //muted role
+        const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
+        // In Role? Boolean variables
+        const inSuperRole = message.member.roles.cache.some(role => role.name.includes(super_role));
+        const inAdminRole = message.member.roles.cache.some(role => role.name.includes(admin_role));
+        const inOwnerRole = message.member.guild.owner;
+        // Roles
+        let mutedRole = message.guild.roles.cache.find(r => r.name === "Muted"); //muted role
+        const superRole = message.guild.roles.cache.find(role => role.name.includes(super_role));
+        const adminRole = message.guild.roles.cache.find(role => role.name.includes(admin_role));
 
         // Check for user by id
         if(!isNaN(args[0])) {
@@ -772,36 +779,76 @@ module.exports = {
         }
 
         // Check if the muted role exists
-        if(!mutedRole) {
-            // If no muted role then create one
-            mutedRole = await message.guild.roles.create({
-                data: {
-                    name: `Muted`,
-                    color: `#818386`,
-                    position: `${usersRole.position + 1}`,
-                    permissions: [], //set permissions to an empty array so no permissions are given
-                },
-                reason: `No muted role, need one to mute users!`,
+        if(mutedRole) {
+            const inMutedRole = user.roles.cache.some(role => role.name.includes("Muted"));
+            // If the user is already muted let the mod know
+            if(inMutedRole) {
+                return message.reply(`uh oh! Looks like ${user.displayName} is already muted!`)
+            }
+
+            // Add the user to the muted role
+            user.roles.add(mutedRole).then(() => {
+                // Let mod know the user was muted
+                const muteEmbed = {
+                    color: 0xFF5500,
+                    title: `A user was muted`,
+                    author: {
+                        name: message.author.username,
+                        icon_url: message.author.displayAvatarURL({dynamic:true}),
+                    },
+                    description: `${message.author} has muted ${user.user}!`,
+                    fields: [
+                        {
+                            name: "User Muted",
+                            value: `${user}`,
+                            inline: true,
+                        },
+                        {
+                            name: "Muted by",
+                            value: `${message.author}`,
+                            inline: true,
+                        }
+                    ],
+                    timestamp: new Date()
+                }
+                actionLog.send({embed: muteEmbed});
+                message.reply(`${user.displayName} was successfully muted!`);
             });
+        // If no muted role let user know to create it
+        } else {
+            // Check if user is a super or higher role
+            if(inSuperRole || inAdminRole || inOwnerRole) {
+                return message.reply(`uh oh! It seems there isn't a muted role, please use \`${prefix}createmute\` to make the role!`);
+            // If not a super or higher let them know to ask a super or higher
+            } else {
+                // If no muted role let user know to create it
+                return message.reply(`uh oh! It seems there isn't a muted role, please ask a ${superRole} or ${adminRole} to make the role with \`${prefix}createmute\`!`);
+            }
         }
-
-        // Loop through all channels channels
-        message.guild.channels.cache.forEach(async (channel) => {
-            // Deny the ability to send messages, speak, add reactions, and use voice activity for each channel for the muted role
-            await channel.updateOverwrite(mutedRole, {
-                SEND_MESSAGES: false,
-                SPEAK: false,
-                ADD_REACTIONS: false,
-                USE_VAD: false
-            });
-        });
-
-        // Add the user to the muted role
-        user.roles.add(mutedRole);
     },
     unmuteHandler: function(a, m) {
         const args = a, message = m;
-        let mutedRole = message.member.guild.roles.cache.find(r => r.name === "Muted"); //muted role
+        const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
+        // In Role? Boolean variables
+        const inSuperRole = message.member.roles.cache.some(role => role.name.includes(super_role));
+        const inAdminRole = message.member.roles.cache.some(role => role.name.includes(admin_role));
+        const inOwnerRole = message.member.guild.owner;
+        // Roles
+        let mutedRole = message.guild.roles.cache.find(r => r.name === "Muted"); //muted role
+        const superRole = message.guild.roles.cache.find(role => role.name.includes(super_role));
+        const adminRole = message.guild.roles.cache.find(role => role.name.includes(admin_role));
+
+        // Make sure a muted role exists
+        if(!mutedRole) {
+            // Check if user is a super or higher role
+            if(inSuperRole || inAdminRole || inOwnerRole) {
+                return message.reply(`uh oh! It seems there isn't a muted role, please use \`${prefix}createmute\` to make the role!`);
+            // If not a super or higher let them know to ask a super or higher
+            } else {
+                // If no muted role let user know to create it
+                return message.reply(`uh oh! It seems there isn't a muted role, please ask a ${superRole} or ${adminRole} to make the role with \`${prefix}createmute\`!`);
+            }
+        }
 
         // Check for user by id
         if(!isNaN(args[0])) {
@@ -825,9 +872,75 @@ module.exports = {
             return message.reply(`uh oh! You must provide me with a user mention or id so I know who to mute!`);
         }
 
-        //If user exists then remove from muted role
+        // If user exists then remove from muted role
         if(user) {
-            user.roles.remove(mutedRole);
+            const inMutedRole = user.roles.cache.some(role => role.name.includes("Muted"));
+            // If the user isn't already muted let the mod know
+            if(!inMutedRole) {
+                return message.reply(`uh oh! Looks like ${user.displayName} isn't muted!`)
+            }
+
+            user.roles.remove(mutedRole).then(() => {
+                // Let mod know the user was unmuted
+                const unmuteEmbed = {
+                    color: 0xFF5500,
+                    title: `A user was unmuted`,
+                    author: {
+                        name: message.author.username,
+                        icon_url: message.author.displayAvatarURL({dynamic:true}),
+                    },
+                    description: `${message.author} has unmuted ${user.user}!`,
+                    fields: [
+                        {
+                            name: "User Muted",
+                            value: `${user}`,
+                            inline: true,
+                        },
+                        {
+                            name: "Muted by",
+                            value: `${message.author}`,
+                            inline: true,
+                        }
+                    ],
+                    timestamp: new Date()
+                }
+                actionLog.send({embed: unmuteEmbed});
+                message.reply(`${user.displayName} was successfully unmuted!`);
+            });
+        }
+    },
+    createMuteHandler: async function(m) {
+        const message = m;
+        const usersRole = message.guild.roles.cache.find(role => role.name.includes(user_role)); //users role
+        let mutedRole = message.guild.roles.cache.find(r => r.name === "Muted"); //muted role
+
+        // Check if the muted role exists
+        if(!mutedRole) {
+            // If no muted role then create one
+            mutedRole = await message.guild.roles.create({
+                data: {
+                    name: `Muted`,
+                    color: `#818386`,
+                    position: `${usersRole.position + 1}`,
+                    permissions: [], //set permissions to an empty array so no permissions are given
+                },
+                reason: `No muted role, need one to mute users!`,
+            });
+
+            // Loop through all channels channels
+            message.guild.channels.cache.forEach(async (channel) => {
+                // Deny the ability to send messages, speak, add reactions, and use voice activity for each channel for the muted role
+                await channel.updateOverwrite(mutedRole, {
+                    SEND_MESSAGES: false,
+                    SPEAK: false,
+                    ADD_REACTIONS: false,
+                    USE_VAD: false
+                });
+            });
+
+            message.channel.send(`The ${mutedRole} role was successfully created!`)
+        } else {
+            return message.reply(`uh oh! Looks like the ${mutedRole} role already exists!`)
         }
     }
 }

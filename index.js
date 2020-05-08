@@ -1,7 +1,5 @@
 require('dotenv').config()
 
-
-
 // Import required files
 const Discord = require("discord.js");
 const config = require("./config");
@@ -11,6 +9,7 @@ const leaveController = require("./controllers/LeaveController");
 const databaseController = require("./controllers/DatabaseController");
 const moderationController = require("./controllers/ModerationController");
 const reactionsController = require("./controllers/ReactionsController");
+const channelController = require("./controllers/ChannelController");
 
 // Instantiate a new Discord client and collection
 const client = new Discord.Client({disableEveryone: false, partials: ["MESSAGE", "REACTION"]});
@@ -79,7 +78,7 @@ client.once('ready', () => {
 
 });
 
-// Listen for messages
+// Listen for messages to be sent
 client.on('message', async message => {
     // Call the function from /controllers/MessageController to handle the message
     try {
@@ -122,6 +121,7 @@ client.on('messageReactionAdd', (reaction, user) => {
     }
 });
 
+// Listen for messages to be deleted
 client.on("messageDelete", message => {
     
     // Make sure the author isn't null
@@ -145,6 +145,7 @@ client.on("messageDelete", message => {
     }
 });
 
+// Listen for messages to be edited
 client.on("messageUpdate", (oldMsg, newMsg) => {
     let fullMsg; //var in case of partial
 
@@ -192,6 +193,16 @@ client.on("messageUpdate", (oldMsg, newMsg) => {
         console.error(e);
     }
 });
+
+// Listen for channels to be created
+client.on("channelCreate", channel => {
+    // Call the function from /controllers/ChannelController to handle the message
+    try {
+        channelController.channelHandler(channel);
+    } catch (e) {
+        console.error(e);
+    };
+})
 
 // Log the client in
 client.login(config.token);

@@ -137,6 +137,15 @@ module.exports = {
         } else if(command.name === "unmute") {
             // Call the mute handler function from the ModerationController file
             ModerationController.unmuteHandler(args, message);
+            
+        /*
+        ##################################
+        ####### createmute command #######
+        ##################################
+        */
+        } else if(command.name === "createmute") {
+            // Call the mute handler function from the ModerationController file
+            ModerationController.createMuteHandler(message);
 
         /*
         ####################################
