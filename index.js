@@ -60,17 +60,17 @@ client.once('ready', () => {
     // Set the status of the bot
     client.user.setPresence({activity: {name: `${config.prefix}help`}, status: 'online'});
 
-    // Populate the triggerList and check for unbans
+    // Populate the triggerList and check for unbans/unmutes
     try {
         databaseController.botReconnect(triggerList);
     } catch(e) {
         console.error("Error: ", e);
     }
 
-    // Check for unbans every hour
+    // Check for unbans/unmutes every minute
     setInterval(() => {
         try {
-            databaseController.unbanCheck(client);
+            databaseController.databaseCheck(client);
         } catch(e) {
             console.error("Error: ", e);
         }

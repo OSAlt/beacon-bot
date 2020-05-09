@@ -308,24 +308,18 @@ module.exports = {
         const superRole = message.guild.roles.cache.find(role => role.name.includes(super_role));
         const adminRole = message.guild.roles.cache.find(role => role.name.includes(admin_role));
 
-        const argsStr = args.join(" "); //create a string out of the args
+        let argsStr = args.join(" "); //create a string out of the args
+        argsStr = argsStr.replace(/,/g, ", "); // replace
         const newArgs = argsStr.split(",").map(i => i.trim()); //create a new args array and trim the whitespace from the items
 
-
-        // Check if the first arg is a number
-        if(isNaN(args[0])) {
-            // Attempt to fix the arg for the user by removing the comma if the moderator forgot to add a space after the id and before the comma
-            args[0] = args[0].replace(",", "");
-        }
-
         // Make sure the first arg was a user mention or a user id
-        if(isNaN(args[0]) && !args[0].startsWith("<@")) {
+        if(isNaN(newArgs[0]) && !newArgs[0].startsWith("<@")) {
             // Let user know they need to provide a user mention or a valid user id
             message.reply(`uh oh! Looks like you gave an invalid user mention or user id. Make sure that you are either mentioning a user or providing a valid user id!`);
         } else {
 
             // Check if a user mention was given
-            if(args[0].startsWith("<@")) {
+            if(newArgs[0].startsWith("<@")) {
 
                 // Try to get the user
                 try {
@@ -360,7 +354,7 @@ module.exports = {
                     user = await client.users.fetch(args[0]);
                 } catch(e) {
                     // If unable to get the user, let the mod know
-                    return message.reply(`uh oh! That user isn't a member of this guild!`);
+                    return message.reply(`uh oh! I wasn't able to find that user!`);
                 }
 
                 // Get bans from the server
@@ -380,9 +374,10 @@ module.exports = {
             }
 
             // Check if a reason was given
-            if(args[1] && user !== undefined) {
+            if(newArgs[1] && user !== undefined) {
+                console.log(newArgs);
                 // If a length wasn't given then let the user know it is required
-                if(!args[2]) {
+                if(!newArgs[2]) {
                     return message.reply(`uh oh! It seems you forgot to give a length for ther ban, please be sure to provide a ban length for this action!\nExample: \`${prefix}ban ${user}, reason, length\``);
 
                 // If both a reason and length were given ban the user and log the action in the database
@@ -393,7 +388,7 @@ module.exports = {
                     let banValue = banLength.replace(/\D+/, '').trim(); //assign the ban value
                     let banUnit = banLength.replace(/\d+/, '').trim(); //assign the ban unit
                     const now = moment();
-                    const banLengthRegex = /(\d+\s*\D+$|^permanent$|^perma$|^perm$|^p{1}){1}/; //regex for ban time format
+                    const banLengthRegex = /(\d+\s*\D+$|^permanent$|^perma$|^perm$|^p{1}$){1}/; //regex for ban time format
 
                     // Check if the user input for a perma ban
                     if(banUnit.toLowerCase() === "p" || banUnit.toLowerCase().includes("perm")) {
@@ -476,6 +471,7 @@ module.exports = {
                             message.guild.members.ban(user.id, {reason: reason}).then(() => {
                                 // Send the embed to the action log channel
                                 actionLog.send({embed: banEmbed});
+                                message.channel.send(`${user.username} was successfully banned for ${banLength}!`)
                             });
                         });
                     });
@@ -607,7 +603,7 @@ module.exports = {
                                             actionLog.send({embed: unbanEmbed});
 
                                             // Reply with a message
-                                            message.reply(`unban successful!`)
+                                            message.channel.send(`${user.username} was successfully unbanned!`)
                                         });
                                     });
                                 });
@@ -747,27 +743,34 @@ module.exports = {
         const args = a, message = m;
         let user;
         const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
+        const timezone = moment.tz(moment.tz.guess()).zoneAbbr(); // server timezone
         // In Role? Boolean variables
         const inSuperRole = message.member.roles.cache.some(role => role.name.includes(super_role));
         const inAdminRole = message.member.roles.cache.some(role => role.name.includes(admin_role));
         const inOwnerRole = message.member.guild.owner;
         // Roles
         let mutedRole = message.guild.roles.cache.find(r => r.name === "Muted"); //muted role
+        const modTraineeRole = message.guild.roles.cache.find(role => role.name.includes(mod_trainee_role));
+        const modRole = message.guild.roles.cache.find(role => role.name.includes(mod_role));
         const superRole = message.guild.roles.cache.find(role => role.name.includes(super_role));
         const adminRole = message.guild.roles.cache.find(role => role.name.includes(admin_role));
 
+        let argsStr = args.join(" "); //create a string out of the args
+        argsStr = argsStr.replace(/,/g, ", "); // replace
+        const newArgs = argsStr.split(",").map(i => i.trim()); //create a new args array and trim the whitespace from the items
+
         // Check for user by id
-        if(!isNaN(args[0])) {
+        if(!isNaN(newArgs[0])) {
             // If invalid id let the user know
-            if(message.guild.members.cache.get(args[0]) === undefined) {
+            if(message.guild.members.cache.get(newArgs[0]) === undefined) {
                 return message.reply(`uh oh! Looks like I wasn't able to find that user, please check the user id and try again or try using a user mention like so: \`@Username\``);
 
             // If user found, assign it to the user var
             } else {
-                user = message.guild.members.cache.get(args[0]);
+                user = message.guild.members.cache.get(newArgs[0]);
             }
         // Check if a user mention was given
-        } else if (args[0].startsWith("<@")) {
+        } else if (newArgs[0].startsWith("<@")) {
             user = message.mentions.members.first(); // get user tag
             if(!user) {
                 // Let the user know they provided an invalid user mention
@@ -778,56 +781,151 @@ module.exports = {
             return message.reply(`uh oh! You must provide me with a user mention or id so I know who to mute!`);
         }
 
-        // Check if the muted role exists
-        if(mutedRole) {
+        // If user is a bot then deny banning it
+        if(user.user.bot) {
+            return message.channel.send(`You can't mute no beep boop!`);
+        // If the user tries to ban themselves then deny banning them
+        } else if(user.user.id === message.author.id) {
+            return message.reply(`you can't mute yourself, silly!`);
+        // If the user is a mod+ then deny banning them
+        } else if(user.roles.cache.some(r => [modTraineeRole.name, modRole.name, superRole.name, adminRole.name].includes(r.name))) {
+            return message.reply(`you got guts, trying to mute a ${user.roles.highest}!`);
+        // If the user is the server owner then deny banning them
+        } else if (user.user.id === user.guild.ownerID) {
+            return message.reply(`I hope you didn't really think you could mute the server owner...`);
+        }
+
+        // Check if a reason was given
+        if(newArgs[1] && user !== undefined) {
+            // If a length wasn't given then let the user know it is required
+            if(!newArgs[2]) {
+                return message.reply(`uh oh! It seems you forgot to give a length for ther mute, please be sure to provide a mute length for this action!\nExample: \`${prefix}mute ${user}, reason, length\``);
+            }
+
+            const reason = newArgs[1]; //assign the mute reason
+            let muteLength = newArgs[2]; //assign the mute length
+            let muteValue = muteLength.replace(/\D+/, '').trim(); //assign the mute value
+            let muteUnit = muteLength.replace(/\d+/, '').trim(); //assign the mute unit
+            const now = moment();
+            const muteLengthRegex = /(\d+\s*\D+$|^permanent$|^perma$|^perm$|^p{1}){1}/; //regex for mute time format
+
+            // Check if the user input for a perma mute
+            if(muteUnit.toLowerCase() === "p" || muteUnit.toLowerCase().includes("perm")) {
+                muteValue = 999; // assign value
+                muteUnit = "years"; // set unit
+                muteLength = "an indefinite amount of time"; // set length for description
+            // Check if the user provided an accepted format
+            } else if(!muteLength.match(muteLengthRegex)) {
+                return message.reply(`uh oh! It seems like you entered an invalue mute duration! Please use formats such as these for the mute duration: \`6 years\`, \`17d\`, \`permanent\`, \`3 wks\``)
+            } else if (muteUnit === "s" || muteUnit === "sec" || muteUnit === "secs" || muteUnit === "seconds" || muteUnit === "second") {
+                return message.reply(`please give a duration that is at least 1 minute in length!`);
+            }
+
+            let unmuteDate = now.add(muteValue, muteUnit); //create the unmute date
+
+            // Make sure the unban date is after the current time
+            if(moment(unmuteDate).isAfter(now)) {
+                // If not after the current time, let the user know how to fix the problem
+                return message.reply("uh oh! Looks like you have an invalid duration! Please try again with a proper unit of time and number duration!");
+            }
+
+            // Format the unban date
+            unmuteDate = unmuteDate.format(`MMM DD, YYYY HH:mm:ss`);
+            // Check if user is in the muted role
             const inMutedRole = user.roles.cache.some(role => role.name.includes("Muted"));
-            // If the user is already muted let the mod know
+
+            // If no muted role exists let user know
+            if(!mutedRole) {
+                // Check if user is a super or higher role
+                if(inSuperRole || inAdminRole || inOwnerRole) {
+                    return message.reply(`uh oh! It seems there isn't a muted role, please use \`${prefix}createmute\` to make the role!`);
+                // If not a super or higher let them know to ask a super or higher
+                } else {
+                    // If no muted role let user know to create it
+                    return message.reply(`uh oh! It seems there isn't a muted role, please ask a ${superRole} or ${adminRole} to make the role with \`${prefix}createmute\`!`);
+                }
+            }
+
+            // If user is already muted let user know
             if(inMutedRole) {
                 return message.reply(`uh oh! Looks like ${user.displayName} is already muted!`)
             }
 
-            // Add the user to the muted role
-            user.roles.add(mutedRole).then(() => {
-                // Let mod know the user was muted
-                const muteEmbed = {
-                    color: 0xFF5500,
-                    title: `A user was muted`,
-                    author: {
-                        name: message.author.username,
-                        icon_url: message.author.displayAvatarURL({dynamic:true}),
-                    },
-                    description: `${message.author} has muted ${user.user}!`,
-                    fields: [
-                        {
-                            name: "User Muted",
-                            value: `${user}`,
-                            inline: true,
-                        },
-                        {
-                            name: "Muted by",
-                            value: `${message.author}`,
-                            inline: true,
-                        }
-                    ],
-                    timestamp: new Date()
-                }
-                actionLog.send({embed: muteEmbed});
-                message.reply(`${user.displayName} was successfully muted!`);
+            /* 
+            * Sync the model to the table
+            * Creates a new table if table doesn't exist, otherwise just inserts a new row
+            * id, completed, createdAt, and updatedAt are set by default; DO NOT ADD
+            !!!!
+                Keep force set to false otherwise it will overwrite the table instead of making a new row!
+            !!!!
+            */
+            Models.mute.sync({ force: false }).then(() => {
+                // Add the ban record to the database
+                Models.mute.create({
+                    user_id: user.id,
+                    guild_id: message.guild.id,
+                    reason: reason,
+                    unmute_date: unmuteDate,
+                    moderator_id: message.author.id,
+                })
+                // Let the user know it was added
+                .then(() => {
+                    // Add the user to the muted role
+                    user.roles.add(mutedRole).then(() => {
+                        // Create the banned embed
+                        const muteEmbed = {
+                            color: 0xFF0000,
+                            title: `User Was Muted!`,
+                            author: {
+                                name: `${user.user.username}#${user.user.discriminator}`,
+                                icon_url: user.user.displayAvatarURL({dynamic:true}),
+                            },
+                            description: `${user} was muted by ${message.author} for ${muteLength}!`,
+                            fields: [
+                                {
+                                    name: `User Muted`,
+                                    value: `${user}`,
+                                    inline: true,
+                                },
+                                {
+                                    name: `Unmute Date`,
+                                    value: `${unmuteDate} (${timezone})`,
+                                    inline: true,
+                                },
+                                {
+                                    name: `Muted By`,
+                                    value: `${message.author}`,
+                                    inline: true,
+                                },
+                                {
+                                    name: `Reason`,
+                                    value: `${reason}`,
+                                    inline: false,
+                                }
+                            ],
+                            timestamp: new Date(),
+                        };
+                        actionLog.send({embed: muteEmbed});
+                        message.channel.send(`${user.displayName} was successfully muted for ${muteLength}!`);
+                    });
+                });
             });
-        // If no muted role let user know to create it
+        // If no reason was given let the user know it is required
         } else {
-            // Check if user is a super or higher role
-            if(inSuperRole || inAdminRole || inOwnerRole) {
-                return message.reply(`uh oh! It seems there isn't a muted role, please use \`${prefix}createmute\` to make the role!`);
-            // If not a super or higher let them know to ask a super or higher
+            // Check if a user mention was used
+            if(message.mentions.users.first()) {
+                // Let user know a reason is needed
+                message.reply(`uh oh! It seems you forgot to give a reason for muting, please be sure to provide a reason for this action!\nExample: \`${prefix}mute @${user.user.tag}, reason, length\``);
+
+            // If no user mention was given then just output the id they provided
             } else {
-                // If no muted role let user know to create it
-                return message.reply(`uh oh! It seems there isn't a muted role, please ask a ${superRole} or ${adminRole} to make the role with \`${prefix}createmute\`!`);
+                // Let user know a reason is needed
+                message.reply(`uh oh! It seems you forgot to give a reason for muting, please be sure to provide a reason for this action!\nExample: \`${prefix}mute ${user}, reason, length\``);
             }
-        }
+        };
     },
-    unmuteHandler: function(a, m) {
-        const args = a, message = m;
+    unmuteHandler: function(m, a, c) {
+        const message = m, args = a, client = c;
         const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
         // In Role? Boolean variables
         const inSuperRole = message.member.roles.cache.some(role => role.name.includes(super_role));
@@ -837,6 +935,12 @@ module.exports = {
         let mutedRole = message.guild.roles.cache.find(r => r.name === "Muted"); //muted role
         const superRole = message.guild.roles.cache.find(role => role.name.includes(super_role));
         const adminRole = message.guild.roles.cache.find(role => role.name.includes(admin_role));
+
+        // Check if the first arg is a number
+        if(isNaN(args[0])) {
+            // Attempt to fix the arg for the user by removing the comma if the moderator forgot to add a space after the id and before the comma
+            args[0] = args[0].replace(",", "");
+        }
 
         // Make sure a muted role exists
         if(!mutedRole) {
@@ -872,41 +976,102 @@ module.exports = {
             return message.reply(`uh oh! You must provide me with a user mention or id so I know who to mute!`);
         }
 
-        // If user exists then remove from muted role
-        if(user) {
+        // If a reason was given then unban the user and log the action to the database
+        if(args[1]) {
+            let reasonArr = args;
+            let reason;
+            let userId = user.id;
+            reasonArr.shift(); //remove the first arg (user id)
+            reason = reasonArr.join(" "); //turn the array into a string
+            reason = reason.replace(',', ''); // remove the first comma from the string
+            reason = reason.trim(); // remove any excess whitespace
             const inMutedRole = user.roles.cache.some(role => role.name.includes("Muted"));
+
             // If the user isn't already muted let the mod know
             if(!inMutedRole) {
                 return message.reply(`uh oh! Looks like ${user.displayName} isn't muted!`)
             }
 
-            user.roles.remove(mutedRole).then(() => {
-                // Let mod know the user was unmuted
-                const unmuteEmbed = {
-                    color: 0xFF5500,
-                    title: `A user was unmuted`,
-                    author: {
-                        name: message.author.username,
-                        icon_url: message.author.displayAvatarURL({dynamic:true}),
-                    },
-                    description: `${message.author} has unmuted ${user.user}!`,
-                    fields: [
-                        {
-                            name: "User Muted",
-                            value: `${user}`,
-                            inline: true,
-                        },
-                        {
-                            name: "Muted by",
-                            value: `${message.author}`,
-                            inline: true,
-                        }
-                    ],
-                    timestamp: new Date()
-                }
-                actionLog.send({embed: unmuteEmbed});
-                message.reply(`${user.displayName} was successfully unmuted!`);
+            // Search the db for the mute
+            Models.mute.findOne({where: {user_id: userId, completed: 0}, raw: true}).then((data) => {
+                // Make sure data was retrieved
+                if(data) {
+                    const muteDate = moment(data.createdAt).format(`MMM DD, YYYY HH:mm:ss`); //assign mute date
+                    const muteReason = data.reason; //assign mute reason
+                    /* 
+                    * Sync the model to the table
+                    * Creates a new table if table doesn't exist, otherwise just inserts a new row
+                    * id, createdAt, and updatedAt are set by default; DO NOT ADD
+                    !!!!
+                        Keep force set to false otherwise it will overwrite the table instead of making a new row!
+                    !!!!
+                    */
+                    Models.unmute.sync({ force: false }).then(() => {
+
+                        // Add the unmute record to the database
+                        Models.unmute.create({
+                            user_id: userId,
+                            reason: reason,
+                            type: "Manual",
+                            moderator_id: message.author.id,
+                        })
+                        // Let the user know it was added
+                        .then(() => {
+                            // Remove user from the muted role
+                            user.roles.remove(mutedRole).then(() => {
+                                // Create the unmute embed
+                                const unmuteEmbed = {
+                                    color: 0xFF5500,
+                                    title: `User Was Unmuted!`,
+                                    author: {
+                                        name: `${user.user.username}#${user.user.discriminator}`,
+                                        icon_url: user.user.displayAvatarURL({dynamic:true}),
+                                    },
+                                    description: `${user} was unbanned from the server by ${message.author}`,
+                                    fields: [
+                                        {
+                                            name: `User Unmuted`,
+                                            value: `${user}`,
+                                            inline: true,
+                                        },
+                                        {
+                                            name: `Unmuted By`,
+                                            value: `${message.author}`,
+                                            inline: true,
+                                        },
+                                        {
+                                            name: `Unmute Reason`,
+                                            value: `${reason}`,
+                                            inline: false,
+                                        },
+                                        {
+                                            name: `Mute Date`,
+                                            value: `${muteDate}`,
+                                            inline: false,
+                                        },
+                                        {
+                                            name: `Mute Reason`,
+                                            value: `${muteReason}`,
+                                            inline: false,
+                                        }
+                                    ],
+                                    timestamp: new Date(),
+                                };
+                                // Send log to mod log and give feedback to user
+                                actionLog.send({embed: unmuteEmbed});
+                                message.channel.send(`${user.displayName} was successfully unmuted!`).then(() => {
+                                    // Update the completed field for the mute
+                                    Models.mute.update({completed: 1}, {where: {user_id: userId}});
+                                });
+                            });
+                        });
+                    });
+                };
             });
+
+        } else {
+            // Let the user know a reason is needed
+            message.reply(`uh oh! It seems you forgot to give a reason for unmuting, please be sure to provide a reason for this action!\nExample: \`${prefix}unmute ${user}, reason\``);
         }
     },
     createMuteHandler: async function(m) {
