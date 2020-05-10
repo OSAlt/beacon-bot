@@ -13,6 +13,19 @@ The configuration is done via the .env file.  Please copy env-template to .env a
 
 ## Bring up the bot
 
+for develomennt:
+
+```sh
+ln -s develop.yml docker-compose.yml
+```
+
+for production.  The main difference production expects an external resources for the database
+
+```sh
+ln -s production.yml docker-compose.yml
+```
+
+
 ```
 docker-compose up -d
 ```
