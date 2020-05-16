@@ -56,7 +56,6 @@ verify | \<create\> | Creates the initial verification post | Owner | !verify cr
 **Notes:**
 * If any message exists in the channel, you must clear it to send a (new) verification message
 * If a user leaves the server they will be required to re-verify
-* If a user fails to verify within the set time limit they will be automatically kicked from the server
 ___
 
 ## Autoroles
