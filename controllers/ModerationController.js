@@ -1059,7 +1059,7 @@ module.exports = {
                                         name: `${user.user.username}#${user.user.discriminator}`,
                                         icon_url: user.user.displayAvatarURL({dynamic:true}),
                                     },
-                                    description: `${user} was unbanned from the server by ${message.author}`,
+                                    description: `${user} was unmuted from the server by ${message.author}`,
                                     fields: [
                                         {
                                             name: `User Unmuted`,
