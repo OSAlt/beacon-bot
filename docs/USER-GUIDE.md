@@ -118,16 +118,16 @@ warn | \<mention \| user id\>, \<reason\> | Adds a note to the database about a 
 kick | \<mention \| user id\>, \<reason\> | Kicks a user from the guild | Mod | !kick @User, spamming
 ban | \<mention \| user id\>, \<reason\>, \<time\>* | Bans a user from the guild | Mod | !ban @user, graphic content, 1w
 unban | \<user id\>, \<reason\> | Unbans a user from the guild | Mod | !unban 12345, apologized
-purge | \<count\>* | Bulk deletes messages in the channel this command was used in | Super | !purge 25
+purge | \<count\>* | Bulk deletes messages in the channel this command was used in | Mod | !purge 25
 warnings | \<recent \| specific \| user\> \<count \| warn id \| user id \| mention\> | Get the warning(s) for a user or recent warning(s) | Mod | !warnings specific 1hsj3ls
-mute* | \<mention \| user id\> | Removes the user's ability to send messages, add reactions, or speak in voice | Mod | !mute @User
+mute | \<mention \| user id\>, \<type\>*, \<reason\>, \<time\>* | Removes the user's ability to send messages, add reactions, or speak in voice | Mod | !mute @User, server, excessive profanity, 1d
 unmute | \<mention \| user id\> | Removes the user's muted status | Mod | !unmute @User
 
 \*count - The maximum count for a single purge is 100
 
 \*time - This can be any format supported by [Moment's Add method (including shorthands)](https://momentjs.com/docs/#/manipulating/add/) or `p`, `perm`, `perma`, and `permanent` for a permanent ban (999 years)
 
-\*mute - An optional timed function will be added soon along with database logging
+\*type - Accepted types: _server_, _voice_, _text_, and _reactions_
 
 ___
 
@@ -191,6 +191,7 @@ ping | [api \| websocket] | Gets the response time for the Discord api or the bo
 help | [command] | Shows the list of all commands with the ones the user who triggered the command can't use striked out. If you pass in a command name (or alias) you will get specific details on that command, if you have the proper permissions! | Users | !help numfact
 testdb | N/A | Used to test if the bot is connected to the database | Admin | !testdb
 usage | N/A | Provides a link to this guide | Users | !usage
+github | N/A | Provides a link to the bot's repo | Users | !github
 ___
 
 ## Final Notes
