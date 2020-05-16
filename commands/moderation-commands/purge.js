@@ -7,8 +7,8 @@ module.exports = {
     description: 'Purges a specific amount of messages.\n*Limited To 100 at a time*',
     aliases: ['delete', 'clear', 'clean'],
     usage: "<count>",
-    mod: false,
-    super: true,
+    mod: true,
+    super: false,
     admin: false,
     cooldown: 3,
     execute(message, args, client) {

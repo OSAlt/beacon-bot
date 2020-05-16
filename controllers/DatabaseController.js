@@ -333,6 +333,7 @@ module.exports = {
                         muteObj.id = mute.id
                         muteObj.userId = mute.user_id;
                         muteObj.guildId = mute.guild_id;
+                        muteObj.type = mute.type;
                         muteObj.reason = mute.reason;
                         muteObj.unmuteDate = mute.unban_date;
                         muteObj.modId = mute.moderator_id;
@@ -354,8 +355,10 @@ module.exports = {
                 // Find the server the user was banned from
                 const guild = client.guilds.cache.get(item.guildId);
                 const member = await guild.members.fetch(item.userId);
-                const mutedRole = guild.roles.cache.find(r => r.name === "Muted"); //muted role
+                const mutedRole = member.roles.cache.find(r => r.name.includes("Muted")); //muted role
                 logChannel = guild.channels.cache.find((c => c.name.includes(action_log_channel))); //action log channel
+
+                console.log(mutedRole)
 
                 // Unmute the user
                 member.roles.remove(mutedRole).then(() => {
@@ -381,13 +384,18 @@ module.exports = {
                                 inline: true,
                             },
                             {
-                                name: `Date Muted`,
-                                value: `${muteDate} (${timezone})`,
+                                name: `Mute Type`,
+                                value: `${member}`,
                                 inline: true,
                             },
                             {
                                 name: `Muted By`,
                                 value: `${moderator}`,
+                                inline: true,
+                            },
+                            {
+                                name: `Date Muted`,
+                                value: `${muteDate} (${timezone})`,
                                 inline: true,
                             },
                             {

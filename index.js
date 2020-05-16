@@ -198,7 +198,7 @@ client.on("messageUpdate", (oldMsg, newMsg) => {
 client.on("channelCreate", channel => {
     // Call the function from /controllers/ChannelController to handle the message
     try {
-        channelController.channelHandler(channel);
+        channelController.createHandler(channel);
     } catch (e) {
         console.error(e);
     };

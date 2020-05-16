@@ -17,6 +17,11 @@ const Mute = sequelize.define('mute', {
         type: Sequelize.TEXT,
         allowNull: false
     },
+    // Create required guild_id string column
+    type: {
+        type: Sequelize.STRING,
+        allowNull: false
+    },
     // Create required reason text column
     reason: {
         type: Sequelize.TEXT,
