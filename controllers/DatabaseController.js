@@ -358,8 +358,6 @@ module.exports = {
                 const mutedRole = member.roles.cache.find(r => r.name.includes("Muted")); //muted role
                 logChannel = guild.channels.cache.find((c => c.name.includes(action_log_channel))); //action log channel
 
-                console.log(mutedRole)
-
                 // Unmute the user
                 member.roles.remove(mutedRole).then(() => {
                     const moderator = client.users.cache.get(item.modId); //get the moderator that performed the mute
