@@ -1,0 +1,18 @@
+version: '3.7'
+services:
+  bot:
+    image: geekbeacon/beacon-bot:0.2.0
+    restart: always
+    build:
+        context: . 
+        dockerfile: compose/Dockerfile-bot
+    networks:
+       - shared_backend
+    external_links:
+      - shared_mysql
+    env_file: .env
+
+networks:
+    shared_backend:
+        name: shared_backend
+        external: true
