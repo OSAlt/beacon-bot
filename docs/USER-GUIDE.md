@@ -175,7 +175,7 @@ These are commands that provide information about various things within the serv
 | Command     | Argument(s) | Description | Role | Example |
 | --- | :---: | --- | :---: | --- |
 userinfo | \<mention \| user id\> | Gives information on a specific user | Users | !userinfo @user
-roleinfo | \<role name \| role mention \| role id\> | Gives information on a specific role | Users | !roleinfo Space Cowgirl
+roleinfo | \<role name \| role mention \| role id\> | Gives information on a specific role | Users | !roleinfo Moderators
 serverinfo | N/A | Gives information on the guild | Users | !serverinfo
 ___
 
