@@ -2,39 +2,52 @@
 const { readdirSync, statSync } = require("fs");
 const { join } = require("path");
 const Discord = require("discord.js");
-const {prefix, admin_role, super_role, mod_role, mod_trainee_role, excluded_trigger_channels} = require('../config');
+const {prefix, admin_role, super_role, mod_role, mod_trainee_role, excluded_trigger_channels, url_role_whitelist} = require('../config');
 const TriggersController = require("./TriggersController");
+const ModerationController = require("./ModerationController");
 const cooldowns = new Discord.Collection();
 
 // Create a new module export
 module.exports = {
 
     // Create a function to be called
-    messageHandler: function(m, c, tl) {
+    messageHandler: function(m, c, tl, au, deleteSet) {
         // Create vars
-        const message = m, client = c, triggerList = tl;
-        let modRole, superRole, adminRole, ownerRole;
+        const message = m, client = c, triggerList = tl, allowedUrls = au;
+        let inModRole, inSuperRole, inAdminRole, isOwner;
         let triggerArr = [];
+        let allowedUrlArr = [];
+        const modRole = message.guild.roles.cache.find(role => role.id === mod_role);
+        const superRole = message.guild.roles.cache.find(role => role.id === super_role);
+        const adminRole = message.guild.roles.cache.find(role => role.id === admin_role);
 
+        // Loop through the whole trigger list
         for(key in triggerList.list) {
+            // Add each trigger to the triggerArr var
             triggerArr.push(key);
         }
+
+        // Loop through the allowedUrls list
+        allowedUrls.list.forEach((domain) => {
+            // Add each domain to the allowedUrlArr var
+            allowedUrlArr.push(domain);
+        });
         
         client.commands = new Discord.Collection(); // Create a new collection for commands
 
         // Make sure the author isn't a bot and message is from a text channel before checking its' roles
         if(!message.author.bot && message.channel.type === "text") {
-            modTraineeRole = message.member.roles.cache.some(role => role.name.includes(mod_trainee_role));
-            modRole = message.member.roles.cache.some(role => role.name.includes(mod_role));
-            superRole = message.member.roles.cache.some(role => role.name.includes(super_role));
-            adminRole = message.member.roles.cache.some(role => role.name.includes(admin_role));
-            ownerRole = message.member.guild.owner;
+            inModTraineeRole = message.member.roles.cache.some(role => role.id === mod_trainee_role);
+            inModRole = message.member.roles.cache.some(role => role.id === mod_role);
+            inSuperRole = message.member.roles.cache.some(role => role.id === super_role);
+            inAdminRole = message.member.roles.cache.some(role => role.id === admin_role);
+            isOwner = message.member.guild.owner;
 
         // If not a bot and not in a text channel
         } else if(!message.author.bot && message.channel.type === "dm") {
             return message.channel.send(`Ohai, ${message.author.username}!\n\nIt seems you tried to message me within a dm, I appreciate you sliding up into my dms, but at this time I do not support any dm-based commands!`);
 
-        // Else (if a bot) then just ignore
+        // If a bot then just ignore
         } else {
             return;
         }
@@ -50,8 +63,6 @@ module.exports = {
             const cmd = require(file);
             client.commands.set(cmd.name, cmd);
         };
-
-
 
         // If the message doesn't start with the prefix...
         if (!message.content.startsWith(prefix)) {
@@ -76,10 +87,30 @@ module.exports = {
                 } 
                 // Store the trigger words
                 let triggers = triggerArr.filter((trig) => message.content.toLowerCase().match(`\\b(${trig})\\b`));
-                
+
+                // Call the triggerHit function from the TriggersController file
                 TriggersController.triggerHit(message, triggers, client);
 
-            // If not a trigger word/phrase or a bot message then ignore
+            // Check if the message contains a 
+            } else if (message.content.toLowerCase().match(/(?!w{1,}\.)(\w+\.?)([a-zA-Z0-9-]+)(\.\w+)/)) {
+                // If user had an excluded role then ignore
+                if(message.member.roles.cache.some(r => url_role_whitelist.includes(r.id))) {
+                    return;
+                }
+
+                // Check if the url is whitelisted
+                if(!message.content.toLowerCase().match(allowedUrlArr.map(domain => `\\b${domain}\\b`).join("|"))) {
+
+                    const regexMatch = message.content.toLowerCase().match(/(?!w{1,}\.)(\w+\.?)([a-zA-Z0-9-]+)(\.\w+)/);
+                    // If not then call the handleUrl function from the ModerationController file
+                    //ModerationController.handleUrl(message, regexMatch, deleteSet);
+                    message.channel.send("bitch")
+
+                // If whitelisted url then ignore
+                } else {
+                    return;
+                };
+            // If not a trigger word/phrase, a whitelisted domain, or a bot message then ignore
             } else {
                 return;
             };
@@ -115,12 +146,12 @@ module.exports = {
         };
 
         // Check if the user has the proper permissions for the command if not let them know
-        if (command.admin === true && !(adminRole || message.member === ownerRole)) {
-            return message.reply(`uh oh! Looks like you tried to use a command that is only for users in the ${admin_role} group!`);
-        } else if (command.super === true && !(superRole || adminRole || message.member === ownerRole)) {
-            return message.reply(`uh oh! Looks like you tried to use a command that is only for users in the ${super_role} group!`);
-        } else if (command.mod === true && !(modTraineeRole || modRole || superRole || adminRole || message.member === ownerRole)) {
-            return message.reply(`uh oh! Looks like you tried to use a command that is only for users in the ${mod_role} group!`);
+        if (command.admin === true && !(inAdminRole || message.member === isOwner)) {
+            return message.reply(`uh oh! Looks like you tried to use a command that is only for users in the ${adminRole.name} group!`);
+        } else if (command.super === true && !(inSuperRole || inAdminRole || message.member === isOwner)) {
+            return message.reply(`uh oh! Looks like you tried to use a command that is only for users in the ${superRole.name} group!`);
+        } else if (command.mod === true && !(inModTraineeRole || inModRole || inSuperRole || inAdminRole || message.member === isOwner)) {
+            return message.reply(`uh oh! Looks like you tried to use a command that is only for users in the ${modRole.name} group!`);
         }
 
         // Check if the command has a cooldown time and set it if so
@@ -149,7 +180,7 @@ module.exports = {
 
         // Attempt to execute the command
         try {
-            command.execute(message, args, client, triggerList);
+            command.execute(message, args, client, triggerList, allowedUrls);
         } catch (error) {
             console.error(error);
             message.reply('There was an error trying to execute that command, please try again!')

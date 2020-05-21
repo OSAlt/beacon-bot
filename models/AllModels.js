@@ -7,8 +7,10 @@ const Trigger = require("./Trigger");
 const Unban = require("./Unban");
 const Unmute = require("./Unmute");
 const Warning = require("./Warning");
+const AllowedUrl = require("./AllowedUrl");
 
 module.exports = {
+    allowedurl : AllowedUrl,
     autorole : AutoRole,
     ban : Ban,
     joineableRole : JoinableRole,

@@ -4,11 +4,11 @@ module.exports = {
 
     "server_id" : process.env.SERVER_ID,
 
-    "admin_role": process.env.ADMINISTRATOR_ROLE_NAME,
-    "super_role": process.env.SUPER_MODERATOR_ROLE_NAME,
-    "mod_role": process.env.MODERATOR_ROLE_NAME,
-    "mod_trainee_role": process.env.MOD_TRAINEE_ROLE_NAME,
-    "user_role": process.env.USER_ROLE_NAME,
+    "admin_role": process.env.ADMINISTRATOR_ROLE,
+    "super_role": process.env.SUPER_MODERATOR_ROLE,
+    "mod_role": process.env.MODERATOR_ROLE,
+    "mod_trainee_role": process.env.MOD_TRAINEE_ROLE,
+    "user_role": process.env.USER_ROLE,
 
     "admin_channel": process.env.ADMINISTRATOR_CHANNEL_NAME,
     "super_channel": process.env.SUPER_MODERATOR_CHANNEL_NAME,
@@ -18,6 +18,7 @@ module.exports = {
     "join_log_channel" : process.env.JOIN_LOG_CHANNEL_NAME,
 
     "excluded_trigger_channels" : process.env.EXCLUDED_CHANNELS.split(","),
+    "url_role_whitelist" : process.env.URL_ROLE_WHITELIST.split(","),
     "special_permission_flags" : process.env.SPECIAL_PERMISSION_FLAGS.split(","),
     
     "db_name" : process.env.MYSQL_DATABASE || "beaconbot",

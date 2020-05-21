@@ -117,8 +117,8 @@ module.exports = {
         /*********** LIST AUTOROLES ***********/
         } else if (command.name === 'listautoroles') {
             // See if the user is a super, admin, or owner
-            superRole = message.member.roles.cache.some(role => role.name.includes(super_role));
-            adminRole = message.member.roles.cache.some(role => role.name.includes(admin_role));
+            superRole = message.member.roles.cache.some(role => role.id === super_role);
+            adminRole = message.member.roles.cache.some(role => role.id === admin_role);
             ownerRole = message.member.guild.owner === message.author;
 
             // If user is a mod and didn't pass in any args, list autoroles

@@ -16,12 +16,11 @@ module.exports = {
         const message = m;
         const triggerList = tl;
         let trigger;
-        const modRole = message.member.roles.cache.some(role => role.name.includes(mod_role));
-        const superRole = message.member.roles.cache.some(role => role.name.includes(super_role));
-        const adminRole = message.member.roles.cache.some(role => role.name.includes(admin_role));
+        const modRole = message.member.roles.cache.some(role => role.id === mod_role);
+        const superRole = message.member.roles.cache.some(role => role.id === super_role);
+        const adminRole = message.member.roles.cache.some(role => role.id === admin_role);
         const ownerRole = message.member.guild.owner;
         const modChannel = message.guild.channels.cache.find((c => c.name.includes(mod_channel)));
-        const logChannel = message.guild.channels.cache.find((c => c.name.includes(action_log_channel)));
             
         // Check the length of the args
         if (args.length > 1) {
@@ -278,10 +277,10 @@ module.exports = {
         
         let warnId = shortid.generate(); // generate a uid
         let severityArr = [];
-        const modRole = message.member.roles.cache.find(role => role.name.includes(mod_role));
-        const modTraineeRole = message.member.roles.cache.find(role => role.name.includes(mod_trainee_role));
-        const superRole = message.member.roles.cache.find(role => role.name.includes(super_role));
-        const adminRole = message.member.roles.cache.find(role => role.name.includes(admin_role));
+        const modRole = message.member.roles.cache.find(role => role.id === mod_role);
+        const modTraineeRole = message.member.roles.cache.find(role => role.id === mod_trainee_role);
+        const superRole = message.member.roles.cache.find(role => role.id === super_role);
+        const adminRole = message.member.roles.cache.find(role => role.id === admin_role);
 
         // Find the trigger(s) in the database
         Trigger.findAll({where: {trigger: triggers},raw:true}).then((data) => {

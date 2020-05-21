@@ -15,7 +15,7 @@ module.exports = {
         // Make sure the server is available
         if(server.available) {
             const createDate = moment(server.createdAt).format("MMM DD, YYYY"); // created date
-            const users = message.guild.roles.cache.find(r => r.name === user_role); //users role
+            const users = message.guild.roles.cache.find(r => r.id === user_role); //users role
             let channels = server.channels.cache.array();
             let roleCount = server.roles.cache.array().length;
             let categoryCount = 0;

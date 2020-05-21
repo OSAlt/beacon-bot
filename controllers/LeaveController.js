@@ -17,7 +17,7 @@ module.exports = {
         const joinedTimeStamp = moment(member.joinedTimestamp); // timestamp user joined
         const currentTime = moment(); // create a new moment obj with current time
         const memberLength = moment.duration(currentTime.diff(joinedTimeStamp)).format("Y[y] D[d] H[h] m[m] s[s]"); //get the duration of the membership and format it
-        const users = member.guild.roles.cache.find(r => r.name === user_role); //users role
+        const users = member.guild.roles.cache.find(r => r.id === user_role); //users role
 
         // See if the user has a last message
         if (member.lastMessage) {

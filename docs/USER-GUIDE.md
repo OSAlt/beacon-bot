@@ -30,7 +30,6 @@ ___
 
 Here is a quick list of features/modules, click on any one to jump to its' information and commands!
 
-* [Verification](#verification)
 * [Autoroles](#autoroles)
 * [Joinable Roles](#joinable-roles)
 * [Moderation](#moderation)
@@ -40,12 +39,6 @@ Here is a quick list of features/modules, click on any one to jump to its' infor
 * [Miscellaneous](#Miscellaneous)
 
 ___
-
-## Verification
-
-Verification is used to ensure that a user is a human before assigning them autorole(s) by asking them to simply react with a specific emoji. 
-
-*Currently this isn't an optional feature, so you must have at least one autorole!*
 
 #### **Command(s) Usage**
 
@@ -108,6 +101,10 @@ Moderation commands are used to enable moderators and super moderators (Master C
 * Ban User
 * Unban User
 * Warn Member
+* Whitelist
+   * List
+   * Add
+   * Remove
 
 #### **Command(s) Usage**
 
@@ -121,12 +118,15 @@ purge | \<count\>* | Bulk deletes messages in the channel this command was used 
 warnings | \<recent \| specific \| user\> \<count \| warn id \| user id \| mention\> | Get the warning(s) for a user or recent warning(s) | Mod | !warnings specific 1hsj3ls
 mute | \<mention \| user id\>, \<type\>*, \<reason\>, \<time\>* | Removes the user's ability to send messages, add reactions, or speak in voice | Mod | !mute @User, server, excessive profanity, 1d
 unmute | \<mention \| user id\> | Removes the user's muted status | Mod | !unmute @User
+whitelist* | \<list \| add \| remove\> \[comma seperated url list\] | Lists, adds, or removes url(s) from the whitelisted domains | Mod | !whitelist add site1<span>.</span>com,site2<span>.</span>com,site3<span>.</span>com
 
 \*count - The maximum count for a single purge is 100
 
 \*time - This can be any format supported by [Moment's Add method (including shorthands)](https://momentjs.com/docs/#/manipulating/add/) or `p`, `perm`, `perma`, and `permanent` for a permanent ban (999 years)
 
 \*type - Accepted types: _server_, _voice_, _text_, and _reactions_
+
+\*whitelist - **IMPORTANT!** When adding domains to the whitelist, make sure not to use subdomains, these are automatically checked for!
 
 ___
 

@@ -16,10 +16,10 @@ module.exports = {
         let adminCmds = [],superCmds = [],modCmds = [],userCmds = [];
         let adminCmdsStr,superCmdsStr,modCmdsStr;
         const {commands} = message.client;
-        modTraineeRole = message.member.roles.cache.some(role => role.name.includes(mod_trainee_role));
-        const modRole = message.member.roles.cache.some(role => role.name.includes(mod_role));
-        const superRole = message.member.roles.cache.some(role => role.name.includes(super_role));
-        const adminRole = message.member.roles.cache.some(role => role.name.includes(admin_role));
+        modTraineeRole = message.member.roles.cache.some(role => role.id === mod_trainee_role);
+        const modRole = message.member.roles.cache.some(role => role.id === mod_role);
+        const superRole = message.member.roles.cache.some(role => role.id === super_role);
+        const adminRole = message.member.roles.cache.some(role => role.id === admin_role);
         const ownerRole = message.member.guild.ownerID;
         
 

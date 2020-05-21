@@ -8,7 +8,6 @@ const joinController = require("./controllers/JoinController");
 const leaveController = require("./controllers/LeaveController");
 const databaseController = require("./controllers/DatabaseController");
 const moderationController = require("./controllers/ModerationController");
-const reactionsController = require("./controllers/ReactionsController");
 const channelController = require("./controllers/ChannelController");
 
 // Instantiate a new Discord client and collection
@@ -26,7 +25,25 @@ class TriggerList {
         this._list = triggers;
     }
 }
-const triggerList = new TriggerList(); //instantiate a new TriggerList class
+// Create a class for Triggers
+class WhitelistedDomainList {
+    constructor() {
+        this._list = [];
+    }
+    get list() {
+        return this._list;
+    }
+    set list(domains) {
+        this._list = domains;
+    }
+}
+
+// Instantiate classes
+const triggerList = new TriggerList();
+const allowedURLs = new WhitelistedDomainList();
+
+// Create a new Set for deleted messages
+let deleteSet = new Set();
 
 console.log(JSON.stringify(require("./config"), null, 4)) //shows the running config
 
@@ -62,7 +79,7 @@ client.once('ready', () => {
 
     // Populate the triggerList and check for unbans/unmutes
     try {
-        databaseController.botReconnect(triggerList);
+        databaseController.botReconnect(triggerList, allowedURLs);
     } catch(e) {
         console.error("Error: ", e);
     }
@@ -74,7 +91,7 @@ client.once('ready', () => {
         } catch(e) {
             console.error("Error: ", e);
         }
-    }, 60000)
+    }, 3000)
 
 });
 
@@ -82,7 +99,7 @@ client.once('ready', () => {
 client.on('message', async message => {
     // Call the function from /controllers/MessageController to handle the message
     try {
-        messageController.messageHandler(message, client, triggerList);
+        messageController.messageHandler(message, client, triggerList, allowedURLs, deleteSet);
     } catch (e) {
         console.error(e);
     };
@@ -110,17 +127,6 @@ client.on('guildMemberRemove', member => {
     }
 });
 
-// Listen for members to leave the server
-client.on('messageReactionAdd', (reaction, user) => {
-
-    // Attempt to run the leaveHandler method
-    try {
-        reactionsController.verifyHandler(reaction, user);
-    } catch (e) {
-        console.error(e);
-    }
-});
-
 // Listen for messages to be deleted
 client.on("messageDelete", message => {
     
@@ -133,7 +139,7 @@ client.on("messageDelete", message => {
 
             // Attempt to run the deleteHandler method
             try {
-                moderationController.deleteHandler(message, triggerList);
+                moderationController.deleteHandler(message, triggerList, deleteSet);
             } catch (e) {
                 return;
             }

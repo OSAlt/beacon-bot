@@ -167,7 +167,8 @@ module.exports = {
     },
 
     // Function for when bot starts up
-    botReconnect: function(tl) {
+    botReconnect: function(tl, au) {
+        let triggerList = tl, allowedURLs = au;
 
         /*
         ##################################
@@ -204,28 +205,43 @@ module.exports = {
             });
 
             // Add the list of triggers to the local copy
-            tl.list = triggers;
+            triggerList.list = triggers;
+        }).catch((e) => {
+             console.error("Error: "+e);
+        });
+
+        /*
+        ####################################
+        ######## populate whitelist ########
+        ####################################
+        */
+        // Get all rows of whitelisted urls and add them to the urlWhitelist list
+        Models.allowedurl.findAll().then((data) => {
+            let whitelistedDomains = []; //array for whitelisted urls
+
+            // Loop through each item found and add it to the whitelistedDomains array
+            data.forEach((item) => {
+                whitelistedDomains.push(item.get('url'));
+            });
+
+            // Add the list of whitelisted urls to the local copy
+            allowedURLs.list = whitelistedDomains;
         }).catch((e) => {
              console.error("Error: "+e);
         });
     },
 
-    /*
-    ##########################
-    ###### UNBANS CHECK ######
-    ##########################
-    */
-    // Function to handle unbans
+
+    // Function to check db on startup
     databaseCheck: async function(c) {
         const client = c;
-        const now = moment().utc();
         let bannedUsers = []; // array for all banned users
-        let mutedUsers = [];
         let logChannel; // var for action log channel(s)
         const timezone = moment().tz(moment.tz.guess()).format(`z`); // server timezone
 
         // Find all uncompleted bans
         Models.ban.findAll({where: {completed: false},raw:true}).then((data) => {
+            const now = moment().utc();
             // If the ban(s) were found...
             if (data) {
                 // Loop through each row from the db
@@ -319,99 +335,84 @@ module.exports = {
         ###########################
         */
         // Function to handle unmutes
-        Models.mute.findAll({where: {completed: false},raw:true}).then((data) => {
+        mutedUsers = await Models.mute.findAll({where: {completed: 0},raw:true}).then((data) => {
+            const currentTime = new Date();
             // If the mute(s) were found...
             if (data) {
                 // Loop through each row from the db
-                data.forEach((mute) => {
-                    let umDate = mute.unmute_date; // store the unmute date
+                data.forEach(async (mute) => {
+                    let umDate = moment(mute.unmute_date); // store the unmute date
                     // Make sure the mute hasn't already been completed
-                    if(moment(umDate).isSameOrBefore(now)) {
-                        let muteObj = {}; // mute object
+                    if(moment(umDate).isSameOrBefore(moment(currentTime))) {
+                        // Find the server the user was muted in
+                        const guild = client.guilds.cache.get(mute.guild_id);
+                        const member = await guild.members.fetch(mute.user_id);
+                        const mutedRole = member.roles.cache.find(r => r.name.includes("Muted")); //muted role
+                        logChannel = guild.channels.cache.find((c => c.name.includes(action_log_channel))); //action log channel
+                        // Unmute the user
+                        member.roles.remove(mutedRole).then(() => {
+                            const moderator = client.users.cache.get(mute.moderator_id); //get the moderator that performed the mute
+                            let muteDate = moment(mute.created).format(`MMM DD, YYYY HH:mm:ss`);
 
-                        // Add the data to the ban object
-                        muteObj.id = mute.id
-                        muteObj.userId = mute.user_id;
-                        muteObj.guildId = mute.guild_id;
-                        muteObj.type = mute.type;
-                        muteObj.reason = mute.reason;
-                        muteObj.unmuteDate = mute.unban_date;
-                        muteObj.modId = mute.moderator_id;
-                        muteObj.completed = mute.completed;
-                        muteObj.created = mute.createdAt;
-                        muteObj.updated = mute.updatedAt;
-                        
-                        // Add the mute to the mutted users array
-                        mutedUsers.push(muteObj);
+                            // Update the completed field
+                            Models.mute.update({completed: true}, {where: {id: mute.id}});
+
+                            // Create the unmute embed
+                            const unmuteEmbed = {
+                                color: 0xFF5500,
+                                title: "User Unmuted",
+                                author: {
+                                    name: `${member.user.username}#${member.user.discriminator}`,
+                                    icon_url: member.user.displayAvatarURL({dynamic:true}),
+                                },
+                                description: `${member.user.username}'s mute has expired`,
+                                fields: [
+                                    {
+                                        name: `User`,
+                                        value: `${member}`,
+                                        inline: true,
+                                    },
+                                    {
+                                        name: `Mute Type`,
+                                        value: `${mute.type}`,
+                                        inline: true,
+                                    },
+                                    {
+                                        name: `Muted By`,
+                                        value: `${moderator}`,
+                                        inline: true,
+                                    },
+                                    {
+                                        name: `Date Muted`,
+                                        value: `${muteDate} (${timezone})`,
+                                        inline: true,
+                                    },
+                                    {
+                                        name: `Reason`,
+                                        value: `${mute.reason}`,
+                                        inline: false,
+                                    },
+                                ],
+                                timestamp: new Date(),
+                                footer: {
+                                    text: `Mute Id: ${mute.id}`
+                                }
+                            };
+
+                            // Send the embed to the log channel
+                            logChannel.send({embed: unmuteEmbed});
+                        // If member doesn't have a muted rule then update the db and ignore
+                        }).catch(() => {
+                            // Update the completed field
+                            Models.mute.update({completed: true}, {where: {id: mute.id}});
+                            return;
+                        })
                     }
-                })
+                });
             // If no mutes were found just ignore
             } else {
                 return;
             }
-        }).then(() => {
-            // Loop through each user that needs to be unmuted
-            mutedUsers.forEach(async (item) => {
-                // Find the server the user was banned from
-                const guild = client.guilds.cache.get(item.guildId);
-                const member = await guild.members.fetch(item.userId);
-                const mutedRole = member.roles.cache.find(r => r.name.includes("Muted")); //muted role
-                logChannel = guild.channels.cache.find((c => c.name.includes(action_log_channel))); //action log channel
-
-                // Unmute the user
-                member.roles.remove(mutedRole).then(() => {
-                    const moderator = client.users.cache.get(item.modId); //get the moderator that performed the mute
-                    let muteDate = moment(item.created).format(`MMM DD, YYYY HH:mm:ss`);
-
-                    // Update the completed field
-                    Models.mute.update({completed: true}, {where: {id: item.id}});
-
-                    // Create the unmute embed
-                    const unmuteEmbed = {
-                        color: 0xFF5500,
-                        title: "User Unmuted",
-                        author: {
-                            name: `${member.user.username}#${member.user.discriminator}`,
-                            icon_url: member.user.displayAvatarURL({dynamic:true}),
-                        },
-                        description: `${member.user.username}'s mute has expired`,
-                        fields: [
-                            {
-                                name: `User`,
-                                value: `${member}`,
-                                inline: true,
-                            },
-                            {
-                                name: `Mute Type`,
-                                value: `${member}`,
-                                inline: true,
-                            },
-                            {
-                                name: `Muted By`,
-                                value: `${moderator}`,
-                                inline: true,
-                            },
-                            {
-                                name: `Date Muted`,
-                                value: `${muteDate} (${timezone})`,
-                                inline: true,
-                            },
-                            {
-                                name: `Reason`,
-                                value: `${item.reason}`,
-                                inline: false,
-                            },
-                        ],
-                        timestamp: new Date(),
-                        footer: {
-                            text: `Mute Id: ${item.id}`
-                        }
-                    };
-
-                    // Send the embed to the log channel
-                    logChannel.send({embed: unmuteEmbed});
-                });
-            });
         });
     }
 }

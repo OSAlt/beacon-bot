@@ -10,8 +10,8 @@ module.exports = {
     joinableRolesHandler: function(cmd, c, a, m) {
         // Create vars
         const command = cmd, client = c, args = a, message = m;
-        const superRole = message.member.roles.cache.some(role => role.name.includes(super_role));
-        const adminRole = message.member.roles.cache.some(role => role.name.includes(admin_role));
+        const superRole = message.member.roles.cache.some(role => role.id === super_role);
+        const adminRole = message.member.roles.cache.some(role => role.id === admin_role);
         const ownerRole = message.member.guild.owner;
         const superChannel = message.guild.channels.cache.find((c => c.name.includes(super_channel)));
         let joinableRole;
@@ -37,7 +37,11 @@ module.exports = {
                 role = message.guild.roles.cache.find(role => role.name.toLowerCase().includes(args[0].toLowerCase())); // Find the role based on the arg
             }
 
-            const joinedRole = message.member.roles.cache.some(r => r.name.includes(role.name)); // Look for role in user's current roles
+            try {
+                const joinedRole = message.member.roles.cache.some(r => r.name.includes(role.name)); // Look for role in user's current roles
+            } catch(e) {
+                return message.reply(`Uh oh! It looks like to tried to join a role that doesn't exist!\nPlease use \`${prefix}joinables\` to see all joinable roles.`)
+            }
 
             // If no role let user know
             if (!role) {

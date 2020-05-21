@@ -5,13 +5,20 @@ const shortid = require('shortid');
 const Discord = require('discord.js');
 
 module.exports = {
-    deleteHandler: function(m, tl) {
+    deleteHandler: function(m, tl, deleteSet) {
         const message = m, triggerList = tl;
         const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
         let triggerArr = [];
 
         // Exclude master control and pokecord channels
         if(message.channel.name.includes("master-control") || message.channel.name.includes("pokecord")) return;
+
+        // If deleted due to an unapproved url then ignore
+        if(deleteSet.has(message.id)) {
+            // Remove the message id from the set then ignore with return
+            deleteSet.delete(message.id)
+            return;
+        }
 
         // Add the trigger words/phrases to the local array
         for(key in triggerList.list) {
@@ -174,10 +181,10 @@ module.exports = {
         const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
         let user; // user var
         // Get the mod+ roles
-        const modTraineeRole = message.guild.roles.cache.find(role => role.name.includes(mod_trainee_role));
-        const modRole = message.guild.roles.cache.find(role => role.name.includes(mod_role));
-        const superRole = message.guild.roles.cache.find(role => role.name.includes(super_role));
-        const adminRole = message.guild.roles.cache.find(role => role.name.includes(admin_role));
+        const modTraineeRole = message.guild.roles.cache.find(role => role.id === mod_trainee_role);
+        const modRole = message.guild.roles.cache.find(role => role.id === mod_role);
+        const superRole = message.guild.roles.cache.find(role => role.id === super_role);
+        const adminRole = message.guild.roles.cache.find(role => role.id === admin_role);
 
         // Check if the first arg is a number
         if(isNaN(args[0])) {
@@ -214,7 +221,7 @@ module.exports = {
                 return message.reply(`you can't kick yourself from the server, silly!`);
             // If the user is a mod+ then deny kicking them
             } else if(user.roles.cache.some(r => [modTraineeRole.name, modRole.name, superRole.name, adminRole.name].includes(r.name))) {
-                return message.reply(`you got guts, trying to kick a ${user.roles.highest}!`);
+                return message.reply(`you got guts, trying to kick a ${user.roles.highest} member!`);
             // If the user is the server owner then deny kicking them
             } else if (user.user.id === user.guild.ownerID) {
                 return message.reply(`I hope you didn't really think you could kick the server owner...`);
@@ -302,10 +309,10 @@ module.exports = {
         const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
         let user, bans;
         // Get the mod+ roles
-        const modTraineeRole = message.guild.roles.cache.find(role => role.name.includes(mod_trainee_role));
-        const modRole = message.guild.roles.cache.find(role => role.name.includes(mod_role));
-        const superRole = message.guild.roles.cache.find(role => role.name.includes(super_role));
-        const adminRole = message.guild.roles.cache.find(role => role.name.includes(admin_role));
+        const modTraineeRole = message.guild.roles.cache.find(role => role.id === mod_trainee_role);
+        const modRole = message.guild.roles.cache.find(role => role.id === mod_role);
+        const superRole = message.guild.roles.cache.find(role => role.id === super_role);
+        const adminRole = message.guild.roles.cache.find(role => role.id === admin_role);
 
         let argsStr = args.join(" "); //create a string out of the args
         argsStr = argsStr.replace(/,/g, ", "); // replace
@@ -336,7 +343,7 @@ module.exports = {
                     return message.reply(`you can't ban yourself from the server, silly!`);
                 // If the user is a mod+ then deny banning them
                 } else if(user.roles.cache.some(r => [modTraineeRole.name, modRole.name, superRole.name, adminRole.name].includes(r.name))) {
-                    return message.reply(`you got guts, trying to ban a ${user.roles.highest}!`);
+                    return message.reply(`you got guts, trying to ban a ${user.roles.highest} member!`);
                 // If the user is the server owner then deny banning them
                 } else if (user.user.id === user.guild.ownerID) {
                     return message.reply(`I hope you didn't really think you could ban the server owner...`);
@@ -374,7 +381,6 @@ module.exports = {
 
             // Check if a reason was given
             if(newArgs[1] && user !== undefined) {
-                console.log(newArgs);
                 // If a length wasn't given then let the user know it is required
                 if(!newArgs[2]) {
                     return message.reply(`uh oh! It seems you forgot to give a length for ther ban, please be sure to provide a ban length for this action!\nExample: \`${prefix}ban ${user}, reason, length\``);
@@ -387,6 +393,7 @@ module.exports = {
                     let banValue = banLength.replace(/\D+/, '').trim(); //assign the ban value
                     let banUnit = banLength.replace(/\d+/, '').trim(); //assign the ban unit
                     const now = moment();
+                    const timezone = moment().tz(moment.tz.guess()).format(`z`); // server timezone
                     const banLengthRegex = /(\d+\s*\D+$|^permanent$|^perma$|^perm$|^p{1}$){1}/; //regex for ban time format
 
                     // Check if the user input for a perma ban
@@ -409,8 +416,7 @@ module.exports = {
                         // If not after the current time, let the user know how to fix the problem
                         return message.reply("uh oh! Looks like you have an invalid duration! Please try again with a proper unit of time and number duration!");
                     }
-                    
-                    unbanDate.utc(); //convert to utc
+
                     unbanDate = unbanDate.format(`MMM DD, YYYY HH:mm:ss`); //format
 
                     /* 
@@ -449,7 +455,7 @@ module.exports = {
                                     },
                                     {
                                         name: `Unban Date`,
-                                        value: `${unbanDate} (UTC)`,
+                                        value: `${unbanDate} (${timezone})`,
                                         inline: true,
                                     },
                                     {
@@ -668,16 +674,16 @@ module.exports = {
             // Check if a reason was given
             if(args[1] && user.user !== undefined) {
             // Create a new table if one doesn't exist
-            Models.ban.sync({ force: false }).then(() => { 
+            Models.warning.sync({ force: false }).then(() => { 
                 // See if the warning id exists already
-                Models.ban.findOne({where: {warning_id: warnId}, raw:true}).then((warning => {
+                Models.warning.findOne({where: {warning_id: warnId}, raw:true}).then((warning => {
                     // If the warning id matches the newly generated one, generate a new one
                     if(warning) {
                         warnId = shortid.generate();
                     };
                 })).then(() => { 
                     // Create a new warning
-                    Models.ban.create({
+                    Models.warning.create({
                         warning_id: warnId, // add the warning Id
                         user_id: user.user.id, // add the user's id
                         type: "Note", // assign the type of warning
@@ -743,14 +749,14 @@ module.exports = {
         let user;
         const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
         // In Role? Boolean variables
-        const inSuperRole = message.member.roles.cache.some(role => role.name.includes(super_role));
-        const inAdminRole = message.member.roles.cache.some(role => role.name.includes(admin_role));
-        const inOwnerRole = message.member.guild.owner;
+        const inSuperRole = message.member.roles.cache.some(role => role.id === super_role);
+        const inAdminRole = message.member.roles.cache.some(role => role.id === admin_role);
+        const isOwner = message.member.guild.owner;
         // Roles
-        const modTraineeRole = message.guild.roles.cache.find(role => role.name.includes(mod_trainee_role));
-        const modRole = message.guild.roles.cache.find(role => role.name.includes(mod_role));
-        const superRole = message.guild.roles.cache.find(role => role.name.includes(super_role));
-        const adminRole = message.guild.roles.cache.find(role => role.name.includes(admin_role));
+        const modTraineeRole = message.guild.roles.cache.find(role => role.id === mod_trainee_role);
+        const modRole = message.guild.roles.cache.find(role => role.id === mod_role);
+        const superRole = message.guild.roles.cache.find(role => role.id === super_role);
+        const adminRole = message.guild.roles.cache.find(role => role.id === admin_role);
 
         let argsStr = args.join(" "); //create a string out of the args
         argsStr = argsStr.replace(/,/g, ", "); // replace
@@ -786,7 +792,7 @@ module.exports = {
             return message.reply(`you can't mute yourself, silly!`);
         // If the user is a mod+ then deny banning them
         } else if(user.roles.cache.some(r => [modTraineeRole.name, modRole.name, superRole.name, adminRole.name].includes(r.name))) {
-            return message.reply(`you got guts, trying to mute a ${user.roles.highest}!`);
+            return message.reply(`you got guts, trying to mute a ${user.roles.highest} member!`);
         // If the user is the server owner then deny banning them
         } else if (user.user.id === user.guild.ownerID) {
             return message.reply(`I hope you didn't really think you could mute the server owner...`);
@@ -812,6 +818,7 @@ module.exports = {
                     let muteValue = muteLength.replace(/\D+/, '').trim(); //assign the mute value
                     let muteUnit = muteLength.replace(/\d+/, '').trim(); //assign the mute unit
                     const now = moment();
+                    const timezone = moment().tz(moment.tz.guess()).format(`z`); // server timezone
                     const muteLengthRegex = /(\d+\s*\D+$|^permanent$|^perma$|^perm$|^p{1}){1}/; //regex for mute time format
                     let mutedRole = message.guild.roles.cache.find(r => r.name.toLowerCase() === `muted - ${muteType}`); //muted role
 
@@ -827,15 +834,13 @@ module.exports = {
                         return message.reply(`please give a duration that is at least 1 minute in length!`);
                     }
 
-                    let unmuteDate = now.add(muteValue, muteUnit).utc(); //create the unmute date
+                    let unmuteDate = now.add(muteValue, muteUnit); //create the unmute date
 
                     // Make sure the unban date is after the current time
                     if(moment(unmuteDate).isAfter(now)) {
                         // If not after the current time, let the user know how to fix the problem
                         return message.reply("uh oh! Looks like you have an invalid duration! Please try again with a proper unit of time and number duration!");
                     }
-
-                    unmuteDate.utc(); //convert to utc
                     unmuteDate = unmuteDate.format(`MMM DD, YYYY HH:mm:ss`); //format
 
                     // Check if user is in the muted role
@@ -844,7 +849,7 @@ module.exports = {
                     // If no muted role exists let user know
                     if(!mutedRole) {
                         // Check if user is a super or higher role
-                        if(inSuperRole || inAdminRole || inOwnerRole) {
+                        if(inSuperRole || inAdminRole || isOwner) {
                             return message.reply(`uh oh! It seems there isn't a muted - ${muteType} role, please use \`${prefix}createmute\` to make the role!`);
                         // If not a super or higher let them know to ask a super or higher
                         } else {
@@ -862,12 +867,11 @@ module.exports = {
                     * Sync the model to the table
                     * Creates a new table if table doesn't exist, otherwise just inserts a new row
                     * id, completed, createdAt, and updatedAt are set by default; DO NOT ADD
-                    * alter: true means it will update the table if changes were made to the model
                     !!!!
                         Keep force set to false otherwise it will overwrite the table instead of making a new row!
                     !!!!
                     */
-                    Models.mute.sync({ force: false, alter: true }).then(() => {
+                    Models.mute.sync({force: false}).then(() => {
                         // Add the ban record to the database
                         Models.mute.create({
                             user_id: user.id,
@@ -908,7 +912,7 @@ module.exports = {
                                         },
                                         {
                                             name: `Unmute Date`,
-                                            value: `${unmuteDate} (UTC)`,
+                                            value: `${unmuteDate} (${timezone})`,
                                             inline: false,
                                         },
                                         {
@@ -958,12 +962,12 @@ module.exports = {
         const message = m, args = a, client = c;
         const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
         // In Role? Boolean variables
-        const inSuperRole = message.member.roles.cache.some(role => role.name.includes(super_role));
-        const inAdminRole = message.member.roles.cache.some(role => role.name.includes(admin_role));
-        const inOwnerRole = message.member.guild.owner;
+        const inSuperRole = message.member.roles.cache.some(role => role.id === super_role);
+        const inAdminRole = message.member.roles.cache.some(role => role.id === admin_role);
+        const isOwner = message.member.guild.owner;
         // Roles
-        const superRole = message.guild.roles.cache.find(role => role.name.includes(super_role));
-        const adminRole = message.guild.roles.cache.find(role => role.name.includes(admin_role));
+        const superRole = message.guild.roles.cache.find(role => role.id === super_role);
+        const adminRole = message.guild.roles.cache.find(role => role.id === admin_role);
 
         // Check if the first arg is a number
         if(isNaN(args[0])) {
@@ -999,7 +1003,7 @@ module.exports = {
         // Make sure a muted role exists
         if(!mutedRole) {
             // Check if user is a super or higher role
-            if(inSuperRole || inAdminRole || inOwnerRole) {
+            if(inSuperRole || inAdminRole || isOwner) {
                 return message.reply(`uh oh! It seems there isn't a muted role, please use \`${prefix}createmute\` to make the role!`);
             // If not a super or higher let them know to ask a super or higher
             } else {
@@ -1108,7 +1112,7 @@ module.exports = {
     },
     createMuteHandler: async function(m) {
         const message = m;
-        const usersRole = message.guild.roles.cache.find(role => role.name.includes(user_role)); //users role
+        const usersRole = message.guild.roles.cache.find(role => role.id === user_role); //users role
         let mutedServer = message.guild.roles.cache.find(r => r.name === "Muted - Server"); //muted server role
         let mutedVoice = message.guild.roles.cache.find(r => r.name === "Muted - Voice"); //muted voice role
         let mutedText = message.guild.roles.cache.find(r => r.name === "Muted - Text"); //muted text role
@@ -1226,5 +1230,306 @@ module.exports = {
         } else {
             return message.reply(`uh oh! Looks like the muted roles already exist!`)
         }
+    },
+    whitelistHandler: function(m, ar, au) {
+        const message = m, args = ar, allowedUrls = au;
+        const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
+        const subCommand = args.shift(); //remove the first arg and store it in the subcommand var
+        const allowedSubCommands = ["view", "list", "add", "create", "delete", "remove"];
+        // In role? Boolean
+        const inSuperRole = message.member.roles.cache.some(role => role.id === super_role);
+        const inAdminRole = message.member.roles.cache.some(role => role.id === admin_role);
+        const isOwner = message.member.guild.owner;
+        // Role vars
+        const superRole = message.guild.roles.cache.find(role => role.id === super_role);
+        const adminRole = message.guild.roles.cache.find(role => role.id === admin_role);
+        let domains = args.join(","); //create string of for all domains
+        domains = domains.split(","); //create array from all domains
+        domains = domains.filter(i=>i); //remove any null values
+
+        // Make sure a proper subcommand was given
+        if(!allowedSubCommands.includes(subCommand.toLowerCase())) {
+            return message.channel.send(`You didn't give a proper subcommand for me to use, please choose from the list below:\n**${allowedSubCommands.join(", ")}**`)
+        } else {
+            /*
+            #################################
+            ######## list subcommand ########
+            #################################
+            */
+            if(["view", "list"].includes(subCommand.toLowerCase())) {
+                let whitelistedDomains = [];
+
+                // Find all the whitelisted domains from the db
+                Models.allowedurl.findAll().then((data) => {
+                    // If there was any data
+                    if(data) {
+                        // Add each item to the whitelistedDomains array
+                        data.forEach((item) => {
+                            whitelistedDomains.push(`**${item.get('url')}**`);
+                        });
+                    }
+                }).then(() => {
+                    whitelistedDomains = whitelistedDomains.join(", "); //create a string from array
+                    // Try to send the list; will fail if exceeding character limit
+                    try {
+                        // Create embed
+                        const whitelistsEmbed = {
+                            color: 0x33CCFF,
+                            title: `Whitelisted Domains`,
+                            description: `${whitelistedDomains}`,
+                            timestamp: new Date()
+                        };
+                        // Send the embed to the action log channel
+                        return actionLog.send({embed: whitelistsEmbed});
+                        
+                    // If exceeded the character limit let user know
+                    } catch(e) {
+                        return message.channel.send(`There are too many domains to display currently!`);
+                    }
+                })
+            /*
+            ################################
+            ######## add subcommand ########
+            ################################
+            */
+            } else if(["add", "create"].includes(subCommand.toLowerCase())) {
+                // Make sure array has values
+                if(domains.length === 0) {
+                    return message.reply(`uh oh! Looks like you forgot to give me the url(s) to add!`)
+                } else {
+
+                    // Regex for ensuring valid url
+                    const domainRegEx = /^(?:https?\:\/\/)?(?:.+\.)?([A-Za-z0-9-]+\.\w+)(?:\/?[^\s]+)?$/g;
+                    let acceptedInput = [];
+                    let deniedInput = [];
+
+                    // If only one domain was given and it doesn't match the regex let user know
+                    if(domains.length === 1 && !domains[0].match(domainRegEx)) {
+                        return message.channel.send(`${domains[0]} was an invalid url/domains, please try again!`)
+                    }
+
+                    // // Loop through each arg given after the subcommand
+                    domains.forEach((domain) => {
+                        // If a valid url
+                        if(domain.match(domainRegEx)){
+                            // Strip the url to only get the domain name and tld (and sub domains)
+                            const newDomain = domain.replace(/(https?:\/\/(w+\.)?|\/(.+)?)/g, "");
+                            // Add the domain to acceptedInput array
+                            acceptedInput.push(newDomain);
+
+                        // If not a valid url
+                        } else {
+                            // Add to deniedInput array
+                            deniedInput.push(domain)
+                        }
+                    });
+
+                    /* 
+                    * Sync the model to the table
+                    * Creates a new table if table doesn't exist, otherwise just inserts a new row
+                    * id, createdAt, and updatedAt are set by default; DO NOT ADD
+                    !!!!
+                        Keep force set to false otherwise it will overwrite the table instead of making a new row!
+                    !!!!
+                    */
+                    Models.allowedurl.sync({force: false}).then(() => {
+                        // If only one domain was given
+                        if(domains.length === 1) {
+                            // Add the domain to the database
+                            Models.allowedurl.create({
+                                url: domains[0],
+                                added_by: message.author.id,
+                            }).then(() => {
+
+                                // Create the embed
+                                const whitelistEmbed = {
+                                    color: 0x00FF00,
+                                    title: `Domain Whitelist Added`,
+                                    author: {
+                                        name: message.author.tag,
+                                        icon_url: message.author.displayAvatarURL({dynamic: true}),
+                                    },
+                                    description: `${message.author.username} has whitelisted a new domain!`,
+                                    fields: [
+                                        {
+                                            name: `Domain Added`,
+                                            value: `${domains[0]}`,
+                                            inline: true,
+                                        },
+                                        {
+                                            name: `Added By`,
+                                            value: `${message.author}`,
+                                            inline: true,
+                                        }, 
+                                    ],
+                                    timestamp: new Date()
+                                }
+                                // Send the embed to the action log channel
+                                actionLog.send({embed:whitelistEmbed});
+                                // Let the user know the domain was added
+                                message.channel.send(`${domains[0]} was successfully added to the list of allowed domains!`);
+                            })
+                        // If more than one domain was given
+                        } else if(domains.length > 1) {
+                            let bulkDomains = [];
+
+                            // Loop through the accepted input
+                            acceptedInput.forEach((item) => {
+                                // Create a new comain object
+                                let domainObj = {
+                                    url: item,
+                                    added_by: message.author.id,
+                                };
+                                // Add the domain object to the bulkDomains array
+                                bulkDomains.push(domainObj);
+                            });
+                            // Create multiple rows of domains
+                            Models.allowedurl.bulkCreate(bulkDomains).then(() => {
+                                const addedDomains = acceptedInput.join(", ");
+                                const rejectedDomains = deniedInput.join(", ");
+                    
+                                // Create the embed
+                                const whitelistsEmbed = {
+                                    color: 0x00FF00,
+                                    title: `Domain Whitelists Added`,
+                                    author: {
+                                        name: message.author.tag,
+                                        icon_url: message.author.displayAvatarURL({dynamic: true}),
+                                    },
+                                    description: `${message.author.username} has whitelisted new domains!`,
+                                    fields: [
+                                        {
+                                            name: `Domains Added`,
+                                            value: `${addedDomains}`,
+                                            inline: true,
+                                        },
+                                        {
+                                            name: `Rejected Domains`,
+                                            value: `${rejectedDomains || "None"}`
+                                        },
+                                        {
+                                            name: `Added By`,
+                                            value: `${message.author}`,
+                                            inline: true,
+                                        }, 
+                                    ],
+                                    timestamp: new Date()
+                                }
+                                // Send the embed to the action log channel
+                                actionLog.send({embed:whitelistsEmbed});
+                                // Let the user know the domain was added
+                                message.channel.send(`The domains were successfully added to the list of allowed domains, see ${actionLog} for more info!`);
+                                // If any domains were rejected let the user know
+                                if(deniedInput.length > 0 && deniedInput[0] !== "") {
+                                    message.channel.send(`The following domains weren't added to the list of allowed domains due to invalid domain format, see ${actionLog} for more info!\n\`${rejectedDomains}\``);
+                                }
+                            })
+                        }
+                    });
+                }
+            /*
+            ###################################
+            ######## delete subcommand ########
+            ###################################
+            */
+            } else if(["delete", "remove"].includes(subCommand.toLowerCase())) {
+                // Make sure user is a super or higher role
+                if(!inSuperRole && !inAdminRole && message.author !== isOwner) {
+                    // If not let them know to ask a super or higher to remove the domain
+                    return message.reply(`uh oh! You aren't allowed to remove whitelisted domains, if you feel this domain should be removed please ask a ${superRole} or ${adminRole} to delete it!`)
+                }
+                // If no domain was given let user know
+                if(domains.length === 0) {
+                    return message.reply(`uh oh! Looks like you forgot to give me the url(s) to add!`)
+                // If more than one domain was given let user know they can only delete one at a time
+                } else if(domains.length !== 1) {
+                    return message.reply(`uh oh! You can only delete one domain at a time!`);
+                }
+                let domain = domains[0]; //domain var
+
+                // Regex for ensuring valid url
+                const domainRegEx = /^(?:https?\:\/\/)?(?:.+\.)?([A-Za-z0-9-]+\.\w+)(?:\/?[^\s]+)?$/g;
+
+                // If only one domain was given and it doesn't match the regex let user know
+                if(!domain.match(domainRegEx)) {
+                    return message.channel.send(`${domains[0]} was an invalid url/domains, please try again!`)
+                }
+
+                // Strip the url to only get the domain name and tld (and sub domains)
+                const newDomain = domain.replace(/(https?:\/\/(w+\.)?|\/(.+)?)/g, "");
+
+                // Query the database for the domain passed in
+                Models.allowedurl.findOne({where: {url: newDomain}}).then((item) => {
+                    // If the domain was found, then remove it
+                    if (item) {
+                        Models.allowedurl.destroy({
+                            where: {
+                                url: domain
+                            }
+                        // Let the user know it was removed
+                        }).then(() => {
+
+                            // Remove the domain from the allowedUrls list
+                            delete allowedUrls.list[item];
+
+                            // Let user know domain was removed
+                            message.channel.send(`I have successfully removed \`${domain}\` from the whitelisted domains!`);
+                        });
+                    // If the domain wasn't found let the user know
+                    } else {
+                        message.channel.send(`Unable to find \`${domain}\`, please try again or use \`${prefix}whitelist list\` to view all whitelisted domains!`);
+                    };
+                });
+            }
+        }
+    },
+    handleUrl: function(m, rm, deleteSet) {
+        const message = m, regexMatch = rm;
+        const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
+
+        // Add the message id to the deleteSet
+        deleteSet.add(message.id);
+
+        // Create the embed
+        const urlEmbed = {
+            color: 0xff5500,
+            title: `Message Deleted in ${message.channel.name}`,
+            author: {
+                name: message.author.tag,
+                icon_url: message.author.displayAvatarURL({dynamic:true}),
+            },
+            description: `I have deleted a message by ${message.author} in ${message.channel} because it contained a link that isn't whitelisted!`,
+            fields: [
+                {
+                    name: `Author`,
+                    value: `${message.author}`,
+                    inline: true,
+                },
+                {
+                    name: `Channel`,
+                    value: `${message.channel}`,
+                    inline: true,
+                },
+                {
+                    name: `Link`,
+                    value: `${regexMatch[0]}`,
+                    inline: false,
+                },
+                {
+                    name: `Full Message`,
+                    value: `${regexMatch.input}`,
+                    inline: false,
+                },
+            ],
+            timestamp: new Date(),
+        };
+        // Send the embed to the mod log
+        actionLog.send({embed: urlEmbed}).then(() => {
+            // Delete the message with a reason
+            message.delete({reason: "URL not whitelisted"}).then(() => {
+                // Let the user know why their message was deleted
+                message.channel.send(`${message.member.displayName} please refrain from posting unapproved links! If you think your link is safe, please contact a moderator about adding it as a whitelisted link!`)
+            });
+        });
     }
 }
