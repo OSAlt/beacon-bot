@@ -25,8 +25,6 @@ module.exports = {
             joinableRole = args[0].toLowerCase();
         };
 
-
-
         /*********** JOIN/LEAVE ROLE ***********/
         if (command.name === "joinrole" || command.name === "leaverole") {
             let role;
@@ -37,23 +35,18 @@ module.exports = {
                 role = message.guild.roles.cache.find(role => role.name.toLowerCase().includes(args[0].toLowerCase())); // Find the role based on the arg
             }
 
-            try {
-                const joinedRole = message.member.roles.cache.some(r => r.name.includes(role.name)); // Look for role in user's current roles
-            } catch(e) {
-                return message.reply(`Uh oh! It looks like to tried to join a role that doesn't exist!\nPlease use \`${prefix}joinables\` to see all joinable roles.`)
-            }
-
             // If no role let user know
             if (!role) {
-                return message.reply(`That role doesn't exist, please try another role!`);
+                return message.reply(`that role doesn't exist, please try another role!`);
 
             // If role exists Look for it in the database
             } else if (role) {
+                const joinedRole = message.member.roles.cache.some(r => r.name.includes(role.name)); // Look for role in user's current roles
 
                 if (command.name === "joinrole" && joinedRole) {
-                    return message.reply(`You are already in that role!`);
+                    return message.reply(`you are already in that role!`);
                 } else if (command.name === "leaverole" && !joinedRole) {
-                    return message.reply(`You are not in that role!`);
+                    return message.reply(`you are not in that role!`);
                 } else {
                     // Get all rows and add their role to the joinable roles arr
                     JoinableRole.findOne({where: {role: role.name},raw:true}).then((data) => {
@@ -61,20 +54,20 @@ module.exports = {
                         if (data) {
                             if (command.name === "joinrole") {
                                 message.member.roles.add(role); // add the role
-                                return message.reply(`You've been successfully added to the ${role.name} role!`);
+                                return message.reply(`you've been successfully added to the ${role.name} role!`);
                             } else if (command.name === "leaverole") {
                                 message.member.roles.remove(role); // remove the role
-                                return message.reply(`You've have successfully left the ${role.name} role!`);
+                                return message.reply(`you've have successfully left the ${role.name} role!`);
                             }
 
                         // If no role was found in the db let user know
                         } else {
                             // If joinrole command
                             if (command.name === "joinrole") {
-                                return message.reply(`That role isn't joinable, please try another role!`);
+                                return message.reply(`that role isn't joinable, please try another role!`);
                             // If joinrole command
                             } else {
-                                return message.reply(`You cannot leave that role, please try another role!`);
+                                return message.reply(`you cannot leave that role, please try another role!`);
                             }
                         }
                     // If no joinable roles were found
