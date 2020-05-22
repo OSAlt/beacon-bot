@@ -7,10 +7,11 @@ const sequelize = new Sequelize(`mysql://${db_user}:${db_pass}@${db_host}:${db_p
 
 // Create a trigger model/table
 const AllowedUrl = sequelize.define('allowedurl', {
-    // Create required url string column
+    // Create required unique url string column
     url: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
+        unique: true,
     },
     // Create required added_by column
     added_by: {
