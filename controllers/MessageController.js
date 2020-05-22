@@ -103,8 +103,7 @@ module.exports = {
 
                     const regexMatch = message.content.toLowerCase().match(/(?!w{1,}\.)(\w+\.?)([a-zA-Z0-9-]+)(\.\w+)/);
                     // If not then call the handleUrl function from the ModerationController file
-                    //ModerationController.handleUrl(message, regexMatch, deleteSet);
-                    message.channel.send("bitch")
+                    ModerationController.handleUrl(message, regexMatch, deleteSet);
 
                 // If whitelisted url then ignore
                 } else {

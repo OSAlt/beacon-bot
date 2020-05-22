@@ -21,7 +21,7 @@ module.exports = {
         const joinEmbed = {
             color: 0x886CE4, //purple
             title: `New Member`,
-            description: `<@${member.user.id}> has just joined the server!\n*${member.guild.name} now has ${member.guild.memberCount} total members!`,
+            description: `<@${member.user.id}> has just joined the server!\n*${member.guild.name} now has ${member.guild.memberCount} total members!*`,
             fields: [
                 {
                     name: `User`,

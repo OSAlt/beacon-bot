@@ -1280,7 +1280,9 @@ module.exports = {
                             timestamp: new Date()
                         };
                         // Send the embed to the action log channel
-                        return actionLog.send({embed: whitelistsEmbed});
+                        actionLog.send({embed: whitelistsEmbed});
+                        // Let user know the data was sent
+                        return message.channel.send(`I've sent the data you requested to ${actionLog}`)
                         
                     // If exceeded the character limit let user know
                     } catch(e) {

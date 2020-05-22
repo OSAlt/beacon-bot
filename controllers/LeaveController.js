@@ -17,7 +17,6 @@ module.exports = {
         const joinedTimeStamp = moment(member.joinedTimestamp); // timestamp user joined
         const currentTime = moment(); // create a new moment obj with current time
         const memberLength = moment.duration(currentTime.diff(joinedTimeStamp)).format("Y[y] D[d] H[h] m[m] s[s]"); //get the duration of the membership and format it
-        const users = member.guild.roles.cache.find(r => r.id === user_role); //users role
 
         // See if the user has a last message
         if (member.lastMessage) {
@@ -32,7 +31,7 @@ module.exports = {
         const leaveEmbed = {
             color: 0xff5500,
             title: `Member Left`,
-            description: `<@${member.user.id}> has left the server\n*${member.guild.name} now has ${member.guild.memberCount} members, ${users.members.array().length} of which are verified!*`,
+            description: `<@${member.user.id}> has left the server\n*${member.guild.name} now has ${member.guild.memberCount} members*`,
             fields: [
                 {
                     name: `User`,
