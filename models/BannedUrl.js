@@ -6,7 +6,7 @@ const {db_name, db_host, db_port, db_user, db_pass} = require("../config");
 const sequelize = new Sequelize(`mysql://${db_user}:${db_pass}@${db_host}:${db_port}/${db_name}`, {logging: false});
 
 // Create a trigger model/table
-const AllowedUrl = sequelize.define('allowedurl', {
+const BannedUrl = sequelize.define('bannedurl', {
     // Create required unique url string column
     url: {
         type: Sequelize.STRING,
@@ -22,4 +22,4 @@ const AllowedUrl = sequelize.define('allowedurl', {
     collate: 'utf8mb4_bin',
 });
 
-module.exports = AllowedUrl;
+module.exports = BannedUrl;

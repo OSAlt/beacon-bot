@@ -25,8 +25,8 @@ class TriggerList {
         this._list = triggers;
     }
 }
-// Create a class for Triggers
-class WhitelistedDomainList {
+// Create a class for banned domains
+class BannedDomainList {
     constructor() {
         this._list = [];
     }
@@ -40,7 +40,7 @@ class WhitelistedDomainList {
 
 // Instantiate classes
 const triggerList = new TriggerList();
-const allowedURLs = new WhitelistedDomainList();
+const bannedUrls = new BannedDomainList();
 
 // Create a new Set for deleted messages
 let deleteSet = new Set();
@@ -79,7 +79,7 @@ client.once('ready', () => {
 
     // Populate the triggerList and check for unbans/unmutes
     try {
-        databaseController.botReconnect(triggerList, allowedURLs);
+        databaseController.botReconnect(triggerList, bannedUrls);
     } catch(e) {
         console.error("Error: ", e);
     }
@@ -99,7 +99,7 @@ client.once('ready', () => {
 client.on('message', async message => {
     // Call the function from /controllers/MessageController to handle the message
     try {
-        messageController.messageHandler(message, client, triggerList, allowedURLs, deleteSet);
+        messageController.messageHandler(message, client, triggerList, bannedUrls, deleteSet);
     } catch (e) {
         console.error(e);
     };

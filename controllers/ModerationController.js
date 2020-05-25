@@ -1231,7 +1231,7 @@ module.exports = {
             return message.reply(`uh oh! Looks like the muted roles already exist!`)
         }
     },
-    whitelistHandler: function(m, ar, au) {
+    blacklistHandler: function(m, ar, au) {
         const message = m, args = ar, allowedUrls = au;
         const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
         const subCommand = args.shift(); //remove the first arg and store it in the subcommand var
@@ -1257,30 +1257,30 @@ module.exports = {
             #################################
             */
             if(["view", "list"].includes(subCommand.toLowerCase())) {
-                let whitelistedDomains = [];
+                let blacklistedDomains = [];
 
-                // Find all the whitelisted domains from the db
-                Models.allowedurl.findAll().then((data) => {
+                // Find all the blacklisted domains from the db
+                Models.bannedurl.findAll().then((data) => {
                     // If there was any data
                     if(data) {
-                        // Add each item to the whitelistedDomains array
+                        // Add each item to the blacklistedDomains array
                         data.forEach((item) => {
-                            whitelistedDomains.push(`**${item.get('url')}**`);
+                            blacklistedDomains.push(`**${item.get('url')}**`);
                         });
                     }
                 }).then(() => {
-                    whitelistedDomains = whitelistedDomains.join(", "); //create a string from array
+                    blacklistedDomains = blacklistedDomains.join(", "); //create a string from array
                     // Try to send the list; will fail if exceeding character limit
                     try {
                         // Create embed
-                        const whitelistsEmbed = {
+                        const blacklistsEmbed = {
                             color: 0x33CCFF,
-                            title: `Whitelisted Domains`,
-                            description: `${whitelistedDomains}`,
+                            title: `Blacklist Domains`,
+                            description: `${blacklistedDomains}`,
                             timestamp: new Date()
                         };
                         // Send the embed to the action log channel
-                        actionLog.send({embed: whitelistsEmbed});
+                        actionLog.send({embed: blacklistsEmbed});
                         // Let user know the data was sent
                         return message.channel.send(`I've sent the data you requested to ${actionLog}`)
                         
@@ -1334,24 +1334,24 @@ module.exports = {
                         Keep force set to false otherwise it will overwrite the table instead of making a new row!
                     !!!!
                     */
-                    Models.allowedurl.sync({force: false}).then(() => {
+                    Models.bannedurl.sync({force: false}).then(() => {
                         // If only one domain was given
                         if(domains.length === 1) {
                             // Add the domain to the database
-                            Models.allowedurl.create({
+                            Models.bannedurl.create({
                                 url: domains[0],
                                 added_by: message.author.id,
                             }).then(() => {
 
                                 // Create the embed
-                                const whitelistEmbed = {
+                                const blacklistEmbed = {
                                     color: 0x00FF00,
-                                    title: `Domain Whitelist Added`,
+                                    title: `Domain Blacklist Added`,
                                     author: {
                                         name: message.author.tag,
                                         icon_url: message.author.displayAvatarURL({dynamic: true}),
                                     },
-                                    description: `${message.author.username} has whitelisted a new domain!`,
+                                    description: `${message.author.username} has blacklisted a new domain!`,
                                     fields: [
                                         {
                                             name: `Domain Added`,
@@ -1367,9 +1367,9 @@ module.exports = {
                                     timestamp: new Date()
                                 }
                                 // Send the embed to the action log channel
-                                actionLog.send({embed:whitelistEmbed});
+                                actionLog.send({embed:blacklistEmbed});
                                 // Let the user know the domain was added
-                                message.channel.send(`${domains[0]} was successfully added to the list of allowed domains!`);
+                                message.channel.send(`${domains[0]} was successfully added to the list of banned domains!`);
                             })
                         // If more than one domain was given
                         } else if(domains.length > 1) {
@@ -1386,19 +1386,19 @@ module.exports = {
                                 bulkDomains.push(domainObj);
                             });
                             // Create multiple rows of domains
-                            Models.allowedurl.bulkCreate(bulkDomains).then(() => {
+                            Models.bannedurl.bulkCreate(bulkDomains).then(() => {
                                 const addedDomains = acceptedInput.join(", ");
                                 const rejectedDomains = deniedInput.join(", ");
                     
                                 // Create the embed
-                                const whitelistsEmbed = {
+                                const blacklistsEmbed = {
                                     color: 0x00FF00,
-                                    title: `Domain Whitelists Added`,
+                                    title: `Domain Blacklists Added`,
                                     author: {
                                         name: message.author.tag,
                                         icon_url: message.author.displayAvatarURL({dynamic: true}),
                                     },
-                                    description: `${message.author.username} has whitelisted new domains!`,
+                                    description: `${message.author.username} has blacklisted new domains!`,
                                     fields: [
                                         {
                                             name: `Domains Added`,
@@ -1418,12 +1418,12 @@ module.exports = {
                                     timestamp: new Date()
                                 }
                                 // Send the embed to the action log channel
-                                actionLog.send({embed:whitelistsEmbed});
+                                actionLog.send({embed:blacklistsEmbed});
                                 // Let the user know the domain was added
-                                message.channel.send(`The domains were successfully added to the list of allowed domains, see ${actionLog} for more info!`);
+                                message.channel.send(`The domains were successfully added to the list of banned domains, see ${actionLog} for more info!`);
                                 // If any domains were rejected let the user know
                                 if(deniedInput.length > 0 && deniedInput[0] !== "") {
-                                    message.channel.send(`The following domains weren't added to the list of allowed domains due to invalid domain format, see ${actionLog} for more info!\n\`${rejectedDomains}\``);
+                                    message.channel.send(`The following domains weren't added to the list of banned domains due to invalid domain format, see ${actionLog} for more info!\n\`${rejectedDomains}\``);
                                 }
                             })
                         }
@@ -1438,7 +1438,7 @@ module.exports = {
                 // Make sure user is a super or higher role
                 if(!inSuperRole && !inAdminRole && message.author !== isOwner) {
                     // If not let them know to ask a super or higher to remove the domain
-                    return message.reply(`uh oh! You aren't allowed to remove whitelisted domains, if you feel this domain should be removed please ask a ${superRole} or ${adminRole} to delete it!`)
+                    return message.reply(`uh oh! You aren't allowed to remove blacklisted domains, if you feel this domain should be removed please ask a ${superRole} or ${adminRole} to delete it!`)
                 }
                 // If no domain was given let user know
                 if(domains.length === 0) {
@@ -1461,10 +1461,10 @@ module.exports = {
                 const newDomain = domain.replace(/(https?:\/\/(w+\.)?|\/(.+)?)/g, "");
 
                 // Query the database for the domain passed in
-                Models.allowedurl.findOne({where: {url: newDomain}}).then((item) => {
+                Models.bannedurl.findOne({where: {url: newDomain}}).then((item) => {
                     // If the domain was found, then remove it
                     if (item) {
-                        Models.allowedurl.destroy({
+                        Models.bannedurl.destroy({
                             where: {
                                 url: domain
                             }
@@ -1472,14 +1472,14 @@ module.exports = {
                         }).then(() => {
 
                             // Remove the domain from the allowedUrls list
-                            delete allowedUrls.list[item];
+                            delete bannedurl.list[item];
 
                             // Let user know domain was removed
-                            message.channel.send(`I have successfully removed \`${domain}\` from the whitelisted domains!`);
+                            message.channel.send(`I have successfully removed \`${domain}\` from the blacklisted domains!`);
                         });
                     // If the domain wasn't found let the user know
                     } else {
-                        message.channel.send(`Unable to find \`${domain}\`, please try again or use \`${prefix}whitelist list\` to view all whitelisted domains!`);
+                        message.channel.send(`Unable to find \`${domain}\`, please try again or use \`${prefix}blacklist list\` to view all blacklisted domains!`);
                     };
                 });
             }
@@ -1500,7 +1500,7 @@ module.exports = {
                 name: message.author.tag,
                 icon_url: message.author.displayAvatarURL({dynamic:true}),
             },
-            description: `I have deleted a message by ${message.author} in ${message.channel} because it contained a link that isn't whitelisted!`,
+            description: `I have deleted a message by ${message.author} in ${message.channel} because it contained a link that is blacklisted!`,
             fields: [
                 {
                     name: `Author`,
@@ -1528,9 +1528,9 @@ module.exports = {
         // Send the embed to the mod log
         actionLog.send({embed: urlEmbed}).then(() => {
             // Delete the message with a reason
-            message.delete({reason: "URL not whitelisted"}).then(() => {
+            message.delete({reason: "Blacklisted URL"}).then(() => {
                 // Let the user know why their message was deleted
-                message.channel.send(`${message.member.displayName} please refrain from posting unapproved links! If you think your link is safe, please contact a moderator about adding it as a whitelisted link!`)
+                message.channel.send(`${message.member.displayName} please refrain from posting blacklisted urls!`)
             });
         });
     }

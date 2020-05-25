@@ -167,8 +167,8 @@ module.exports = {
     },
 
     // Function for when bot starts up
-    botReconnect: function(tl, au) {
-        let triggerList = tl, allowedURLs = au;
+    botReconnect: function(tl, bu) {
+        let triggerList = tl, bannedUrls = bu;
 
         /*
         ##################################
@@ -212,20 +212,20 @@ module.exports = {
 
         /*
         ####################################
-        ######## populate whitelist ########
+        ######## populate blacklist ########
         ####################################
         */
-        // Get all rows of whitelisted urls and add them to the urlWhitelist list
-        Models.allowedurl.findAll().then((data) => {
-            let whitelistedDomains = []; //array for whitelisted urls
+        // Get all rows of blacklisted urls and add them to the urlWhitelist list
+        Models.bannedurl.findAll().then((data) => {
+            let blacklistedDomains = []; //array for blacklisted urls
 
-            // Loop through each item found and add it to the whitelistedDomains array
+            // Loop through each item found and add it to the blacklistedDomains array
             data.forEach((item) => {
-                whitelistedDomains.push(item.get('url'));
+                blacklistedDomains.push(item.get('url'));
             });
 
-            // Add the list of whitelisted urls to the local copy
-            allowedURLs.list = whitelistedDomains;
+            // Add the list of blacklisted urls to the local copy
+            bannedUrls.list = blacklistedDomains;
         }).catch((e) => {
              console.error("Error: "+e);
         });

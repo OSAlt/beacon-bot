@@ -11,12 +11,12 @@ const cooldowns = new Discord.Collection();
 module.exports = {
 
     // Create a function to be called
-    messageHandler: function(m, c, tl, au, deleteSet) {
+    messageHandler: function(m, c, tl, bu, deleteSet) {
         // Create vars
-        const message = m, client = c, triggerList = tl, allowedUrls = au;
+        const message = m, client = c, triggerList = tl, bannedUrls = bu;
         let inModRole, inSuperRole, inAdminRole, isOwner;
         let triggerArr = [];
-        let allowedUrlArr = [];
+        let bannedUrlArr = [];
         const modRole = message.guild.roles.cache.find(role => role.id === mod_role);
         const superRole = message.guild.roles.cache.find(role => role.id === super_role);
         const adminRole = message.guild.roles.cache.find(role => role.id === admin_role);
@@ -27,10 +27,10 @@ module.exports = {
             triggerArr.push(key);
         }
 
-        // Loop through the allowedUrls list
-        allowedUrls.list.forEach((domain) => {
-            // Add each domain to the allowedUrlArr var
-            allowedUrlArr.push(domain);
+        // Loop through the bannedUrl list
+        bannedUrls.list.forEach((domain) => {
+            // Add each domain to the bannedUrlArr var
+            bannedUrlArr.push(domain);
         });
         
         client.commands = new Discord.Collection(); // Create a new collection for commands
@@ -91,25 +91,24 @@ module.exports = {
                 // Call the triggerHit function from the TriggersController file
                 TriggersController.triggerHit(message, triggers, client);
 
-            // Check if the message contains a 
+            // Check if the message contains a url
             } else if (message.content.toLowerCase().match(/(?!w{1,}\.)(\w+\.?)([a-zA-Z0-9-]+)(\.\w+)/)) {
-                // If user had an excluded role then ignore
+                // If user has an excluded role then ignore
                 if(message.member.roles.cache.some(r => url_role_whitelist.includes(r.id))) {
                     return;
                 }
 
-                // Check if the url is whitelisted
-                if(!message.content.toLowerCase().match(allowedUrlArr.map(domain => `\\b${domain}\\b`).join("|"))) {
-
+                // Check if the url is blacklisted
+                if(message.content.toLowerCase().match(bannedUrlArr.map(domain => `\\b${domain}\\b`).join("|"))) {
                     const regexMatch = message.content.toLowerCase().match(/(?!w{1,}\.)(\w+\.?)([a-zA-Z0-9-]+)(\.\w+)/);
                     // If not then call the handleUrl function from the ModerationController file
                     ModerationController.handleUrl(message, regexMatch, deleteSet);
 
-                // If whitelisted url then ignore
+                // If not blacklisted url then ignore
                 } else {
                     return;
                 };
-            // If not a trigger word/phrase, a whitelisted domain, or a bot message then ignore
+            // If not a trigger word/phrase, a blacklisted domain, or a bot message then ignore
             } else {
                 return;
             };
@@ -179,7 +178,7 @@ module.exports = {
 
         // Attempt to execute the command
         try {
-            command.execute(message, args, client, triggerList, allowedUrls);
+            command.execute(message, args, client, triggerList, bannedUrls);
         } catch (error) {
             console.error(error);
             message.reply('There was an error trying to execute that command, please try again!')
