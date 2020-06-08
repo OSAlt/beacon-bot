@@ -12,6 +12,9 @@
   "author": "Toby Horn (Kankuro)",
   "license": "ISC",
   "dependencies": {
+    "@docusaurus/core": "^2.0.0-alpha.50",
+    "@docusaurus/preset-classic": "^2.0.0-alpha.50",
+    "classnames": "^2.2.6",
     "discord.js": "^12.1.1",
     "dotenv": "^8.2.0",
     "lodash": "^4.17.15",
@@ -19,13 +22,10 @@
     "moment-duration-format": "^2.3.2",
     "moment-timezone": "^0.5.27",
     "mysql2": "^2.1.0",
-    "sequelize": "^5.21.3",
-    "shortid": "^2.2.15",
-    "@docusaurus/core": "^2.0.0-alpha.50",
-    "@docusaurus/preset-classic": "^2.0.0-alpha.50",
-    "classnames": "^2.2.6",
     "react": "^16.8.4",
-    "react-dom": "^16.8.4"
+    "react-dom": "^16.8.4",
+    "sequelize": "^5.21.3",
+    "shortid": "^2.2.15"
   },
   "browserslist": {
     "production": [
@@ -39,5 +39,4 @@
       "last 1 safari version"
     ]
   }
-
 }
