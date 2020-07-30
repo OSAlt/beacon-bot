@@ -13,3 +13,4 @@ data
 .docusaurus/
 build
 .idea
+.history

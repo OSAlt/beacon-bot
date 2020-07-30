@@ -5,8 +5,8 @@ title: Kubernetes
 
 # Deployment
 
-In the [Kubernetes](../kubernetes) folder are 3 files.
-    
+In the [Kubernetes](https://github.com/OSAlt/gb-svc-beacon-bot/tree/master/kubernetes) folder are 3 files.
+
     - bot-deployment.yml: Pulls from docker.io for beaconbot image 
     - db-deployment.yml: Deploys a Mysql database for persistent configuration
     - env-configmap.yml: This is where various env variables are configured for the bot (Eg. Bot-token, Channels. Roles, etc)
@@ -16,15 +16,17 @@ In the [Kubernetes](../kubernetes) folder are 3 files.
 The configuration is done via the env-configmap.yml file.  Please copy the file and update accordingly.
 
 ## Bring up the bot
+
 The easiest way to bring up the bot is to run Kubectl.
 
 From inside the kubernetes folder run
-```
+
+``` 
 kubectl apply -f env-configmap.yml,db-deployment.yml,bot-deployment.yml
 ```
 
 To verify that the bot is up and running (You should see 2 pods running with bot-deployment and db-deployment prefixes.):
+
 ``` 
 kubectl get pods
 ```
-

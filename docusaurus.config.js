@@ -1,82 +1,68 @@
 module.exports = {
-  title: 'GeekBeacon',
-  tagline: 'Geek Beacon Discord Bot',
-  url: 'https://osalt.github.io',
-  baseUrl: '/gb-svc-beacon-bot/',
-  favicon: 'img/favicon.ico',
-  organizationName: 'osalt', // Usually your GitHub org/user name.
-  projectName: 'gb-svc-beacon-bot', // Usually your repo name.
+  title: "GeekBeacon",
+  tagline: "Geek Beacon Discord Bot",
+  url: "https://osalt.github.io",
+  baseUrl: "/gb-svc-beacon-bot/",
+  favicon: "img/favicon.ico",
+  organizationName: "osalt", // Usually your GitHub org/user name.
+  projectName: "gb-svc-beacon-bot", // Usually your repo name.
   themeConfig: {
     navbar: {
-      title: 'Beacon Bot',
+      title: "Beacon Bot",
       logo: {
-        alt: 'Beacon Bot Logo',
-        src: 'img/logo.png',
+        alt: "Beacon Bot Logo",
+        src: "img/logo.png",
       },
-      links: [
+      items: [
         {
-          to: 'docs/install',
-          activeBasePath: 'docs',
-          label: 'Docs',
-          position: 'left',
-        },
-       {
-          to: 'docs/user_guide',
-          activeBasePath: 'docs',
-          label: 'User Guides',
-          position: 'left',
+          to: "docs/install",
+          activeBasePath: "docs",
+          label: "Docs",
+          position: "left",
         },
         {
-
-          href: 'https://github.com/OSAlt/gb-svc-beacon-bot',
-          label: 'GitHub',
-          position: 'right',
+          to: "docs/user_guide",
+          activeBasePath: "docs",
+          label: "User Guides",
+          position: "left",
+        },
+        {
+          href: "https://github.com/OSAlt/gb-svc-beacon-bot",
+          label: "GitHub",
+          position: "right",
         },
       ],
     },
     footer: {
-      style: 'dark',
+      style: "dark",
       links: [
         {
-          title: 'Docs',
+          title: "Community",
           items: [
             {
-              label: 'Style Guide',
-              to: 'docs/doc1',
+              label: "Stack Overflow",
+              href: "https://stackoverflow.com/questions/tagged/docusaurus",
             },
             {
-              label: 'Second Doc',
-              to: 'docs/doc2',
+              label: "Discord",
+              href: "https://discordapp.com/invite/docusaurus",
             },
           ],
         },
         {
-          title: 'Community',
+          title: "Social",
           items: [
+            // {
+            //   label: 'Blog',
+            //   to: 'blog',
+            // },
             {
-              label: 'Stack Overflow',
-              href: 'https://stackoverflow.com/questions/tagged/docusaurus',
+              label: "GitHub",
+              href: "https://github.com/facebook/docusaurus",
             },
             {
-              label: 'Discord',
-              href: 'https://discordapp.com/invite/docusaurus',
-            },
-          ],
-        },
-        {
-          title: 'Social',
-          items: [
-            {
-              label: 'Blog',
-              to: 'blog',
-            },
-            {
-              label: 'GitHub',
-              href: 'https://github.com/facebook/docusaurus',
-            },
-            {
-              label: 'Twitter',
-              href: 'https://twitter.com/docusaurus',
+              label: "Twitter",
+              href: "https://twitter.com/docusaurus",
             },
           ],
         },
@@ -86,15 +72,15 @@ module.exports = {
   },
   presets: [
     [
-      '@docusaurus/preset-classic',
+      "@docusaurus/preset-classic",
       {
         docs: {
-          sidebarPath: require.resolve('./sidebars.js'),
+          sidebarPath: require.resolve("./sidebars.js"),
           editUrl:
-            'https://github.com/facebook/docusaurus/edit/master/website/',
+            "https://github.com/facebook/docusaurus/edit/master/website/",
         },
         theme: {
-          customCss: require.resolve('./src/css/custom.css'),
+          customCss: require.resolve("./src/css/custom.css"),
         },
       },
     ],

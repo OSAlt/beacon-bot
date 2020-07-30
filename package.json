@@ -12,8 +12,8 @@
   "author": "Toby Horn (Kankuro)",
   "license": "ISC",
   "dependencies": {
-    "@docusaurus/core": "^2.0.0-alpha.50",
-    "@docusaurus/preset-classic": "^2.0.0-alpha.50",
+    "@docusaurus/core": "^2.0.0-alpha.60",
+    "@docusaurus/preset-classic": "^2.0.0-alpha.60",
     "classnames": "^2.2.6",
     "discord.js": "^12.1.1",
     "dotenv": "^8.2.0",

@@ -3,12 +3,13 @@ id: install
 title: Installation Guide
 sidebar_label: Install
 ---
+
 # Installation 
 
 ## Requirements 
 
-  - Make sure you have node 13+ installed ```https://nodejs.org/en/download/package-manager/```
-  - You will need a MySQL database. The code has been tested with version 5.7 but likely any modern version should be fine. 
+  + Make sure you have node 13+ installed `` `https://nodejs.org/en/download/package-manager/` ``
+  + You will need a MySQL database. The code has been tested with version 5.7 but likely any modern version should be fine. 
 
 ### Javascript Tools
 
@@ -16,7 +17,9 @@ sidebar_label: Install
 
   To install yarn please see this [guide](https://classic.yarnpkg.com/en/docs/install) or type the command below.
 
-  ```sh
+  
+
+``` sh
   curl -o- -L https://yarnpkg.com/install.sh | bash
   ```
 
@@ -24,16 +27,19 @@ sidebar_label: Install
 
   install the package dependencies.  In the project's root folder run one of the following commands:
 
-  ```
+  
+
+``` 
   npm install
   ```
 
   or
 
-  ```sh
+  
+
+``` sh
   yarn install
   ```
-
 
 # Configuring the Bot
 
@@ -51,11 +57,10 @@ Follow the Doscord documentation linked below for instructions on getting a toke
 
 We recommend the following minimum permissions for security but you can also just assign the Administrator role if you would like. 
 
-![Discord Permissions](/static/img/discord_permissions.png)
-
+![Discord Permissions](/img/discord_permissions.png)
 
 ## Running the bot
 
-```
+``` 
 node index.js
 ```

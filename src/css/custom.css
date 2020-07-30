@@ -17,9 +17,12 @@
   --ifm-code-font-size: 95%;
 }
 
-.docusaurus-highlight-code-line {
+.button.button--secondary.button--outline:not(.button--active):not(:hover) {
+  color: #fff;
+}
+.hero.hero--primary {
   background-color: rgb(72, 77, 91);
-  display: block;
-  margin: 0 calc(-1 * var(--ifm-pre-padding));
-  padding: 0 var(--ifm-pre-padding);
+  /* display: block; */
+  /* margin: 0 calc(-1 * var(--ifm-pre-padding)); */
+  /* padding: 0 var(--ifm-pre-padding); */
 }
