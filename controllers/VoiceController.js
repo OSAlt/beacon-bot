@@ -1,16 +1,15 @@
 // Import required files
 const Models = require("../models/AllModels");
-const {action_log_channel} = require('../config');
 
 // Create a new module export
 module.exports = {
 
-    voiceUpdateHandler: function(oldState, newState) {
-        const actionLog = oldState.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
+    voiceUpdateHandler: function(oldState, newState, client) {
+        const actionLog = oldState.guild.channels.cache.find((c => c.name.includes(client.settings.get("mod_log_channel_name")))); //mod log channel
 
         // If a member joins a voice channel
-        if(!oldState.channel && newState.channel) {
-            // If the channel is in the 
+        if(newState.channel) {
+            // If the channel is in the db
             Models.tempchannel.findOne({where:{channel_id: newState.channel.id}, raw: true}).then((data) => {
                 // Make sure data exists
                 if(data) {
@@ -24,15 +23,13 @@ module.exports = {
         };
 
         // If a user leaves a voice channel
-        if(oldState.channel && !newState.channel) {
-
-            // If the channel is in the 
+        if(oldState.channel) {
+            // If the channel is in the db
             Models.tempchannel.findOne({where:{channel_id: oldState.channel.id}, raw: true}).then((data) => {
                 // Make sure data exists
                 if(data) {
                     // Get the user that created the channel
-                    const user = oldState.guild.client.users.cache.get(data.user_id);
-
+                    const user = client.users.cache.get(data.user_id);
                     // Check if the temp channel has been activated and not deleted
                     if(data.active === 1 && data.deleted === 0) {
                         // Check if every member has left the channel

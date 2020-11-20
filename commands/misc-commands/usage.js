@@ -1,20 +1,15 @@
-const {prefix} = require('../../config');
-
 module.exports = {
     name: 'usage',
     description: "Get a link to the usage guide for the bot",
-    aliases: ['docs'],
+    aliases: ['docs', 'guide'],
     cooldown: 5,
     enabled: true,
     mod: false,
     super: false,
     admin: false,
     usage: " ",
-    execute(message, args) {
-
-        if(args.length) {
-            desc = args[0];
-        }
+    execute(message, args, client) {
+        const prefix = client.settings.get("prefix");
 
         // Create the embed
         const linkEmbed = {

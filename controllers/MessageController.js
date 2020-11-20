@@ -1,6 +1,5 @@
 // Import required files
 const Discord = require("discord.js");
-const {prefix, admin_role, super_role, mod_role, mod_trainee_role, excluded_trigger_channels, url_role_whitelist} = require('../config');
 const TriggersController = require("./TriggersController");
 const ModerationController = require("./ModerationController");
 const cooldowns = new Discord.Collection();
@@ -15,6 +14,15 @@ module.exports = {
         let inModRole, inSuperRole, inAdminRole, isOwner;
         let triggerArr = [];
         let bannedUrlArr = [];
+        const prefix = client.settings.get("prefix"); //assign the prefix
+        const mod_trainee_role = client.settings.get("trainee_role_id"); //assign the trainee role
+        const mod_role = client.settings.get("mod_role_id"); //assign the mod role
+        const super_role = client.settings.get("super_role_id"); //assign the super role
+        const admin_role = client.settings.get("admin_role_id"); //assign the admin role
+        const excluded_trigger_channels = client.settings.get("excluded_channels").split(",");
+        const url_role_whitelist = client.settings.get("url_role_whitelist").split(",");
+
+        // Find roles
         const modRole = message.guild.roles.cache.find(role => role.id === mod_role);
         const superRole = message.guild.roles.cache.find(role => role.id === super_role);
         const adminRole = message.guild.roles.cache.find(role => role.id === admin_role);
@@ -90,7 +98,7 @@ module.exports = {
                 } else {
                     const regexMatch = message.content.toLowerCase().match(/(?!w{1,}\.)(\w+\.?)([a-zA-Z0-9-]+)(\.\w+)/);
                     // If not then call the handleUrl function from the ModerationController file
-                    ModerationController.handleUrl(message, regexMatch, deleteSet);
+                    ModerationController.handleUrl(message, client, regexMatch, deleteSet);
                 };
             // If not a trigger word/phrase, a blacklisted domain, or a bot message then ignore
             } else {
@@ -168,7 +176,7 @@ module.exports = {
 
         // Attempt to execute the command
         try {
-            command.execute(message, args, client, triggerList, bannedUrls);
+            command.execute(message, args, client, triggerList);
         } catch (error) {
             console.error(error);
             message.reply('There was an error trying to execute that command, please try again!')

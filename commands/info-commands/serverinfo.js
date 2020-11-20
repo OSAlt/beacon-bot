@@ -1,5 +1,4 @@
 const moment = require("moment");
-const {user_role} = require("../../config");
 
 module.exports = {
     name: 'serverinfo',
@@ -11,12 +10,11 @@ module.exports = {
     super: false,
     admin: false,
     usage: " ",
-    execute(message) {
+    execute(message, args, client) {
         const server = message.guild;
         // Make sure the server is available
         if(server.available) {
             const createDate = moment(server.createdAt).format("MMM DD, YYYY"); // created date
-            const users = message.guild.roles.cache.find(r => r.id === user_role); //users role
             let channels = server.channels.cache.array();
             let roleCount = server.roles.cache.array().length;
             let categoryCount = 0;
@@ -67,7 +65,7 @@ module.exports = {
                 fields: [
                     {
                         name: `Members`,
-                        value: `Total: ${server.memberCount}\nVerified: ${users.members.array().length}`,
+                        value: `${server.memberCount}`,
                         inline: true,
                     },
                     {
@@ -117,7 +115,7 @@ module.exports = {
                     },
                     {
                         name: `Rules Channel`,
-                        value: `${server.rulesChannel}`,
+                        value: `${server.rulesChannel || "Not Set"}`,
                         inline: true,
                     },
                     {

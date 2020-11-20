@@ -1,26 +1,22 @@
 // Import the required files
 const moment = require('moment');
-const {prefix, admin_role, super_role, mod_role, mod_trainee_role, admin_channel, super_channel, mod_channel, super_log_channel, action_log_channel} = require("../config");
-const Trigger = require("../models/Trigger");
-const Warning = require("../models/Warning");
+const Models = require("../models/AllModels");
 const shortid = require('shortid');
+const { get } = require('lodash');
 
 // Create a new module export
 module.exports = {
     // Create a function with required args
     triggerHandler: function(cmd, c, a, m, tl) {
         // Create vars
-        const command = cmd;
-        const client = c;
-        const args = a;
-        const message = m;
-        const triggerList = tl;
+        const command = cmd, client = c, args = a, message = m, triggerList = tl;
         let trigger;
-        const modRole = message.member.roles.cache.some(role => role.id === mod_role);
-        const superRole = message.member.roles.cache.some(role => role.id === super_role);
-        const adminRole = message.member.roles.cache.some(role => role.id === admin_role);
+        const prefix = client.settings.get("prefix");
+        const modRole = message.member.roles.cache.some(role => role.id === client.settings.get("mod_role_id"));
+        const superRole = message.member.roles.cache.some(role => role.id === client.settings.get("super_role_id"));
+        const adminRole = message.member.roles.cache.some(role => role.id === client.settings.get("admin_role_id"));
         const ownerRole = message.member.guild.owner;
-        const modChannel = message.guild.channels.cache.find((c => c.name.includes(mod_channel)));
+        const modChannel = message.guild.channels.cache.find((c => c.name.includes(client.settings.get("mod_channel_name"))));
             
         // Check the length of the args
         if (args.length > 1) {
@@ -39,7 +35,7 @@ module.exports = {
                 let triggers = [];
 
                 // Get all rows and add their trigger word/phrase to the triggers arr
-                Trigger.findAll().then((data) => {
+                Models.trigger.findAll().then((data) => {
                     data.forEach((item) => {
                         triggers.push(item.get('trigger'));
                     });
@@ -65,7 +61,7 @@ module.exports = {
                 let triggerData = {};
 
                 // Get the data for the trigger
-                Trigger.findOne({where: {trigger: trigger}}).then((data) => {
+                Models.trigger.findOne({where: {trigger: trigger}}).then((data) => {
                     triggerData.id = data.get('id'); //get id
                     triggerData.trigger = data.get('trigger'); //get trigger
                     triggerData.creator = client.users.cache.get(data.get('user_id'));
@@ -159,12 +155,12 @@ module.exports = {
                         Keep force set to false otherwise it will overwrite the table instead of making a new row!
                     !!!!
                     */
-                    Trigger.sync({ force: false }).then(() => {
+                    Models.trigger.sync({ force: false }).then(() => {
                         // Query the database for the trigger
-                        Trigger.findOne({where:{trigger: triggerArgs[0]}}).then((trig) => {
+                        Models.trigger.findOne({where:{trigger: triggerArgs[0]}}).then((trig) => {
                             // If there is no trigger add it
                             if (!trig) {
-                                Trigger.create({
+                                Models.trigger.create({
                                     trigger: triggerArgs[0], // add the trigger string to the trigger column
                                     user_id: message.author.id, // add the creator's id
                                     severity: triggerArgs[1].trim().toLowerCase()
@@ -194,10 +190,10 @@ module.exports = {
         /*********** REMOVE TRIGGER ***********/
         } else if (command.name === 'removetrigger') {
             // Query the database for the trigger passed in
-            Trigger.findOne({where: {trigger: trigger}}).then((trig) => {
+            Models.trigger.findOne({where: {trigger: trigger}}).then((trig) => {
                 // If the trigger was found, then remove it
                 if (trig) {
-                    Trigger.destroy({
+                    Models.trigger.destroy({
                         where: {
                             trigger: trigger
                         }
@@ -218,7 +214,7 @@ module.exports = {
         /*********** ENABLE TRIGGER ***********/
         } else if (command.name === 'enabletrigger') {
             // Find the trigger
-            Trigger.findOne({where: {trigger: trigger}}).then((trig) => {
+            Models.trigger.findOne({where: {trigger: trigger}}).then((trig) => {
                 //If the trigger was found...
                 if (trig) {
                     // Check if the trigger is already enabled
@@ -245,7 +241,7 @@ module.exports = {
         /*********** DISABLE TRIGGER ***********/
         } else if (command.name === 'disabletrigger') {
             // Find the trigger
-            Trigger.findOne({where: {trigger: trigger}}).then((trig) => {
+            Models.trigger.findOne({where: {trigger: trigger}}).then((trig) => {
                 //If the trigger was found...
                 if (trig) {
                     // Check if the trigger is already disabled
@@ -273,17 +269,18 @@ module.exports = {
     triggerHit: function(m, t, c) {
         // Create vars
         const message = m, triggers = t, client = c;
+        const prefix = client.settings.get("prefix");
         let severity, fullMessage;
         
         let warnId = shortid.generate(); // generate a uid
         let severityArr = [];
-        const modRole = message.member.roles.cache.find(role => role.id === mod_role);
-        const modTraineeRole = message.member.roles.cache.find(role => role.id === mod_trainee_role);
-        const superRole = message.member.roles.cache.find(role => role.id === super_role);
-        const adminRole = message.member.roles.cache.find(role => role.id === admin_role);
+        const modRole = message.member.roles.cache.find(role => role.id === client.settings.get("mod_role_id"));
+        const modTraineeRole = message.member.roles.cache.find(role => role.id === client.settings.get("trainee_role_id"));
+        const superRole = message.member.roles.cache.find(role => role.id === client.settings.get("super_role_id"));
+        const adminRole = message.member.roles.cache.find(role => role.id === client.settings.get("admin_role_id"));
 
         // Find the trigger(s) in the database
-        Trigger.findAll({where: {trigger: triggers},raw:true}).then((data) => {
+        Models.trigger.findAll({where: {trigger: triggers},raw:true}).then((data) => {
             //If the trigger(s) were found...
             if (data) {
                 // Loop through returned data matches and add severities to array
@@ -303,9 +300,9 @@ module.exports = {
             }
 
             // Create a new table if one doesn't exist
-            Warning.sync({ force: false }).then(() => {
+            Models.warning.sync({ force: false }).then(() => {
 
-                Warning.findOne({where: {warning_id: warnId}, raw:true}).then((warning => {
+                Models.warning.findOne({where: {warning_id: warnId}, raw:true}).then((warning => {
                     if(warning) {
                         if(warning.warning_id === warnId) {
                             warnId = shortid.generate();
@@ -313,7 +310,7 @@ module.exports = {
                     }
                 })).then(() => {
                     // Store the data
-                    Warning.create({
+                    Models.warning.create({
                         warning_id: warnId, // add the warning Id
                         user_id: message.author.id, // add the user's id
                         type: "Trigger", // assign the type of warning
@@ -421,10 +418,10 @@ module.exports = {
 
         // Sends reports of triggers based on user's permissions and the existence of specific channels
         function reportLadder(t, e) {
-            const superChannel = message.guild.channels.cache.find((c => c.name.includes(super_channel))); //super channel
-            const adminChannel = message.guild.channels.cache.find((c => c.name.includes(admin_channel))); //admin channel
-            const superLog = message.guild.channels.cache.find((c => c.name.includes(super_log_channel))); //super log channel
-            const logChannel = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //action log channel
+            const superChannel = message.guild.channels.cache.find((c => c.name.includes(client.settings.get("super_channel_name")))); //super channel
+            const adminChannel = message.guild.channels.cache.find((c => c.name.includes(client.settings.get("admin_channel_name")))); //admin channel
+            const superLog = message.guild.channels.cache.find((c => c.name.includes(client.settings.get("super_log_channel_name")))); //super log channel
+            const logChannel = message.guild.channels.cache.find((c => c.name.includes(client.settings.get("mod_log_channel_name")))); //action log channel
             // Gets the guildMember instance of the user so we can get more information on them and their information within our server.
             warnedUser = client.guilds.cache.get(message.guild.id).members.cache.get(message.author.id);
 
@@ -476,7 +473,7 @@ module.exports = {
                             // Send the embed with a copy of the message to the super log
                             superLog.send({embed: delMsgEmbed}).then(d => {
                                 // Update the db's message link
-                                Warning.update({message_link: d.url}, {
+                                Models.warning.update({message_link: d.url}, {
                                     where: {
                                         warning_id: warnId
                                     }
@@ -513,7 +510,7 @@ module.exports = {
                                         superChannel.send({embed: e});
 
                                         // Update the db's message link
-                                        Warning.update({message_link: d.url}, {
+                                        Models.warning.update({message_link: d.url}, {
                                             where: {
                                                 warning_id: warnId
                                             }
@@ -524,7 +521,7 @@ module.exports = {
                                 } else {
                                     superChannel.send({embed: delMsgEmbed}).then(d => {
                                         // Update the db's message link
-                                        Warning.update({message_link: d.url}, {
+                                        Models.warning.update({message_link: d.url}, {
                                             where: {
                                                 warning_id: warnId
                                             }
@@ -564,7 +561,7 @@ module.exports = {
                                 logChannel.send("@here", {embed: e});
 
                                 // Update the db's message link
-                                Warning.update({message_link: d.url}, {
+                                Models.warning.update({message_link: d.url}, {
                                     where: {
                                         warning_id: warnId
                                     }

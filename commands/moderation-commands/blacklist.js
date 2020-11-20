@@ -1,6 +1,5 @@
 // Import the required files
 const ModerationController = require("../../controllers/ModerationController");
-const {prefix} = require("../../config")
 
 // Create a new module export
 module.exports = {
@@ -13,7 +12,8 @@ module.exports = {
     mod: true,
     super: false,
     admin: false,
-    execute(message, args, client, triggerList, bannedUrls) {
+    execute(message, args, client) {
+        const prefix = client.settings.get("prefix");
         // Check if any arguments were given, it not let user know
         if (!args.length) {
             message.channel.send(`You must tell me what you're wanting to do with the blacklist feature. Example: \`${prefix}blacklist add example.com\` or \`${prefix} list\``);
@@ -22,7 +22,7 @@ module.exports = {
         } else {
 
             // Call the blacklist handler function from the ModerationController file
-            ModerationController.blacklistHandler(message, args, bannedUrls);
+            ModerationController.blacklistHandler(message, args, client);
         }
     }
 }

@@ -1,5 +1,4 @@
 // Import required files
-const {prefix} = require('../../config');
 const DatabaseController = require("../../controllers/DatabaseController");
 
 module.exports = {
@@ -15,7 +14,7 @@ module.exports = {
     execute(message, args, client) {
         if (!args.length) {
             // If no arguments let users know arguments are required
-            return message.reply(`You must give a number of messages to delete (max 100)!\n\nExample: \`${prefix}purge 10\``);
+            return message.reply(`You must give a number of messages to delete (max 100)!\n\nExample: \`${client.settings.get("prefix")}purge 10\``);
         } else {
             // Call the query handler from the database controller with required args
             DatabaseController.queryHandler(message, args, client);

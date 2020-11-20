@@ -1,6 +1,5 @@
 // Import the required files
 const moment = require('moment');
-const {prefix, super_role, admin_role, super_channel, mod_channel, special_permission_flags} = require('../config');
 const AutoRole = require("../models/AutoRole");
 
 // Create a new module export
@@ -10,8 +9,9 @@ module.exports = {
     autoroleHandler: function(cmd, c, a, m) {
         // Create vars
         const command = cmd, client = c, args = a, message = m;
-        const modChannel = message.guild.channels.cache.find((c => c.name.includes(mod_channel)));
-        const superChannel = message.guild.channels.cache.find((c => c.name.includes(super_channel)));
+        const prefix = client.settings.get("prefix");
+        const modChannel = message.guild.channels.cache.find((c => c.name.includes(client.settings.get("mod_log_channel_name"))));
+        const superChannel = message.guild.channels.cache.find((c => c.name.includes(client.settings.get("super_log_channel_name"))));
         let autorole;
 
         // Check the length of the args
@@ -23,17 +23,25 @@ module.exports = {
             autorole = args[0].toLowerCase();
         };
 
+        // If a role id was given
+        if(!isNaN(args[0])) {
+            // Fine the role by its' id
+            const idRole = message.guild.roles.cache.find(role => role.id === args[0]);
+            autorole = idRole.name; //assign the role name to autorole
+        }
+
         /*********** ADD AUTOROLE ***********/
         if (command.name === 'addautorole') {
             // Search for the role within the server
-            const role = message.guild.roles.cache.find(role => role.name.toLowerCase().includes(autorole));
-
-            if(role.permissions.any(special_permission_flags)) {
-                return message.reply(`uh oh! It seems that \`${autorole}\` has moderator or special permissions, please check to make sure you have the right role!`)
-            }
+            const role = message.guild.roles.cache.find(role => role.name.toLowerCase().includes(autorole.toLowerCase()));
             
             //Check if the role exists
             if (role) {
+
+                // Check if the role has special permissions
+                if(role.permissions.any(client.settings.get("special_permission_flags").split(","))) {
+                    return message.reply(`uh oh! It seems that \`${autorole}\` has moderator or special permissions, please check to make sure you have the right role!`)
+                }
 
                 // Create a filter for the message collector
                 const filter = m => {
@@ -89,13 +97,13 @@ module.exports = {
                     });
                 });
             } else {
-                message.reply(`it looks like that role (${autorole}) doesn't exist!`);
+                message.reply(`uh oh! Looks like you either tried to add a role that doesn't exist or used a role id or mention. Please tell me the name of the role instead!`);
             };
 
         /*********** REMOVE AUTOROLE ***********/
         } else if (command.name === 'removeautorole') {
             // Find the role within the guild
-            const role = message.guild.roles.cache.find(role => role.name.toLowerCase().includes(autorole));
+            const role = message.guild.roles.cache.find(role => role.name.toLowerCase().includes(autorole.toLowerCase()));
             // Query the database for the autorole passed in
             AutoRole.findOne({where: {role: role.name}}).then((arole) => {
                 // If the autorole was found, then remove it
@@ -117,8 +125,8 @@ module.exports = {
         /*********** LIST AUTOROLES ***********/
         } else if (command.name === 'listautoroles') {
             // See if the user is a super, admin, or owner
-            superRole = message.member.roles.cache.some(role => role.id === super_role);
-            adminRole = message.member.roles.cache.some(role => role.id === admin_role);
+            superRole = message.member.roles.cache.some(role => role.id === client.settings.get("super_role_id"));
+            adminRole = message.member.roles.cache.some(role => role.id === client.settings.get("admin_role_id"));
             ownerRole = message.member.guild.owner === message.author;
 
             // If user is a mod and didn't pass in any args, list autoroles

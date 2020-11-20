@@ -1,6 +1,5 @@
 // Import the required files
 const moment = require('moment');
-const {prefix, super_role, admin_role, super_channel, special_permission_flags} = require('../config');
 const JoinableRole = require("../models/JoinableRole");
 
 // Create a new module export
@@ -10,10 +9,11 @@ module.exports = {
     joinableRolesHandler: function(cmd, c, a, m) {
         // Create vars
         const command = cmd, client = c, args = a, message = m;
-        const superRole = message.member.roles.cache.some(role => role.id === super_role);
-        const adminRole = message.member.roles.cache.some(role => role.id === admin_role);
+        const prefix = client.settings.get("prefix");
+        const superRole = message.member.roles.cache.some(role => role.id === client.settings.get("super_role_id"));
+        const adminRole = message.member.roles.cache.some(role => role.id === client.settings.get("admin_role_id"));
         const ownerRole = message.member.guild.owner;
-        const superChannel = message.guild.channels.cache.find((c => c.name.includes(super_channel)));
+        const superChannel = message.guild.channels.cache.find((c => c.name.includes(client.settings.get("super_channel_name"))));
         let joinableRole;
             
         // Check the length of the args
@@ -24,6 +24,13 @@ module.exports = {
             // If only 1 arg then assign it to joinableRole
             joinableRole = args[0].toLowerCase();
         };
+
+        // If a role id was given
+        if(!isNaN(args[0])) {
+            // Fine the role by its' id
+            const idRole = message.guild.roles.cache.find(role => role.id === args[0]);
+            joinableRole = idRole.name; //assign the role name to joinableRole
+        }
 
         /*********** JOIN/LEAVE ROLE ***********/
         if (command.name === "joinrole" || command.name === "leaverole") {
@@ -80,14 +87,16 @@ module.exports = {
         /*********** ADD JOINABLE ROLE ***********/
         } else if (command.name === 'addjoinablerole' && (superRole || adminRole || message.member === ownerRole)) {
             // Search for the role within the server
-            const role = message.guild.roles.cache.find(role => role.name.toLowerCase().includes(joinableRole));
-
-            if(role.permissions.any(special_permission_flags)) {
-                return message.reply(`uh oh! It seems that \`${joinableRole}\` has moderator or special permissions, please check to make sure you have the right role!`)
-            }
+            const role = message.guild.roles.cache.find(role => role.name.toLowerCase().includes(joinableRole.toLowerCase()));
             
             // Check if the role exists
             if (role) {
+
+                // Check if the role has special permissions
+                if(role.permissions.any(client.settings.get("special_permission_flags").split(","))) {
+                    return message.reply(`uh oh! It seems that \`${joinableRole}\` has moderator or special permissions, please check to make sure you have the right role!`)
+                }
+
                 // Create a filter for the message collector
                 const filter = m => {
                     // If user says "yes" or "no" then return true
@@ -142,13 +151,19 @@ module.exports = {
                     });
                 });
             } else {
-                message.reply(`it looks like that role (${joinableRole}) doesn't exist!`);
+                message.reply(`it looks like the role \`${joinableRole}\` doesn't exist!`);
             };
 
         /*********** REMOVE JOINABLE ROLE ***********/
         } else if (command.name === 'removejoinablerole' && (superRole || adminRole || ownerRole)) {
             // Find the role within the guild
-            const role = message.guild.roles.cache.find(role => role.name.toLowerCase().includes(joinableRole));
+            const role = message.guild.roles.cache.find(role => role.name.toLowerCase().includes(joinableRole.toLowerCase()));
+
+            // If the role doesn't exist let the user know
+            if(!role) {
+                return message.reply(`uh oh! Looks like you either tried to add a role that doesn't exist or used a role id or mention. Please tell me the name of the role instead!`);
+            }
+
             // Query the database for the joinable role passed in
             JoinableRole.findOne({where: {role: role.name}}).then((jrole) => {
                 // If the joinable role was found, then remove it

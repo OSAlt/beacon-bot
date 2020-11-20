@@ -1,13 +1,12 @@
 const moment = require("moment");
-const {prefix, admin_role, super_role, mod_role, mod_trainee_role, action_log_channel, super_log_channel, user_role, url_role_whitelist} = require('../config');
 const Models = require("../models/AllModels");
 const shortid = require('shortid');
 const Discord = require('discord.js');
 
 module.exports = {
-    deleteHandler: function(m, tl, deleteSet) {
-        const message = m, triggerList = tl;
-        const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
+    deleteHandler: function(m, c, tl, deleteSet) {
+        const message = m, client = c, triggerList = tl;
+        const actionLog = message.guild.channels.cache.find((c => c.name.includes(client.settings.get("mod_log_channel_name")))); //mod log channel
         let triggerArr = [];
 
         // Exclude master control and trick-or-treat channels
@@ -63,9 +62,9 @@ module.exports = {
             actionLog.send({embed: delEmbed});
         }
     },
-    purgeHandler: function(a, m) {
-        const args = a, message = m; //create vars for parameter values
-        const superLog = message.guild.channels.cache.find((c => c.name.includes(super_log_channel))); //super log channel
+    purgeHandler: function(a, m, c) {
+        const args = a, message = m, client = c; //create vars for parameter values
+        const superLog = message.guild.channels.cache.find((c => c.name.includes(client.settings.get("super_log_channel_name")))); //super log channel
         const regex = /(^\d{1,10}$)/;
 
         // Check if the argument given was a number
@@ -120,12 +119,10 @@ module.exports = {
     },
     editHandler: function(o, n, c, tl, bu, deleteSet) {
         const oldMsg = o, newMsg = n, client = c, triggerList = tl, bannedUrls = bu; // create vars for parameter values
-        const superLog = newMsg.guild.channels.cache.find((c => c.name.includes(super_log_channel))); //super log channel
+        const superLog = newMsg.guild.channels.cache.find((c => c.name.includes(client.settings.get("super_log_channel_name")))); //super log channel
         // Create author var
         const author = client.users.cache.get(newMsg.author.id);
         let bannedUrlArr = [];
-        // Exclude pokecord channel
-        if(newMsg.channel.name.includes("pokecord")) return;
 
         // Create embed and attach the shared fields
         let editEmbed = new Discord.MessageEmbed()
@@ -182,6 +179,7 @@ module.exports = {
             });
 
             if (newMsg.content.toLowerCase().match(/(?!w{1,}\.)(\w+\.?)([a-zA-Z0-9-]+)(\.\w+)/)) {
+                const url_role_whitelist = client.settings.get("url_role_whitelist").split(",");
                 // If user has an excluded role then ignore
                 if(newMsg.member.roles.cache.some(r => url_role_whitelist.includes(r.id))) {
                     return;
@@ -206,17 +204,17 @@ module.exports = {
             }
         })
     },
-    kickHandler: function(a, m) {
-        const args = a;
-        const message = m;
+    kickHandler: function(a, m, c) {
+        const args = a, message = m, client = c;
         let warnId = shortid.generate(); //generate a short id for the warning
-        const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
+        const prefix = client.settings.get("prefix");
+        const actionLog = message.guild.channels.cache.find((c => c.name.includes(client.settings.get("mod_log_channel_name")))); //mod log channel
         let user; // user var
         // Get the mod+ roles
-        const modTraineeRole = message.guild.roles.cache.find(role => role.id === mod_trainee_role);
-        const modRole = message.guild.roles.cache.find(role => role.id === mod_role);
-        const superRole = message.guild.roles.cache.find(role => role.id === super_role);
-        const adminRole = message.guild.roles.cache.find(role => role.id === admin_role);
+        const modTraineeRole = message.guild.roles.cache.find(role => role.id === client.settings.get("trainee_role_id"));
+        const modRole = message.guild.roles.cache.find(role => role.id === client.settings.get("mod_role_id"));
+        const superRole = message.guild.roles.cache.find(role => role.id === client.settings.get("super_role_id"));
+        const adminRole = message.guild.roles.cache.find(role => role.id === client.settings.get("admin_role_id"));
 
         // Check if the first arg is a number
         if(isNaN(args[0])) {
@@ -370,13 +368,14 @@ module.exports = {
     banHandler: async function(a, m, c) {
         const args = a, message = m, client = c;
         let warnId = shortid.generate(); //generate a short id for the warning
-        const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
+        const prefix = client.settings.get("prefix");
+        const actionLog = message.guild.channels.cache.find((c => c.name.includes(client.settings.get("mod_log_channel_name")))); //mod log channel
         let user, bans;
         // Get the mod+ roles
-        const modTraineeRole = message.guild.roles.cache.find(role => role.id === mod_trainee_role);
-        const modRole = message.guild.roles.cache.find(role => role.id === mod_role);
-        const superRole = message.guild.roles.cache.find(role => role.id === super_role);
-        const adminRole = message.guild.roles.cache.find(role => role.id === admin_role);
+        const modTraineeRole = message.guild.roles.cache.find(role => role.id === client.settings.get("trainee_role_id"));
+        const modRole = message.guild.roles.cache.find(role => role.id === client.settings.get("mod_role_id"));
+        const superRole = message.guild.roles.cache.find(role => role.id === client.settings.get("super_role_id"));
+        const adminRole = message.guild.roles.cache.find(role => role.id === client.settings.get("admin_role_id"));
 
         let argsStr = args.join(" "); //create a string out of the args
         argsStr = argsStr.replace(/,/g, ", "); // replace
@@ -591,10 +590,9 @@ module.exports = {
         }
     },
     unbanHandler: function(a, m, c) {
-        const args = a;
-        const message = m;
-        const client = c;
-        const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
+        const args = a, message = m, client = c;
+        const prefix = client.settings.get("prefix");
+        const actionLog = message.guild.channels.cache.find((c => c.name.includes(client.settings.get("mod_log_channel_name")))); //mod log channel
         let user; // user var
 
         // Check if the first arg is a number
@@ -727,7 +725,8 @@ module.exports = {
     warnHandler: function(a, m, c) {
         const args = a, message = m, client = c;
         let warnId = shortid.generate(); //generate a short id for the warning
-        const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
+        const prefix = client.settings.get("prefix");
+        const actionLog = message.guild.channels.cache.find((c => c.name.includes(client.settings.get("mod_log_channel_name")))); //mod log channel
         let reason = args.slice(1).join(" "); //remove the user from the array then join to get the reason
         reason = reason.replace(",", ""); //remove the comma
         reason = reason.trim(); //remove any excess whitespace
@@ -837,19 +836,20 @@ module.exports = {
             }
         }
     },
-    muteHandler: function(a, m) {
-        const args = a, message = m;
+    muteHandler: function(a, m, c) {
+        const args = a, message = m, client = c;
         let user;
-        const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
+        const prefix = client.settings.get("prefix");
+        const actionLog = message.guild.channels.cache.find((c => c.name.includes(client.settings.get("mod_log_channel_name")))); //mod log channel
         // In Role? Boolean variables
-        const inSuperRole = message.member.roles.cache.some(role => role.id === super_role);
-        const inAdminRole = message.member.roles.cache.some(role => role.id === admin_role);
+        const inSuperRole = message.member.roles.cache.some(role => role.id === client.settings.get("super_role_id"));
+        const inAdminRole = message.member.roles.cache.some(role => role.id === client.settings.get("admin_role_id"));
         const isOwner = message.member.guild.owner;
         // Roles
-        const modTraineeRole = message.guild.roles.cache.find(role => role.id === mod_trainee_role);
-        const modRole = message.guild.roles.cache.find(role => role.id === mod_role);
-        const superRole = message.guild.roles.cache.find(role => role.id === super_role);
-        const adminRole = message.guild.roles.cache.find(role => role.id === admin_role);
+        const modTraineeRole = message.guild.roles.cache.find(role => role.id === client.settings.get("trainee_role_id"));
+        const modRole = message.guild.roles.cache.find(role => role.id === client.settings.get("mod_role_id"));
+        const superRole = message.guild.roles.cache.find(role => role.id === client.settings.get("super_role_id"));
+        const adminRole = message.guild.roles.cache.find(role => role.id === client.settings.get("admin_role_id"));
 
         let argsStr = args.join(" "); //create a string out of the args
         argsStr = argsStr.replace(/,/g, ", "); // replace
@@ -903,7 +903,7 @@ module.exports = {
                 if(newArgs[2] && user !== undefined) {
                     // If a length wasn't given then let the user know it is required
                     if(!newArgs[3]) {
-                        return message.reply(`uh oh! It seems you forgot to give a length for ther mute, please be sure to provide a mute length for this action!\nExample: \`${prefix}mute ${user}, reason, length\``);
+                        return message.reply(`uh oh! It seems you forgot a required part of the mute command, please be sure to provide all options for this action!\nExample: \`${prefix}mute ${user}, type, reason, length\``);
                     }
 
                     const reason = newArgs[2]; //assign the mute reason
@@ -1026,12 +1026,12 @@ module.exports = {
                     // Check if a user mention was used
                     if(message.mentions.users.first()) {
                         // Let user know a reason is needed
-                        message.reply(`uh oh! It seems you forgot to give a reason for muting, please be sure to provide a reason for this action!\nExample: \`${prefix}mute @${user.user.tag}, reason, length\``);
+                        message.reply(`uh oh! It seems you forgot to give a reason for muting, please be sure to provide a reason for this action!\nExample: \`${prefix}mute @${user.user.tag}, type, reason, length\``);
 
                     // If no user mention was given then just output the id they provided
                     } else {
                         // Let user know a reason is needed
-                        message.reply(`uh oh! It seems you forgot to give a reason for muting, please be sure to provide a reason for this action!\nExample: \`${prefix}mute ${user}, reason, length\``);
+                        message.reply(`uh oh! It seems you forgot to give a reason for muting, please be sure to provide a reason for this action!\nExample: \`${prefix}mute ${user}, type, reason, length\``);
                     }
                 };
                 
@@ -1053,14 +1053,15 @@ module.exports = {
     },
     unmuteHandler: function(m, a, c) {
         const message = m, args = a, client = c;
-        const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
+        const prefix = client.settings.get("prefix");
+        const actionLog = message.guild.channels.cache.find((c => c.name.includes(client.settings.get("mod_log_channel_name")))); //mod log channel
         // In Role? Boolean variables
-        const inSuperRole = message.member.roles.cache.some(role => role.id === super_role);
-        const inAdminRole = message.member.roles.cache.some(role => role.id === admin_role);
+        const inSuperRole = message.member.roles.cache.some(role => role.id === client.settings.get("super_role_id"));
+        const inAdminRole = message.member.roles.cache.some(role => role.id === client.settings.get("admin_role_id"));
         const isOwner = message.member.guild.owner;
         // Roles
-        const superRole = message.guild.roles.cache.find(role => role.id === super_role);
-        const adminRole = message.guild.roles.cache.find(role => role.id === admin_role);
+        const superRole = message.guild.roles.cache.find(role => role.id === client.settings.get("super_role_id"));
+        const adminRole = message.guild.roles.cache.find(role => role.id === client.settings.get("admin_role_id"));
 
         // Check if the first arg is a number
         if(isNaN(args[0])) {
@@ -1203,9 +1204,9 @@ module.exports = {
             message.reply(`uh oh! It seems you forgot to give a reason for unmuting, please be sure to provide a reason for this action!\nExample: \`${prefix}unmute ${user}, reason\``);
         }
     },
-    createMuteHandler: async function(m) {
-        const message = m;
-        const usersRole = message.guild.roles.cache.find(role => role.id === user_role); //users role
+    createMuteHandler: async function(m, c) {
+        const message = m, client = c;
+        const usersRole = message.guild.roles.cache.find(role => role.id === client.settings.get("user_role_id")); //users role
         let mutedServer = message.guild.roles.cache.find(r => r.name === "Muted - Server"); //muted server role
         let mutedVoice = message.guild.roles.cache.find(r => r.name === "Muted - Voice"); //muted voice role
         let mutedText = message.guild.roles.cache.find(r => r.name === "Muted - Text"); //muted text role
@@ -1324,18 +1325,19 @@ module.exports = {
             return message.reply(`uh oh! Looks like the muted roles already exist!`)
         }
     },
-    blacklistHandler: function(m, ar, au) {
-        const message = m, args = ar, allowedUrls = au;
-        const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
+    blacklistHandler: function(m, ar, c) {
+        const message = m, args = ar, client = c;
+        const prefix = client.settings.get("prefix");
+        const actionLog = message.guild.channels.cache.find((c => c.name.includes(client.settings.get("mod_log_channel_name")))); //mod log channel
         const subCommand = args.shift(); //remove the first arg and store it in the subcommand var
         const allowedSubCommands = ["view", "list", "add", "create", "delete", "remove"];
         // In role? Boolean
-        const inSuperRole = message.member.roles.cache.some(role => role.id === super_role);
-        const inAdminRole = message.member.roles.cache.some(role => role.id === admin_role);
+        const inSuperRole = message.member.roles.cache.some(role => role.id === client.settings.get("super_role_id"));
+        const inAdminRole = message.member.roles.cache.some(role => role.id === client.settings.get("admin_role_id"));
         const isOwner = message.member.guild.owner;
         // Role vars
-        const superRole = message.guild.roles.cache.find(role => role.id === super_role);
-        const adminRole = message.guild.roles.cache.find(role => role.id === admin_role);
+        const superRole = message.guild.roles.cache.find(role => role.id === client.settings.get("super_role_id"));
+        const adminRole = message.guild.roles.cache.find(role => role.id === client.settings.get("admin_role_id"));
         let domains = args.join(","); //create string of for all domains
         domains = domains.split(","); //create array from all domains
         domains = domains.filter(i=>i); //remove any null values
@@ -1578,9 +1580,9 @@ module.exports = {
             }
         }
     },
-    handleUrl: function(m, rm, deleteSet) {
-        const message = m, regexMatch = rm;
-        const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
+    handleUrl: function(m, c, rm, deleteSet) {
+        const message = m, client = c, regexMatch = rm;
+        const actionLog = message.guild.channels.cache.find((c => c.name.includes(client.settings.get("mod_l;og_channel_name")))); //mod log channel
 
         // Add the message id to the deleteSet
         deleteSet.add(message.id);
@@ -1627,8 +1629,9 @@ module.exports = {
             });
         });
     },
-    slowmode: function(message, args) {
-        const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
+    slowmode: function(message, args, client) {
+        const prefix = client.settings.get("prefix");
+        const actionLog = message.guild.channels.cache.find((c => c.name.includes(client.settings.get("mod_log_channel_name")))); //mod log channel
         const channel = message.mentions.channels.first(); //channel
 
         // If user asked to enable slowmode
@@ -1713,8 +1716,9 @@ module.exports = {
         };
     },
     listBans: function(message, args, client) {
+        const prefix = client.settings.get("prefix");
         // Get the action log channel
-        const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); 
+        const actionLog = message.guild.channels.cache.find((c => c.name.includes(client.settings.get("mod_log_channel_name")))); 
 
         // If no args were given, process to list 10 most recent bans
         if(!args.length) {
@@ -1838,11 +1842,11 @@ module.exports = {
         }
     },
     roleHandler: function(message, args, client) {
-        const isSuper = message.member.roles.cache.some(role => role.id === super_role);
-        const isAdmin = message.member.roles.cache.some(role => role.id === admin_role);
+        const isSuper = message.member.roles.cache.some(role => role.id === client.settings.get("super_role_id"));
+        const isAdmin = message.member.roles.cache.some(role => role.id === client.settings.get("admin_role_id"));
         const isElder = message.member.roles.cache.some(role => role.name.toLowerCase().includes("elder squirrel"));
         const squirrelRole = message.guild.roles.cache.find(role => role.name.toLowerCase().includes("squirrel army"));
-        const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
+        const actionLog = message.guild.channels.cache.find((c => c.name.includes(client.settings.get("mod_log_channel_name")))); //mod log channel
         let isOwner;
         let user;
         let role;
@@ -2096,13 +2100,19 @@ module.exports = {
                 }
             }
         } else {
-            return message.reply("uh oh! Looks like you tried to use a command that is only for specific users!");
+            return message.reply("uh oh! Looks like you tried to use a command that is only for specific roles!");
         }
     },
     nicknameHandler: async function(message, args, client) {
-        const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
+        const actionLog = message.guild.channels.cache.find((c => c.name.includes(client.settings.get("mod_log_channel_name")))); //mod log channel
         let newArgs = args.join(" "); //join the args together
         newArgs = newArgs.split(","); //split by comma
+
+        // See if the user added a comma, if not, tell them it is needed
+        if(!newArgs[1]) {
+            return message.reply(`uh oh! Looks like you forgot the comma after the user, please try again!`);
+        }
+
         newArgs[1] = newArgs[1].trim(); //remove spaces from new nickname
         let user; //user var
         let oldNick; //old nickname var
@@ -2186,7 +2196,8 @@ module.exports = {
         })
     },
     tempVoiceHandler: function(message, args, client) {
-        const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
+        const prefix = client.settings.get("prefix");
+        const actionLog = message.guild.channels.cache.find((c => c.name.includes(client.settings.get("mod_log_channel_name")))); //mod log channel
         let argsStr = args.join(" "); //join the args together
         const newArgs = argsStr.split(",").map(i => i.trim()); //create a new array by splitting on the comma then remove any whitespace
         const name = newArgs[0].split(' ').map(w => w[0].toUpperCase() + w.substr(1).toLowerCase()).join(' '); //caps the first letter of each word in the name
@@ -2254,8 +2265,8 @@ module.exports = {
         // If the user gave two arguments then assign the first as the channel name and the second as the channel limit
         } else if (newArgs.length === 2) {
             // If the user limit given was less than 1 or greater than 99 let user know it is invalid
-            if(newArgs[1] < 1 || newArgs[1] > 99) {
-                return message.reply(`uh oh! Looks like you tried to give me an invalid user limit, please provide me with a limit that is between 1 and 99 or leave blank if no limit is needed!`);
+            if(isNaN(newArgs[1]) || newArgs[1] < 1 || newArgs[1] > 99) {
+                return message.reply(`uh oh! Looks like you tried to give me an invalid user limit, please provide me with a numerical limit that is between 1 and 99, or leave blank if no limit is needed!`);
             };
 
             // Create the temporary voice channel in the same category the server's afk channel is in with the user limit given
@@ -2314,6 +2325,7 @@ module.exports = {
         };
     },
     configHandler: async function(args, message, client) {
+        const prefix = client.settings.get("prefix");
         // Find the command in the local collection of the commands
         const command = client.commands.get(args[0]) || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(args[0]));
 
@@ -2391,5 +2403,20 @@ module.exports = {
         } else {
             return message.reply(`uh oh! Looks like you are trying to update a command that doesn't exist, please try again!\n If you need a list of commands use \`${prefix}help\``)
         }
+    },
+    settingsHandler: async function(args, message, client) {
+        const prefix = client.settings.get("prefix");
+        const settingName = args[0].toLowerCase(); //make the setting name lowercase
+        Models.setting.findOne({where: {name: settingName}}).then((setting) => {
+            // If a setting was found
+            if(setting) {
+                
+                //stuff
+
+            // If no setting was found let the user know
+            } else {
+                return message.reply(`uh oh! Looks like I wasn't able to find that setting, please check your setting name and try again!\nYour input: \`${message.content}\``);
+            }
+        });
     }
 }

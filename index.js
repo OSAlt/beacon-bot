@@ -12,11 +12,12 @@ const databaseController = require("./controllers/DatabaseController");
 const moderationController = require("./controllers/ModerationController");
 const channelController = require("./controllers/ChannelController");
 const voiceController = require("./controllers/VoiceController");
-const AllModels = require("./models/AllModels");
+const Models = require("./models/AllModels");
 
 // Instantiate a new Discord client and collection
 const client = new Discord.Client({disableEveryone: false, partials: ["MESSAGE", "REACTION"]});
-client.commands = new Discord.Collection(); // Create a new collection for commands
+client.commands = new Discord.Collection(); //create a new collection for commands
+client.settings = new Discord.Collection(); //create a new collection for the settings from the db
 
 // Create a class for Triggers
 class TriggerList {
@@ -49,7 +50,10 @@ const bannedUrls = new BannedDomainList();
 
 // Create a new Set for deleted messages
 let deleteSet = new Set();
-let dbCmds; //var for the database commands data
+
+// Create vars
+let dbCmds;
+let settings;
 
 console.log(JSON.stringify(require("./config"), null, 4)) //shows the running config
 
@@ -80,14 +84,11 @@ process.on('unhandledRejection', error => console.error('Uncaught Promise Reject
 client.once('ready', async () => {
 
     // Query the database for all the commands
-    dbCmds = await AllModels.command.findAll({raw:true});
-
+    dbCmds = await Models.command.findAll({raw:true});
     // Create the path for the commands directory
     const absolutePath = join(__dirname, "./", "commands");
-
     // Read command files
     const commandFiles = readdirRecursive(absolutePath).filter(file => file.endsWith(".js"));
-
     // Loop through commands and assign them to the client
     for (const file of commandFiles) {
         const cmd = require(file);
@@ -95,10 +96,18 @@ client.once('ready', async () => {
         client.commands.set(cmd.name, {...cmd, ...extraInfo});
     };
 
+    // Create the settings table if it doesn't exist
+    Models.setting.sync();
+    // Query the settings table for all settings
+    settings = await Models.setting.findAll({raw:true});
+
+    // Assign each setting to the settings collection
+    settings.forEach((item) => {client.settings.set(item.name, item.value)});
+
     console.log('Bot Online!');
     
     // Set the status of the bot
-    client.user.setPresence({activity: {name: `${config.prefix}help`}, status: 'online'});
+    client.user.setPresence({activity: {name: `${client.settings.get("prefix")}help`}, status: 'online'});
 
     // Populate the triggerList and check for unbans/unmutes
     try {
@@ -122,7 +131,7 @@ client.once('ready', async () => {
 client.on('message', async message => {
     // Call the function from /controllers/MessageController to handle the message
     try {
-        messageController.messageHandler(message, client, triggerList, bannedUrls, deleteSet, dbCmds);
+        messageController.messageHandler(message, client, triggerList, bannedUrls, deleteSet, dbCmds, settings);
     } catch (e) {
         console.error(e);
     };
@@ -144,7 +153,7 @@ client.on('guildMemberRemove', member => {
 
     // Attempt to run the leaveHandler method
     try {
-        leaveController.leaveHandler(member);
+        leaveController.leaveHandler(member, client);
     } catch (e) {
         console.error(e);
     }
@@ -162,7 +171,7 @@ client.on("messageDelete", message => {
 
             // Attempt to run the deleteHandler method
             try {
-                moderationController.deleteHandler(message, triggerList, deleteSet);
+                moderationController.deleteHandler(message, client, triggerList, deleteSet);
             } catch (e) {
                 return;
             }
@@ -236,7 +245,7 @@ client.on("channelCreate", channel => {
 // Listen for voice state updates
 client.on("voiceStateUpdate", (oldState, newState) => {
     // Call the channel left handler from the voice controller
-    voiceController.voiceUpdateHandler(oldState, newState);
+    voiceController.voiceUpdateHandler(oldState, newState, client);
 });
 
 // Function to read the given directory recursively

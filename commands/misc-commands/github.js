@@ -1,5 +1,3 @@
-
-
 module.exports = {
     name: "github",
     description: "Provides the user with the link to the bot's repository",

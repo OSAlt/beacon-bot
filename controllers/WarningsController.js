@@ -1,6 +1,5 @@
 // Import the required files
 const moment = require('moment-timezone');
-const {prefix, action_log_channel} = require('../config');
 const Discord = require("discord.js");
 const Warning = require("../models/Warning");
 
@@ -11,7 +10,8 @@ module.exports = {
         // Create vars
         const client = c, args = a, message = m;
         let warnedUser, warnedChannel, fullMessage;
-        const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel)));
+        const prefix = client.settings.get("prefix");
+        const actionLog = message.guild.channels.cache.find((c => c.name.includes(client.settings.get("mod_log_channel_name"))));
 
         // If only 1 arg, make sure it is "recent"
         if (args[0].toLowerCase() === "recent") {
@@ -64,7 +64,14 @@ module.exports = {
                             recentEmbed.addField(
                                 `Warning #${i}`, //title
                                 `Warning Id: **${warning.warning_id}**\rUser: **${warnedUser || "\`Not In Server\`"}**\rType: **${warning.type}**\rDate: **${date}**` //value
-                            )
+                            );
+                        } else {
+                            // Warning for all other types
+                            recentEmbed.addField(
+                                `Warning #${i}`, //title
+                                `Warning Id: **${warning.warning_id}**\rUser: **${warnedUser || "\`Not In Server\`"}**\rType: **${warning.type}**\rDate: **${date}**` //value
+                            );
+
                         }
                         i++; // increment counter
                     });

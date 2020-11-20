@@ -1,6 +1,4 @@
 // Import required files
-const {db_name, db_host, db_port, db_user, db_pass, join_log_channel, user_role} = require("../config");
-const Sequelize = require('sequelize');
 const moment = require("moment-timezone");
 const Models = require("../models/AllModels");
 
@@ -9,12 +7,11 @@ module.exports = {
 
     // Create a function to be called
     joinHandler: async function(m, c) {
-        const member = m; //assign the member var to the passed in member parameter
-        const sequelize = new Sequelize(`mysql://${db_user}:${db_pass}@${db_host}:${db_port}/${db_name}`, {logging: false}); //create the sequelize connection
+        const member = m, client = c; //assign the member var to the passed in member parameter
         const registerDate = moment(member.user.createdAt).format("MMM DD, YYYY"); // register date
         const registerTime = moment(member.user.createdAt).format("h:mm A"); // register time
         const roles = []; //create the roles array
-        const joinLog = member.guild.channels.cache.find((c => c.name.includes(join_log_channel))); //join log channel
+        const joinLog = member.guild.channels.cache.find((c => c.name.includes(client.settings.get("join_log_channel_name")))); //join log channel
         let mutes;
         let warnings = 0;
 
@@ -55,8 +52,8 @@ module.exports = {
         // Send the embed to the action log channel
         await joinLog.send({embed: joinEmbed});
 
-        // Query the database for all of the autoroles as a select
-        sequelize.query("SELECT `role` FROM `autoroles`", {type:sequelize.QueryTypes.SELECT}).then(async (data) => {
+        // Query the db for all the autoroles
+        Models.autorole.findAll({raw: true}).then(async (data) => {
 
             // Find any muted roles the user might have	
             mutes = await Models.mute.findAll({where: {user_id: member.user.id,completed: false}, raw:true});

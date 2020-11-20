@@ -1,5 +1,4 @@
 // Import the required files
-const {prefix} = require('../../config');
 const DatabaseController = require("../../controllers/DatabaseController");
 
 // Create a new module export
@@ -16,7 +15,7 @@ module.exports = {
     execute(message, args, client) {
         // Check if any arguments were given, it not let user know
         if (!args.length) {
-            message.channel.send(`To get information on a warning you must give the username or user id you wish to find.\rIf you are wanting the most recent warnings use \`${prefix}warnings recent\``);
+            message.channel.send(`To get information on a warning you must give the username or user id you wish to find.\rIf you are wanting the most recent warnings use \`${client.settings.get("prefix")}warnings recent\``);
 
         // If args were given...
         } else {

@@ -1,4 +1,3 @@
-const {prefix, admin_role, super_role, mod_role, mod_trainee_role, action_log_channel} = require('../../config');
 const moment = require("moment");
 const Discord = require("discord.js");
 const Models = require("../../models/AllModels");
@@ -13,14 +12,15 @@ module.exports = {
     super: false,
     admin: false,
     usage: "<mention | id>",
-    async execute(message, args) {
-        const actionLog = message.guild.channels.cache.find((c => c.name.includes(action_log_channel))); //mod log channel
+    async execute(message, args, client) {
+        const prefix = client.settings.get("prefix");
+        const actionLog = message.guild.channels.cache.find((c => c.name.includes(client.settings.get("mod_log_channel_name")))); //mod log channel
         let user; // user var
         // Get the mod+ roles
-        const modTraineeRole = message.guild.roles.cache.find(role => role.id === mod_trainee_role);
-        const modRole = message.guild.roles.cache.find(role => role.id === mod_role);
-        const superRole = message.guild.roles.cache.find(role => role.id === super_role);
-        const adminRole = message.guild.roles.cache.find(role => role.id === admin_role);
+        const modTraineeRole = message.guild.roles.cache.find(role => role.id === client.settings.get("trainee_role_id"));
+        const modRole = message.guild.roles.cache.find(role => role.id === client.settings.get("mod_role_id"));
+        const superRole = message.guild.roles.cache.find(role => role.id === client.settings.get("super_role_id"));
+        const adminRole = message.guild.roles.cache.find(role => role.id === client.settings.get("admin_role_id"));
         let warnings = 0; //warnings var
 
         // Make sure user provived an argument

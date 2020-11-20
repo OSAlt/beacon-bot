@@ -1,5 +1,4 @@
 // Import required files
-const {prefix} = require('../../config');
 const ModerationController = require("../../controllers/ModerationController");
 
 module.exports = {
@@ -13,6 +12,7 @@ module.exports = {
     super: false,
     admin: false,
     execute(message, args, client) {
+        const prefix = client.settings.get("prefix");
         if (!args.length) {
             // If no arguments let users know arguments are required
             return message.reply(`uh oh! you must tell me the channel, message interval, and length in order for me to enable slowmode!\nExample: \`${prefix}slow enable #${message.channel.name} 5\``);

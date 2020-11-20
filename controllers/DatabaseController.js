@@ -1,7 +1,5 @@
 // Import the required files
-const Sequelize = require('sequelize');
 const moment = require("moment");
-const {prefix, db_name, db_host, db_port, db_user, db_pass, action_log_channel} = require("../config");
 const TriggersController = require("./TriggersController");
 const AutorolesController = require("./AutorolesController");
 const JoinableRolesController = require("./JoinableRolesController");
@@ -15,11 +13,9 @@ module.exports = {
     queryHandler: function(m, a, c, tl) {
         // Create vars
         const message = m, client = c, triggerList = tl;
+        const prefix = client.settings.get("prefix");
         let args = a;
         let commandName;
-        
-        // Create a db connection; pass in the logging option and set to false to prevent console logs
-        const sequelize = new Sequelize(`mysql://${db_user}:${db_pass}@${db_host}:${db_port}/${db_name}`, {logging: false});
 
         // Check if the command has args
         if (!args.length) {
@@ -72,7 +68,7 @@ module.exports = {
         } else if (command.name === "purge") {
             
             // Call the purge handler function from the ModeratorController file
-            ModerationController.purgeHandler(args, message);
+            ModerationController.purgeHandler(args, message, client);
 
 
         /*
@@ -91,7 +87,7 @@ module.exports = {
         */
         } else if(command.name === "kick") {
             // Call the kick handler function from the ModerationController file
-            ModerationController.kickHandler(args, message);
+            ModerationController.kickHandler(args, message, client);
 
         /*
         #################################
@@ -127,7 +123,7 @@ module.exports = {
         */
         } else if(command.name === "mute") {
             // Call the mute handler function from the ModerationController file
-            ModerationController.muteHandler(args, message);
+            ModerationController.muteHandler(args, message, client);
             
         /*
         ##################################
@@ -145,16 +141,25 @@ module.exports = {
         */
         } else if(command.name === "createmute") {
             // Call the mute handler function from the ModerationController file
-            ModerationController.createMuteHandler(message);
+            ModerationController.createMuteHandler(message, client);
             
         /*
         ##############################
         ####### config command #######
         ##############################
         */
-        } else if(command.name === "config") {
+        } else if(command.name === "configure") {
             // Call the config handler function from the ModerationController file
             ModerationController.configHandler(args, message, client);
+
+        /*
+        ######################################
+        ########## settings command ##########
+        ######################################
+        */
+        } else if(command.name === "settings") {
+            // Call the settings handler function from the ModerationController file
+            ModerationController.settingsHandler(args, message, client);
 
         /*
         ####################################
@@ -162,8 +167,9 @@ module.exports = {
         ####################################
         */
         } else if (command.name === 'testdb') {
-            // Authenticate the sequelize object
-            sequelize.authenticate()
+
+            // Authenticate the sequelize object from within a model
+            Models.setting.sequelize.authenticate()
             .then(() => {
                 // If valid then let user know
                 message.channel.send("Connection Successful!");
@@ -284,7 +290,7 @@ module.exports = {
             bannedUsers.forEach((item) => {
                 // Find the server the user was banned from
                 const guild = client.guilds.cache.get(item.guildId);
-                logChannel = guild.channels.cache.find((c => c.name.includes(action_log_channel))); //action log channel
+                logChannel = guild.channels.cache.find((c => c.name.includes(client.settings.get("mod_log_channel_name")))); //action log channel
 
                 // Unban the user with a time up reason
                 guild.members.unban(item.userId, "Ban Expiration").then(() => {
@@ -367,7 +373,7 @@ module.exports = {
                         }
 
                         const mutedRole = member.roles.cache.find(r => r.name.includes("Muted")); //muted role
-                        logChannel = guild.channels.cache.find((c => c.name.includes(action_log_channel))); //action log channel
+                        logChannel = guild.channels.cache.find((c => c.name.includes(client.settings.get("mod_log_channel_name")))); //action log channel
                         // Unmute the user
                         member.roles.remove(mutedRole).then(() => {
                             const moderator = client.users.cache.get(mute.moderator_id); //get the moderator that performed the mute

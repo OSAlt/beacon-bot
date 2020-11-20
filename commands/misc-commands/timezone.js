@@ -1,5 +1,4 @@
 // Import required files
-const {prefix} = require('../../config');
 const moment = require("moment-timezone");
 
 module.exports = {
@@ -12,7 +11,8 @@ module.exports = {
     super: false,
     admin: false,
     usage: "<datetime>, <timezone>, <timezone>",
-    execute(message, args) { 
+    execute(message, args, client) { 
+        const prefix = client.settings.get("prefix");
         // Make sure args were provided
         if(args.length) {
             args = args.join(" "); // make a string out of the args
@@ -20,7 +20,7 @@ module.exports = {
             const dateTime = args[0];
             let from = args[1];
             let to = args[2];
-            let timezones = [];
+            const prefix = client.settings.get("prefix");
 
             // If user forgot to provide the timezone to convert from and to
             if(args.length === 1) {

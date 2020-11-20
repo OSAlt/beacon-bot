@@ -1,5 +1,4 @@
 // Import required files
-const {prefix} = require('../../config');
 const ModerationController = require("../../controllers/ModerationController");
 
 module.exports = {
@@ -9,10 +8,11 @@ module.exports = {
     usage: `<add/remove> <user> <role>`,
     cooldown: 5,
     enabled: true,
-    mod: false,
+    mod: true,
     super: false,
     admin: false,
     execute(message, args, client) {
+        const prefix = client.settings.get("prefix");
         if (!args.length) {
             // If no arguments let users know arguments are required
             return message.reply(`uh oh! you must tell me the subcommand, user, and role in order for me to add or remove a user to/from a role.!\nExample: \`${prefix}role add @${message.author.tag} Users\``);

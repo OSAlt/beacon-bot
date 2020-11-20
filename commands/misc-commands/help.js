@@ -1,6 +1,3 @@
-// Import required files
-const {prefix, admin_role, super_role, mod_role, mod_trainee_role} = require('../../config');
-
 // Create a new module export
 module.exports = {
     name: "help",
@@ -12,16 +9,17 @@ module.exports = {
     mod: false,
     super: false,
     admin: false,
-    execute(message, args) {
+    execute(message, args, client) {
         const help = {};
         let adminCmds = [],superCmds = [],modCmds = [],userCmds = [];
         let adminCmdsStr,superCmdsStr,modCmdsStr;
         const {commands} = message.client;
+        const prefix = client.settings.get("prefix")
         const elderRole = message.member.roles.cache.some(role => role.name === "Elder Squirrel");
-        const modTraineeRole = message.member.roles.cache.some(role => role.id === mod_trainee_role);
-        const modRole = message.member.roles.cache.some(role => role.id === mod_role);
-        const superRole = message.member.roles.cache.some(role => role.id === super_role);
-        const adminRole = message.member.roles.cache.some(role => role.id === admin_role);
+        const modTraineeRole = message.member.roles.cache.some(role => role.id === client.settings.get("trainee_role_id"));
+        const modRole = message.member.roles.cache.some(role => role.id === client.settings.get("mod_role_id"));
+        const superRole = message.member.roles.cache.some(role => role.id === client.settings.get("super_role_id"));
+        const adminRole = message.member.roles.cache.some(role => role.id === client.settings.get("admin_role_id"));
         const ownerRole = message.member.guild.ownerID;
         
 

@@ -1,18 +1,17 @@
 // Import required files
 const moment = require("moment");
 const momentDuration = require("moment-duration-format");
-const {super_log_channel, user_role} = require("../config");
 
 // Create a new module export
 module.exports = {
-    leaveHandler: function(m) {
+    leaveHandler: function(m, c) {
 
         // Link moment-duration-format with moment
         momentDuration(moment);
 
-        const member = m;
+        const member = m, client = c;
         let lastMessage;
-        const superLog = member.guild.channels.cache.find((c => c.name.includes(super_log_channel))); //super log channel
+        const superLog = member.guild.channels.cache.find((c => c.name.includes(client.settings.get("super_log_channel_name")))); //super log channel
         const joinedDate = moment(member.joinedAt).format("MMM DD, YYYY HH:mm:ss"); // joined date
         const joinedTimeStamp = moment(member.joinedTimestamp); // timestamp user joined
         const currentTime = moment(); // create a new moment obj with current time
