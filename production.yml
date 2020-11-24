@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   bot:
-    image: geekbeacon/beacon-bot:0.2.0
+    image: geekbeacon/beacon-bot:0.2.1
     restart: always
     build:
         context: . 
