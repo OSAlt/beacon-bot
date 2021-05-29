@@ -18,7 +18,7 @@
     "discord.js": "^12.1.1",
     "discord.js-pagination": "^1.0.3",
     "dotenv": "^8.2.0",
-    "lodash": "^4.17.19",
+    "lodash": "^4.17.21",
     "moment": "^2.24.0",
     "moment-duration-format": "^2.3.2",
     "moment-timezone": "^0.5.27",
