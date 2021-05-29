@@ -1,0 +1,42 @@
+kind: pipeline
+name: default
+
+steps:
+  - name: docker
+    image: plugins/docker
+    settings:
+      repo: geekbeacon/beacon-bot
+      tags:
+        - ${DRONE_TAG}
+        - ${DRONE_SOURCE_BRANCH}
+      username:
+        from_secret: DOCKER_USER
+      password:
+        from_secret: DOCKER_PASS
+
+trigger:
+  branch:
+    - master
+    - feature/droneci
+  event:
+    - tag
+---
+kind: pipeline
+name: validation
+
+steps:
+  - name: docker
+    image: plugins/docker
+    settings:
+      repo: geekbeacon/gb-ghost
+      tags: ${DRONE_TAG}
+      dry_run: true
+      username:
+        from_secret: DOCKER_USER
+      password:
+        from_secret: DOCKER_PASS
+
+trigger:
+  event:
+    - push
+    - pull_request
